@@ -3,17 +3,17 @@ package practica;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class reseña {
+public class Reseña {
 
     /**
      * RF5.1: Añadir reseña sobre un pedido
      */
     public void addReview(int idReseña, int idPedido, int idUsuario, int valoracion, String comentario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        Connection conn = connection.connection;
+        java.sql.Connection conn =  Connection.connection;
 
         // Comprobar que exista el usuario
         try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
@@ -70,11 +70,11 @@ public class reseña {
      * RF5.2: Editar reseña
      */
     public void editReview(int idReseña, int idUsuario, int nuevaValoracion, String nuevoComentario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Comprobar existencia de la reseña y detalles
         int userFromPedido = -1;
@@ -121,11 +121,11 @@ public class reseña {
      * RF5.3: Eliminar reseña
      */
     public void deleteReview(int idReseña, int idUsuario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Comprobar existencia y detalles
         int userFromPedido = -1;
@@ -173,12 +173,12 @@ public class reseña {
      * @throws Exception si el pedido no existe
      */
     public ArrayList<String> getReviewsByOrder(int idPedido) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
         ArrayList<String> reviews = new ArrayList<>();
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Comprobar que el pedido existe
         try (PreparedStatement ps = conn.prepareStatement(
@@ -218,12 +218,12 @@ public class reseña {
      * @throws Exception si el usuario no existe
      */
     public ArrayList<String> getReviewsByUser(int idUsuario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
         ArrayList<String> reviews = new ArrayList<>();
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Comprobar que el usuario existe
         try (PreparedStatement ps = conn.prepareStatement(

@@ -3,15 +3,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
-public class connection {
+public class Connection {
     /* ATRIBUTOS */
     private static final String URL = "jdbc:oracle:thin:@oracle0.ugr.es:1521/practbd";
     private static final String USER = "x4049463";
     private static final String PASSWORD = "x4049463";
-    public static Connection connection;
+    public static java.sql.Connection connection;
     public static JFrame frame;
 
     /* MÉTODOS */

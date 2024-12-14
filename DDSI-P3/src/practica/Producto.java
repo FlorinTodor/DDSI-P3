@@ -9,11 +9,11 @@ public class Producto{
      * RF2.1: Insertar Producto
      */
     public void addProduct(int idProducto, String nombre, double precio, int cantidad, int idUsuario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
 
             // Verificar que el usuario existe
@@ -69,11 +69,11 @@ public class Producto{
      * RF2.2: Editar producto
      */
     public void editProduct(int idProducto, String nuevoNombre, int nuevaCantidad, double nuevoPrecio, int idUsuario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Verificar que el usuario existe
         try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
@@ -146,11 +146,11 @@ public class Producto{
      * @throws Exception si el producto no existe o ya tiene cantidad 0
      */
     public void deleteProduct(int idProducto, int idUsuario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Verificar que el usuario existe
         try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
@@ -199,12 +199,12 @@ public class Producto{
      * @throws Exception si el usuario no existe o no tiene productos asociados
      */
     public ArrayList<String> getProductsByUser(int idUsuario) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
         System.out.println("ID Usuario recibido: " + idUsuario);
         ArrayList<String> productos = new ArrayList<>();
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Comprobar que el usuario existe
         try (PreparedStatement ps = conn.prepareStatement(
@@ -253,12 +253,12 @@ public class Producto{
      * @throws Exception si no hay productos con ese precio o si ocurre un error
      */
     public ArrayList<String> getProductsByPrice(double precio) throws Exception {
-        if (connection.connection == null) {
+        if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
         ArrayList<String> productos = new ArrayList<>();
-        Connection conn = connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Consulta para obtener productos con el precio especificado y cantidad mayor a 0
         String obtenerProductosPorPrecioQuery =

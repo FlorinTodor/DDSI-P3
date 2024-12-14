@@ -2,15 +2,13 @@ package practica;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Stack;
 
-public class diseño {
+public class Diseño {
 
     private static JTextArea textArea;
-    private reseña reviewService = new reseña(); // Instancia de la clase reseña con los métodos JDBC
+    private Reseña reviewService = new Reseña(); // Instancia de la clase reseña con los métodos JDBC
 
 
     public static void pantalla_registro(JFrame frame) {
@@ -32,7 +30,7 @@ public class diseño {
         JMenu menuArchivo = new JMenu("Archivo");
         JMenuItem salirItem = new JMenuItem("Salir");
         salirItem.addActionListener(e -> {
-            connection.cerrarConexion(true);
+            Connection.cerrarConexion(true);
             System.exit(0);
         });
         menuArchivo.add(salirItem);
@@ -397,7 +395,7 @@ public class diseño {
                 String com = txtComentario.getText().trim();
 
                 // Llamada a método addReview
-                reseña reviewService = new reseña();
+                Reseña reviewService = new Reseña();
                 reviewService.addReview(idRes, idPed, idUser, val, com);
                 JOptionPane.showMessageDialog(panelAddReview, "Reseña añadida con éxito.");
 
@@ -434,7 +432,7 @@ public class diseño {
                 int val = Integer.parseInt(txtEditValoracion.getText().trim());
                 String com = txtEditComentario.getText().trim();
 
-                reseña reviewService = new reseña();
+                Reseña reviewService = new Reseña();
                 reviewService.editReview(idRes, idUser, val, com);
                 JOptionPane.showMessageDialog(panelEditReview, "Reseña editada con éxito.");
 
@@ -463,7 +461,7 @@ public class diseño {
                 int idRes = Integer.parseInt(txtDeleteIdReseña.getText().trim());
                 int idUser = Integer.parseInt(txtDeleteIdUsuario.getText().trim());
 
-                reseña reviewService = new reseña();
+                Reseña reviewService = new Reseña();
                 reviewService.deleteReview(idRes, idUser);
                 JOptionPane.showMessageDialog(panelDeleteReview, "Reseña eliminada con éxito.");
 
@@ -496,7 +494,7 @@ public class diseño {
             try {
                 textAreaOrder.setText("");
                 int idPed = Integer.parseInt(txtViewByOrder.getText().trim());
-                reseña reviewService = new reseña();
+                Reseña reviewService = new Reseña();
                 ArrayList<String> reviews = reviewService.getReviewsByOrder(idPed);
                 for (String review : reviews) {
                     textAreaOrder.append(review + "\n");
@@ -530,7 +528,7 @@ public class diseño {
             try {
                 textAreaUser.setText("");
                 int idUser = Integer.parseInt(txtViewByUser.getText().trim());
-                reseña reviewService = new reseña();
+                Reseña reviewService = new Reseña();
                 ArrayList<String> reviews = reviewService.getReviewsByUser(idUser);
                 for (String review : reviews) {
                     textAreaUser.append(review + "\n");
@@ -547,15 +545,15 @@ public class diseño {
 
 
     public static void mostrarTablas() {
-        if (connection.connection == null) {
-            JOptionPane.showMessageDialog(connection.frame, "No hay conexión a la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
+        if (Connection.connection == null) {
+            JOptionPane.showMessageDialog(Connection.frame, "No hay conexión a la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        try (PreparedStatement ps = connection.connection.prepareStatement("SELECT table_name FROM user_tables");
+        try (PreparedStatement ps = Connection.connection.prepareStatement("SELECT table_name FROM user_tables");
              ResultSet rs = ps.executeQuery()) {
 
-            JDialog dialog = new JDialog(connection.frame, "Tablas en la BD", true);
+            JDialog dialog = new JDialog(Connection.frame, "Tablas en la BD", true);
             dialog.setLayout(new BorderLayout());
 
             JTabbedPane tabbedPane = new JTabbedPane();
@@ -567,7 +565,7 @@ public class diseño {
 
                 // Consulta para obtener datos de la tabla ordenados de forma ascendente por la primera columna
                 String sql = "SELECT * FROM \"" + tableName + "\" ORDER BY 1 ASC";
-                try (Statement st = connection.connection.createStatement();
+                try (Statement st = Connection.connection.createStatement();
                      ResultSet rsTable = st.executeQuery(sql)) {
 
                     ResultSetMetaData metaData = rsTable.getMetaData();
@@ -614,11 +612,11 @@ public class diseño {
             dialog.add(tabbedPane, BorderLayout.CENTER);
 
             dialog.setSize(600, 400);
-            dialog.setLocationRelativeTo(connection.frame);
+            dialog.setLocationRelativeTo(Connection.frame);
             dialog.setVisible(true);
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(connection.frame, "Error al obtener las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Connection.frame, "Error al obtener las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -626,7 +624,7 @@ public class diseño {
 
 
     private static void eliminarDatos_tabla() {
-        try (Statement stmt = connection.connection.createStatement()) {
+        try (Statement stmt = Connection.connection.createStatement()) {
             // Truncar tablas dependientes primero
             stmt.executeUpdate("TRUNCATE TABLE Gestion_Reseña");
             stmt.executeUpdate("TRUNCATE TABLE Realiza");
@@ -640,10 +638,10 @@ public class diseño {
             stmt.executeUpdate("TRUNCATE TABLE carrito");
             stmt.executeUpdate("TRUNCATE TABLE usuario");
 
-            connection.connection.commit();
-            JOptionPane.showMessageDialog(connection.frame, "Datos eliminados correctamente.");
+            Connection.connection.commit();
+            JOptionPane.showMessageDialog(Connection.frame, "Datos eliminados correctamente.");
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(connection.frame, "Error al eliminar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Connection.frame, "Error al eliminar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
 
     }
@@ -651,7 +649,7 @@ public class diseño {
 
 
     private static void insertarDatosPrueba_tabla(){
-        try (Statement stmt = connection.connection.createStatement()) {
+        try (Statement stmt = Connection.connection.createStatement()) {
             // Insertar Usuarios
             stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion) VALUES (1, 'user1@example.com', 'Juan', 'A', 'Calle Falsa 123')");
             stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion) VALUES (2, 'user2@example.com', 'Maria', 'A', 'Avenida Principal 456')");
@@ -682,16 +680,16 @@ public class diseño {
             stmt.executeUpdate("INSERT INTO Realiza (ID_metodoPago, ID_Pedido, Metodo_Pago) VALUES (1, 100, 'Tarjeta')");
             stmt.executeUpdate("INSERT INTO Realiza (ID_metodoPago, ID_Pedido, Metodo_Pago) VALUES (2, 101, 'PayPal')");
 
-            connection.connection.commit();
-            JOptionPane.showMessageDialog(connection.frame, "Datos de prueba insertados correctamente.");
+            Connection.connection.commit();
+            JOptionPane.showMessageDialog(Connection.frame, "Datos de prueba insertados correctamente.");
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(connection.frame, "Error al insertar datos de prueba: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Connection.frame, "Error al insertar datos de prueba: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
 
     private static void borraryCrearTablas() {
-        try (Statement stmt = connection.connection.createStatement()) {
+        try (Statement stmt = Connection.connection.createStatement()) {
             // Borrar tablas que dependen de otras
             stmt.executeUpdate("DROP TABLE Gestion_Reseña PURGE");
             stmt.executeUpdate("DROP TABLE Realiza PURGE");
@@ -807,10 +805,10 @@ public class diseño {
                     "    UNIQUE(ID_Usuario)\n" +
                     ")");
 
-            connection.connection.commit();
-            JOptionPane.showMessageDialog(connection.frame, "Tablas creadas correctamente.");
+            Connection.connection.commit();
+            JOptionPane.showMessageDialog(Connection.frame, "Tablas creadas correctamente.");
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(connection.frame, "Error al crear las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Connection.frame, "Error al crear las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
