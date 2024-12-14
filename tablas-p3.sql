@@ -12,7 +12,6 @@ CREATE TABLE usuario (
 CREATE TABLE producto (
     ID_Producto integer NOT NULL,
     NombreProducto varchar(30),
-    ID_Usuario integer REFERENCES usuario(ID_Usuario),
     Cantidad integer,
     Precio float,
     PRIMARY KEY(ID_Producto)
@@ -109,64 +108,6 @@ CREATE TABLE GestionPedido (
 );
 
 
-
--- PRUEBAS
-/*
--- Insertar Usuarios
-INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion)
-VALUES (1, 'user1@example.com', 'Juan', 'A', 'Calle Falsa 123');
-
-INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion)
-VALUES (2, 'user2@example.com', 'Maria', 'A', 'Avenida Principal 456');
-
--- Insertar Productos
-INSERT INTO producto (ID_Producto, NombreProducto, ID_Usuario, Cantidad, Precio)
-VALUES (10, 'Camisa', 1, 50, 19.99);
-
-INSERT INTO producto (ID_Producto, NombreProducto, ID_Usuario, Cantidad, Precio)
-VALUES (11, 'Pantalón', 2, 20, 29.99);
-
--- Insertar Pedidos
-INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario)
-VALUES (100, 'Calle Falsa 123', 'Entregado', 1, 'Correo', 1);
-
-INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario)
-VALUES (101, 'Avenida Principal 456', 'Entregado', 2, 'Mensajeria', 2);
-
--- Insertar Reseñas
-INSERT INTO reseña (ID_Resena, Comentario, Valoracion)
-VALUES (1, 'Muy buen producto', 5);
-
-INSERT INTO reseña (ID_Resena, Comentario, Valoracion)
-VALUES (2, 'Rápida entrega, producto aceptable', 4);
-
--- Asociar Reseñas con Pedidos
-INSERT INTO Gestion_Reseña (ID_Resena, ID_Pedido)
-VALUES (1, 100);
-
-INSERT INTO Gestion_Reseña (ID_Resena, ID_Pedido)
-VALUES (2, 101);
-
--- Insertar Pagos
-INSERT INTO pago (ID_metodoPago, Fecha)
-VALUES (1, SYSDATE);
-
-INSERT INTO pago (ID_metodoPago, Fecha)
-VALUES (2, SYSDATE);
-
-INSERT INTO GestionPago (ID_Usuario, ID_metodoPago)
-VALUES (1, 1);
-
-INSERT INTO GestionPago (ID_Usuario, ID_metodoPago)
-VALUES (2, 2);
-
-INSERT INTO Realiza (ID_metodoPago, ID_Pedido, Metodo_Pago)
-VALUES (1, 100, 'Tarjeta');
-
-INSERT INTO Realiza (ID_metodoPago, ID_Pedido, Metodo_Pago)
-VALUES (2, 101, 'PayPal');
-
-*/
 
 
 SELECT * FROM Usuario;

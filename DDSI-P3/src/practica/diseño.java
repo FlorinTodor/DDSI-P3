@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class diseño {
 
@@ -33,11 +34,29 @@ public class diseño {
 
         // Menú Gestión de Tablas
         JMenu menuGestion = new JMenu("Gestión de Tablas");
+
+        // Opción 1: Borrar y crear tablas
         JMenuItem crearBorrarTablas = new JMenuItem("Borrar y Crear Tablas");
         crearBorrarTablas.addActionListener(e -> {
-            // Aquí podría ir la lógica de borrar y crear tablas, si es necesario
+            eliminarDatos_tabla();
+            borraryCrearTablas();
         });
         menuGestion.add(crearBorrarTablas);
+
+        // Opción 2: Eliminar datos de las tablas
+        JMenuItem eliminarDatosTablas = new JMenuItem("Eliminar Datos de las Tablas");
+        eliminarDatosTablas.addActionListener(e -> {
+            eliminarDatos_tabla();
+        });
+        menuGestion.add(eliminarDatosTablas);
+
+        // Opción 3: Insertar datos de prueba
+        JMenuItem insertarDatosPrueba = new JMenuItem("Insertar Datos de Prueba");
+        insertarDatosPrueba.addActionListener(e -> {
+            insertarDatosPrueba_tabla();
+        });
+        menuGestion.add(insertarDatosPrueba);
+
 
         // Añadir menús a la barra de menú
         menuBar.add(menuArchivo);
@@ -254,6 +273,9 @@ public class diseño {
         frame.setVisible(true);
     }
 
+
+
+
     public static void mostrarTablas() {
         if (connection.connection == null) {
             JOptionPane.showMessageDialog(connection.frame, "No hay conexión a la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -329,6 +351,200 @@ public class diseño {
             JOptionPane.showMessageDialog(connection.frame, "Error al obtener las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+
+
+
+    private static void eliminarDatos_tabla() {
+        try (Statement stmt = connection.connection.createStatement()) {
+            // Truncar tablas dependientes primero
+            stmt.executeUpdate("TRUNCATE TABLE Gestion_Reseña");
+            stmt.executeUpdate("TRUNCATE TABLE Realiza");
+            stmt.executeUpdate("TRUNCATE TABLE GestionPago");
+
+            // Truncar tablas principales después
+            stmt.executeUpdate("TRUNCATE TABLE reseña");
+            stmt.executeUpdate("TRUNCATE TABLE pedido");
+            stmt.executeUpdate("TRUNCATE TABLE producto");
+            stmt.executeUpdate("TRUNCATE TABLE pago");
+            stmt.executeUpdate("TRUNCATE TABLE carrito");
+            stmt.executeUpdate("TRUNCATE TABLE usuario");
+
+            connection.connection.commit();
+            JOptionPane.showMessageDialog(connection.frame, "Datos eliminados correctamente.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(connection.frame, "Error al eliminar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+    }
+
+
+
+    private static void insertarDatosPrueba_tabla(){
+        try (Statement stmt = connection.connection.createStatement()) {
+            // Insertar Usuarios
+            stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion) VALUES (1, 'user1@example.com', 'Juan', 'A', 'Calle Falsa 123')");
+            stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion) VALUES (2, 'user2@example.com', 'Maria', 'A', 'Avenida Principal 456')");
+
+            // Insertar Productos
+            stmt.executeUpdate("INSERT INTO producto (ID_Producto, NombreProducto, Cantidad, Precio) VALUES (10, 'Camisa', 50, 19.99)");
+            stmt.executeUpdate("INSERT INTO producto (ID_Producto, NombreProducto, Cantidad, Precio) VALUES (11, 'Pantalón', 20, 29.99)");
+
+            // Insertar Pedidos
+            stmt.executeUpdate("INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario) VALUES (100, 'Calle Falsa 123', 'Entregado', 1, 'Correo', 1)");
+            stmt.executeUpdate("INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario) VALUES (101, 'Avenida Principal 456', 'Entregado', 2, 'Mensajeria', 2)");
+
+            // Insertar Reseñas
+            stmt.executeUpdate("INSERT INTO reseña (ID_Resena, Comentario, Valoracion) VALUES (1, 'Muy buen producto', 5)");
+            stmt.executeUpdate("INSERT INTO reseña (ID_Resena, Comentario, Valoracion) VALUES (2, 'Rápida entrega, producto aceptable', 4)");
+
+            // Asociar Reseñas con Pedidos
+            stmt.executeUpdate("INSERT INTO Gestion_Reseña (ID_Resena, ID_Pedido) VALUES (1, 100)");
+            stmt.executeUpdate("INSERT INTO Gestion_Reseña (ID_Resena, ID_Pedido) VALUES (2, 101)");
+
+            // Insertar Pagos
+            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (1, SYSDATE)");
+            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (2, SYSDATE)");
+
+            // Asociar Pagos
+            stmt.executeUpdate("INSERT INTO GestionPago (ID_Usuario, ID_metodoPago) VALUES (1, 1)");
+            stmt.executeUpdate("INSERT INTO GestionPago (ID_Usuario, ID_metodoPago) VALUES (2, 2)");
+            stmt.executeUpdate("INSERT INTO Realiza (ID_metodoPago, ID_Pedido, Metodo_Pago) VALUES (1, 100, 'Tarjeta')");
+            stmt.executeUpdate("INSERT INTO Realiza (ID_metodoPago, ID_Pedido, Metodo_Pago) VALUES (2, 101, 'PayPal')");
+
+            connection.connection.commit();
+            JOptionPane.showMessageDialog(connection.frame, "Datos de prueba insertados correctamente.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(connection.frame, "Error al insertar datos de prueba: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+    private static void borraryCrearTablas() {
+        try (Statement stmt = connection.connection.createStatement()) {
+            // Borrar tablas que dependen de otras
+            stmt.executeUpdate("DROP TABLE Gestion_Reseña PURGE");
+            stmt.executeUpdate("DROP TABLE Realiza PURGE");
+            stmt.executeUpdate("DROP TABLE GestionPago PURGE");
+            stmt.executeUpdate("DROP TABLE GestionCarrito PURGE");
+            stmt.executeUpdate("DROP TABLE GestionPedido PURGE");
+            stmt.executeUpdate("DROP TABLE modificaProducto PURGE");
+            stmt.executeUpdate("DROP TABLE tiene PURGE");
+
+            // Borrar tablas base
+            stmt.executeUpdate("DROP TABLE reseña PURGE");
+            stmt.executeUpdate("DROP TABLE pedido PURGE");
+            stmt.executeUpdate("DROP TABLE producto PURGE");
+            stmt.executeUpdate("DROP TABLE pago PURGE");
+            stmt.executeUpdate("DROP TABLE carrito PURGE");
+            stmt.executeUpdate("DROP TABLE usuario PURGE");
+
+            // Crear tablas base
+            stmt.executeUpdate("CREATE TABLE usuario (\n" +
+                    "    ID_Usuario integer NOT NULL,\n" +
+                    "    Correo varchar(30),\n" +
+                    "    Nombre varchar(30),\n" +
+                    "    Estado CHAR(1) CHECK (Estado IN ('A', 'I')),\n" +
+                    "    Direccion varchar(50),\n" +
+                    "    PRIMARY KEY(ID_Usuario)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE producto (\n" +
+                    "    ID_Producto integer NOT NULL,\n" +
+                    "    NombreProducto varchar(30),\n" +
+                    "    Cantidad integer,\n" +
+                    "    Precio float,\n" +
+                    "    PRIMARY KEY(ID_Producto)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE carrito (\n" +
+                    "    ID_Carrito integer NOT NULL,\n" +
+                    "    PRIMARY KEY(ID_Carrito)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE pedido (\n" +
+                    "    ID_Pedido integer NOT NULL,\n" +
+                    "    Direccion varchar(30),\n" +
+                    "    Estado_Pedido varchar(10),\n" +
+                    "    Tipo_Pago integer,\n" +
+                    "    Metodo_Envio varchar(10),\n" +
+                    "    ID_Usuario integer REFERENCES usuario(ID_Usuario),\n" +
+                    "    PRIMARY KEY(ID_Pedido)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE reseña (\n" +
+                    "    ID_Resena INT PRIMARY KEY,\n" +
+                    "    Comentario VARCHAR2(500),\n" +
+                    "    Valoracion INT\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE pago (\n" +
+                    "    ID_metodoPago INT PRIMARY KEY,\n" +
+                    "    Fecha DATE\n" +
+                    ")");
+
+            // Crear tablas relacionadas
+            stmt.executeUpdate("CREATE TABLE GestionPago (\n" +
+                    "    ID_Usuario INT,\n" +
+                    "    ID_metodoPago INT,\n" +
+                    "    PRIMARY KEY (ID_Usuario),\n" +
+                    "    UNIQUE (ID_metodoPago),\n" +
+                    "    FOREIGN KEY (ID_Usuario) REFERENCES usuario(ID_Usuario),\n" +
+                    "    FOREIGN KEY (ID_metodoPago) REFERENCES pago(ID_metodoPago)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE Realiza (\n" +
+                    "    ID_metodoPago INT,\n" +
+                    "    ID_Pedido INT,\n" +
+                    "    Metodo_Pago VARCHAR(30),\n" +
+                    "    PRIMARY KEY (ID_Pedido),\n" +
+                    "    UNIQUE (ID_metodoPago),\n" +
+                    "    FOREIGN KEY (ID_Pedido) REFERENCES pedido(ID_Pedido),\n" +
+                    "    FOREIGN KEY (ID_metodoPago) REFERENCES pago(ID_metodoPago)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE Gestion_Reseña (\n" +
+                    "    ID_Resena INT,\n" +
+                    "    ID_Pedido INT,\n" +
+                    "    PRIMARY KEY (ID_Resena),\n" +
+                    "    FOREIGN KEY (ID_Resena) REFERENCES reseña(ID_Resena),\n" +
+                    "    FOREIGN KEY (ID_Pedido) REFERENCES pedido(ID_Pedido)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE modificaProducto (\n" +
+                    "    ID_Usuario integer REFERENCES usuario(ID_Usuario),\n" +
+                    "    ID_Producto integer REFERENCES producto(ID_Producto),\n" +
+                    "    PRIMARY KEY(ID_Usuario)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE tiene (\n" +
+                    "    ID_Carrito integer REFERENCES carrito(ID_Carrito),\n" +
+                    "    ID_Producto integer REFERENCES producto(ID_Producto),\n" +
+                    "    Cantidad integer,\n" +
+                    "    PRIMARY KEY(ID_Carrito, ID_Producto)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE GestionCarrito (\n" +
+                    "    ID_Carrito integer REFERENCES carrito(ID_Carrito),\n" +
+                    "    ID_Pedido integer REFERENCES pedido(ID_Pedido),\n" +
+                    "    PRIMARY KEY(ID_Carrito)\n" +
+                    ")");
+
+            stmt.executeUpdate("CREATE TABLE GestionPedido (\n" +
+                    "    ID_Usuario integer REFERENCES usuario(ID_Usuario),\n" +
+                    "    ID_Pedido integer REFERENCES pedido(ID_Pedido),\n" +
+                    "    PRIMARY KEY(ID_Pedido),\n" +
+                    "    UNIQUE(ID_Usuario)\n" +
+                    ")");
+
+            connection.connection.commit();
+            JOptionPane.showMessageDialog(connection.frame, "Tablas creadas correctamente.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(connection.frame, "Error al crear las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
 
 
 
