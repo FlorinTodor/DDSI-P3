@@ -273,8 +273,8 @@ public class diseño {
                 hayTablas = true;
                 String tableName = rs.getString("table_name");
 
-                // Consulta para obtener datos de la tabla
-                String sql = "SELECT * FROM \"" + tableName + "\"";
+                // Consulta para obtener datos de la tabla ordenados de forma ascendente por la primera columna
+                String sql = "SELECT * FROM \"" + tableName + "\" ORDER BY 1 ASC";
                 try (Statement st = connection.connection.createStatement();
                      ResultSet rsTable = st.executeQuery(sql)) {
 
