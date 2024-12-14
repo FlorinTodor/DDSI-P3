@@ -79,6 +79,8 @@ public class Diseño {
         // Crear pestañas específicas
         JTabbedPane reseñasTabbedPane = crearPestañasReseñas();
         JTabbedPane productosTabbedPane = crearPestañasProductos();
+        JTabbedPane CarritoTabbedPane = crearPestañasCarrito();
+
 
 
 
@@ -98,10 +100,194 @@ public class Diseño {
 
         frame.setVisible(true);
     }
+
+
 // -------------------------------------------------------------------------------------------Ç
     // PESTAÑAS DE CADA SUBSISTEMA
 
 // -----------------------------------------------------------------------------------------------
+
+    private static JTabbedPane crearPestañasCarrito() {
+
+            JTabbedPane carritoTabbedPane = new JTabbedPane();
+
+            // -----------------------------------------------------------
+            // RF3.1: Añadir producto al carrito
+            // -----------------------------------------------------------
+            JPanel panelAddToCart = new JPanel(new GridLayout(4, 2, 5, 5));
+            JTextField txtIdUsuarioAdd = new JTextField();
+            JTextField txtIdProductoAdd = new JTextField();
+            JTextField txtCantidadAdd = new JTextField();
+
+            panelAddToCart.add(new JLabel("ID Usuario:"));
+            panelAddToCart.add(txtIdUsuarioAdd);
+
+            panelAddToCart.add(new JLabel("ID Producto:"));
+            panelAddToCart.add(txtIdProductoAdd);
+
+            panelAddToCart.add(new JLabel("Cantidad:"));
+            panelAddToCart.add(txtCantidadAdd);
+
+            JButton btnAddToCart = new JButton("Añadir al Carrito");
+            panelAddToCart.add(btnAddToCart);
+
+            btnAddToCart.addActionListener(e -> {
+                try {
+                    int idUsuario = Integer.parseInt(txtIdUsuarioAdd.getText().trim());
+                    int idProducto = Integer.parseInt(txtIdProductoAdd.getText().trim());
+                    int cantidad = Integer.parseInt(txtCantidadAdd.getText().trim());
+
+                    Carrito carritoService = new Carrito();
+                    carritoService.addProductToCart(idUsuario, idProducto, cantidad);
+                    JOptionPane.showMessageDialog(panelAddToCart, "Producto añadido con éxito al carrito.");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(panelAddToCart, "Error al añadir producto: " + ex.getMessage());
+                }
+            });
+
+            carritoTabbedPane.addTab("Añadir Producto al Carrito", panelAddToCart);
+
+            // -----------------------------------------------------------
+            // RF3.2: Ver carrito de compras
+            // -----------------------------------------------------------
+            JPanel panelViewCart = new JPanel(new BorderLayout(10, 10));
+            JPanel inputPanelView = new JPanel(new GridLayout(1, 2, 5, 5));
+            JTextField txtIdUsuarioView = new JTextField();
+
+            inputPanelView.add(new JLabel("ID Usuario:"));
+            inputPanelView.add(txtIdUsuarioView);
+
+            JButton btnViewCart = new JButton("Ver Carrito");
+            JPanel topPanelView = new JPanel(new FlowLayout());
+            topPanelView.add(inputPanelView);
+            topPanelView.add(btnViewCart);
+
+            JTextArea textAreaViewCart = new JTextArea(10, 40);
+            textAreaViewCart.setEditable(false);
+
+            panelViewCart.add(topPanelView, BorderLayout.NORTH);
+            panelViewCart.add(new JScrollPane(textAreaViewCart), BorderLayout.CENTER);
+
+            btnViewCart.addActionListener(e -> {
+                try {
+                    textAreaViewCart.setText("");
+                    int idUsuario = Integer.parseInt(txtIdUsuarioView.getText().trim());
+
+                    Carrito carritoService = new Carrito();
+                    ArrayList<String> productos = carritoService.viewCart(idUsuario);
+
+                    for (String linea : productos) {
+                        textAreaViewCart.append(linea + "\n");
+                    }
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(panelViewCart, "Error al ver el carrito: " + ex.getMessage());
+                }
+            });
+
+            carritoTabbedPane.addTab("Ver Carrito", panelViewCart);
+
+            // -----------------------------------------------------------
+            // RF3.3: Modificar cantidad de un producto en el carrito
+            // -----------------------------------------------------------
+            JPanel panelModifyQuantity = new JPanel(new GridLayout(4, 2, 5, 5));
+            JTextField txtIdUsuarioModify = new JTextField();
+            JTextField txtIdProductoModify = new JTextField();
+            JTextField txtNuevaCantidad = new JTextField();
+
+            panelModifyQuantity.add(new JLabel("ID Usuario:"));
+            panelModifyQuantity.add(txtIdUsuarioModify);
+
+            panelModifyQuantity.add(new JLabel("ID Producto:"));
+            panelModifyQuantity.add(txtIdProductoModify);
+
+            panelModifyQuantity.add(new JLabel("Nueva Cantidad:"));
+            panelModifyQuantity.add(txtNuevaCantidad);
+
+            JButton btnModifyQuantity = new JButton("Modificar Cantidad");
+            panelModifyQuantity.add(btnModifyQuantity);
+
+            btnModifyQuantity.addActionListener(e -> {
+                try {
+                    int idUsuario = Integer.parseInt(txtIdUsuarioModify.getText().trim());
+                    int idProducto = Integer.parseInt(txtIdProductoModify.getText().trim());
+                    int cantidad = Integer.parseInt(txtNuevaCantidad.getText().trim());
+
+                    Carrito carritoService = new Carrito();
+                    carritoService.modifyCartQuantity(idUsuario, idProducto, cantidad);
+                    JOptionPane.showMessageDialog(panelModifyQuantity, "Cantidad modificada con éxito.");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(panelModifyQuantity, "Error al modificar cantidad: " + ex.getMessage());
+                }
+            });
+
+            carritoTabbedPane.addTab("Modificar Cantidad", panelModifyQuantity);
+
+            // -----------------------------------------------------------
+            // RF3.4: Eliminar producto del carrito
+            // -----------------------------------------------------------
+            JPanel panelRemoveProduct = new JPanel(new GridLayout(3, 2, 5, 5));
+            JTextField txtIdUsuarioRemove = new JTextField();
+            JTextField txtIdProductoRemove = new JTextField();
+
+            panelRemoveProduct.add(new JLabel("ID Usuario:"));
+            panelRemoveProduct.add(txtIdUsuarioRemove);
+
+            panelRemoveProduct.add(new JLabel("ID Producto:"));
+            panelRemoveProduct.add(txtIdProductoRemove);
+
+            JButton btnRemoveProduct = new JButton("Eliminar Producto del Carrito");
+            panelRemoveProduct.add(btnRemoveProduct);
+
+            btnRemoveProduct.addActionListener(e -> {
+                try {
+                    int idUsuario = Integer.parseInt(txtIdUsuarioRemove.getText().trim());
+                    int idProducto = Integer.parseInt(txtIdProductoRemove.getText().trim());
+
+                    Carrito carritoService = new Carrito();
+                    carritoService.removeProductFromCart(idUsuario, idProducto);
+                    JOptionPane.showMessageDialog(panelRemoveProduct, "Producto eliminado del carrito con éxito.");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(panelRemoveProduct, "Error al eliminar producto: " + ex.getMessage());
+                }
+            });
+
+            carritoTabbedPane.addTab("Eliminar Producto del Carrito", panelRemoveProduct);
+
+            // -----------------------------------------------------------
+            // RF3.5: Vaciar carrito de compras
+            // -----------------------------------------------------------
+            JPanel panelEmptyCart = new JPanel(new GridLayout(2, 2, 5, 5));
+            JTextField txtIdUsuarioEmpty = new JTextField();
+
+            panelEmptyCart.add(new JLabel("ID Usuario:"));
+            panelEmptyCart.add(txtIdUsuarioEmpty);
+
+            JButton btnEmptyCart = new JButton("Vaciar Carrito");
+            panelEmptyCart.add(btnEmptyCart);
+
+            btnEmptyCart.addActionListener(e -> {
+                try {
+                    int idUsuario = Integer.parseInt(txtIdUsuarioEmpty.getText().trim());
+
+                    Carrito carritoService = new Carrito();
+                    carritoService.emptyCart(idUsuario);
+                    JOptionPane.showMessageDialog(panelEmptyCart, "Carrito vaciado con éxito.");
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(panelEmptyCart, "Error al vaciar el carrito: " + ex.getMessage());
+                }
+            });
+
+            carritoTabbedPane.addTab("Vaciar Carrito", panelEmptyCart);
+
+            return carritoTabbedPane;
+    }
+
+
     private static JTabbedPane crearPestañasProductos() {
 
         // -----------------------------------------------------------
