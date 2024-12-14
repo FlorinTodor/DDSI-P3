@@ -14,6 +14,11 @@ public class diseño {
 
 
     public static void pantalla_registro(JFrame frame) {
+        /**
+         * COdigo de registro/Iniciar sesión
+         * Cuando se inice sesion o se registre, tenemos que guardar como variable global el id_usuario
+         * ESto implica modificar las interfaces para no pedir el id_usuario ya que se debería de recoger de forma interna
+          */
 
     }
 
@@ -74,9 +79,6 @@ public class diseño {
         panelMostrarTablas.add(mostrarTablasButton, BorderLayout.NORTH);
         panelMostrarTablas.add(scrollPane, BorderLayout.CENTER);
 
-        // Panel "Dar de alta nuevo pedido" (ejemplo)
-        JPanel panelAltaPedido = new JPanel();
-        panelAltaPedido.add(new JLabel("Aquí iría el formulario para dar de alta un nuevo pedido"));
 
         // -----------------------------------------------------------
         // PESTAÑA PARA RESEÑAS
@@ -260,13 +262,14 @@ public class diseño {
 
         reseñasTabbedPane.addTab("Ver Reseñas por Usuario", panelViewByUser);
 
+
         // -----------------------------------------------------------
-// PESTAÑA PARA PRODUCTOS
-// -----------------------------------------------------------
+        // PESTAÑA PARA PRODUCTOS
+        // -----------------------------------------------------------
 
         JTabbedPane productosTabbedPane = new JTabbedPane();
 
-// Panel para Añadir Producto
+        // Panel para Añadir Producto
         JPanel panelAddProduct = new JPanel(new GridLayout(6, 2, 5, 5));
         JTextField txtIdProducto = new JTextField();
         JTextField txtNombreProducto = new JTextField();
@@ -308,7 +311,7 @@ public class diseño {
 
         productosTabbedPane.addTab("Añadir Producto", panelAddProduct);
 
-// Panel para Editar Producto
+        // Panel para Editar Producto
         JPanel panelEditProduct = new JPanel(new GridLayout(6, 2, 5, 5));
         JTextField txtEditIdProducto = new JTextField();
         JTextField txtEditNombreProducto = new JTextField();
@@ -349,7 +352,7 @@ public class diseño {
 
         productosTabbedPane.addTab("Editar Producto", panelEditProduct);
 
-// Panel para Eliminar Producto
+        // Panel para Eliminar Producto
         JPanel panelDeleteProduct = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtDeleteIdProducto = new JTextField();
         JTextField txtDeleteIdUsuarioProducto = new JTextField();
@@ -378,30 +381,30 @@ public class diseño {
 
         productosTabbedPane.addTab("Eliminar Producto", panelDeleteProduct);
 
-// Panel para Filtrar Productos por Precio
+        // Panel para Filtrar Productos por Precio
         JPanel panelFilterByPrice = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelPrice = new JPanel(new GridLayout(1, 2, 5, 5));
 
-// Campo de texto para introducir el precio
+        // Campo de texto para introducir el precio
         JTextField txtPriceFilter = new JTextField();
         inputPanelPrice.add(new JLabel("Precio:"));
         inputPanelPrice.add(txtPriceFilter);
 
-// Botón para filtrar por precio
+        // Botón para filtrar por precio
         JButton btnFilterByPrice = new JButton("Filtrar por Precio");
         JPanel topPanelPrice = new JPanel(new FlowLayout());
         topPanelPrice.add(inputPanelPrice);
         topPanelPrice.add(btnFilterByPrice);
 
-// Área de texto para mostrar los productos filtrados
+        // Área de texto para mostrar los productos filtrados
         JTextArea textAreaPrice = new JTextArea(10, 40);
         textAreaPrice.setEditable(false);
 
-// Añade los componentes al panel principal
+        // Añade los componentes al panel principal
         panelFilterByPrice.add(topPanelPrice, BorderLayout.NORTH);
         panelFilterByPrice.add(new JScrollPane(textAreaPrice), BorderLayout.CENTER);
 
-// Acción del botón para filtrar productos por precio
+        // Acción del botón para filtrar productos por precio
         btnFilterByPrice.addActionListener(e -> {
             try {
                 // Limpia el área de texto antes de mostrar resultados
@@ -438,49 +441,86 @@ public class diseño {
             }
         });
 
-// Añade el panel al contenedor principal de pestañas
         productosTabbedPane.addTab("Filtrar por Precio", panelFilterByPrice);
 
-// Panel para Filtrar Productos por Usuario
-        JPanel panelFilterByUser = new JPanel(new BorderLayout(5, 5));
-        JPanel inputPanelUser2 = new JPanel(new GridLayout(1, 2, 5, 5));
-        JTextField txtUserFilter = new JTextField();
-        inputPanelUser2.add(new JLabel("ID Usuario:"));
-        inputPanelUser2.add(txtUserFilter);
+        // Panel para Filtrar Productos por Usuario
+        JPanel panelFilterByUser = new JPanel(new BorderLayout(10, 10));
+        panelFilterByUser.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15)); // Margen
 
-        JButton btnFilterByUser = new JButton("Filtrar por Usuario");
-        JPanel topPanelUser2 = new JPanel(new FlowLayout());
-        topPanelUser2.add(inputPanelUser);
-        topPanelUser2.add(btnFilterByUser);
+    // Panel superior para la entrada del ID y el botón
+            JPanel inputPanelUser2 = new JPanel(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(5, 5, 5, 5); // Espaciado interno
+            gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JTextArea textAreaUser2 = new JTextArea(10, 40);
-        textAreaUser2.setEditable(false);
+    // Etiqueta "ID Usuario"
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            inputPanelUser2.add(new JLabel("Ingrese el ID del Usuario:"), gbc);
 
-        panelFilterByUser.add(topPanelUser2, BorderLayout.NORTH);
-        panelFilterByUser.add(new JScrollPane(textAreaUser2), BorderLayout.CENTER);
+    // Campo de texto para el ID Usuario
+            JTextField txtUserFilter = new JTextField(20);
+            gbc.gridx = 1;
+            gbc.gridy = 0;
+            inputPanelUser2.add(txtUserFilter, gbc);
 
-        btnFilterByUser.addActionListener(e -> {
-            try {
-                textAreaUser.setText("");
-                int idUsuario = Integer.parseInt(txtUserFilter.getText().trim());
-                Producto productoService = new Producto();
-                ArrayList<String> productos = productoService.getProductsByUser(idUsuario);
-                for (String producto : productos) {
-                    textAreaUser.append(producto + "\n");
+    // Botón "Filtrar por Usuario"
+            JButton btnFilterByUser = new JButton("Filtrar");
+            gbc.gridx = 2;
+            gbc.gridy = 0;
+            inputPanelUser2.add(btnFilterByUser, gbc);
+
+    // Panel para mostrar resultados
+            JTextArea textAreaUser2 = new JTextArea(10, 40);
+            textAreaUser2.setEditable(false);
+            textAreaUser2.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // Borde ligero
+            JScrollPane scrollPane2 = new JScrollPane(textAreaUser2);
+
+    // Agregar los componentes al panel principal
+            panelFilterByUser.add(inputPanelUser2, BorderLayout.NORTH);
+            panelFilterByUser.add(scrollPane2, BorderLayout.CENTER);
+
+    // Acción del botón
+            btnFilterByUser.addActionListener(e -> {
+                try {
+                    textAreaUser2.setText(""); // Usar la variable correcta
+                    String input = txtUserFilter.getText().trim(); // Obtener y recortar el texto
+
+                    // Validar el campo
+                    if (input.isEmpty()) {
+                        JOptionPane.showMessageDialog(panelFilterByUser, "El campo ID Usuario no puede estar vacío.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    int idUsuario;
+                    try {
+                        idUsuario = Integer.parseInt(input); // Validar que sea un número
+                    } catch (NumberFormatException nfe) {
+                        JOptionPane.showMessageDialog(panelFilterByUser, "El ID de usuario debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Obtener productos
+                    Producto productoService = new Producto();
+                    ArrayList<String> productos = productoService.getProductsByUser(idUsuario);
+                    for (String producto : productos) {
+                        textAreaUser2.append(producto + "\n");
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(panelFilterByUser, "Error al filtrar productos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelFilterByUser, "Error al filtrar productos: " + ex.getMessage());
-            }
-        });
+            });
 
-        productosTabbedPane.addTab("Filtrar por Usuario", panelFilterByUser);
+    // Agregar el panel mejorado al tabbedPane
+            productosTabbedPane.addTab("Filtrar por Usuario", panelFilterByUser);
+
+
 
         // -----------------------------------------------------------
         // Pestañas principales
         // -----------------------------------------------------------
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Mostrar Tablas", panelMostrarTablas);
-        tabbedPane.addTab("Dar de alta nuevo pedido", panelAltaPedido);
         tabbedPane.addTab("Reseñas", reseñasTabbedPane);
         tabbedPane.addTab("Productos", productosTabbedPane);
 

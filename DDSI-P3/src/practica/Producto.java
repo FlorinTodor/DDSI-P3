@@ -56,7 +56,7 @@ public class Producto{
 
             // Asociar el producto con el usuario en la tabla Modifica_Producto
             try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO MODIFICA_PRODUCTO (ID_PRODUCTO, ID_USUARIO) VALUES (?, ?)")) {
+                    "INSERT INTO MODIFICAPRODUCTO (ID_PRODUCTO, ID_USUARIO) VALUES (?, ?)")) {
                 ps.setInt(1, idProducto);
                 ps.setInt(2, idUsuario);
                 ps.executeUpdate();
@@ -116,6 +116,11 @@ public class Producto{
 
         if (nuevoPrecio <= 0) {
             throw new Exception("El nuevo precio debe ser mayor que 0.");
+        }
+
+        // Usar el nombre actual si no se proporciona un nuevo nombre
+        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
+            nuevoNombre = nombreActual;
         }
 
         // Actualizar el producto
@@ -197,7 +202,7 @@ public class Producto{
         if (connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
-
+        System.out.println("ID Usuario recibido: " + idUsuario);
         ArrayList<String> productos = new ArrayList<>();
         Connection conn = connection.connection;
 
@@ -216,10 +221,10 @@ public class Producto{
         String obtenerProductosQuery =
                 "SELECT p.ID_PRODUCTO, p.NOMBREPRODUCTO, p.CANTIDAD, p.PRECIO " +
                         "FROM PRODUCTO p " +
-                        "JOIN MODIFICA_PRODUCTO mp ON p.ID_PRODUCTO = mp.ID_PRODUCTO " +
+                        "JOIN MODIFICAPRODUCTO mp ON p.ID_PRODUCTO = mp.ID_PRODUCTO " +
                         "WHERE mp.ID_USUARIO = ?";
         try (PreparedStatement ps = conn.prepareStatement(obtenerProductosQuery)) {
-            ps.setInt(1, idUsuario);
+            ps.setInt(1, idUsuario); //establecer el usuario
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int idProducto = rs.getInt("ID_PRODUCTO");
@@ -242,9 +247,9 @@ public class Producto{
     }
 
     /**
-     * Obtener todos los productos con un precio específico
+     * Obtener todos los productos con un precio específico y cantidad mayor a 0
      * @param precio Precio de los productos a buscar
-     * @return Lista de productos con el precio especificado (formato "ID_Producto, Nombre, Cantidad, Precio")
+     * @return Lista de productos con el precio especificado y cantidad mayor a 0 (formato "ID_Producto, Nombre, Cantidad, Precio")
      * @throws Exception si no hay productos con ese precio o si ocurre un error
      */
     public ArrayList<String> getProductsByPrice(double precio) throws Exception {
@@ -255,13 +260,14 @@ public class Producto{
         ArrayList<String> productos = new ArrayList<>();
         Connection conn = connection.connection;
 
-        // Obtener productos con el precio especificado
+        // Consulta para obtener productos con el precio especificado y cantidad mayor a 0
         String obtenerProductosPorPrecioQuery =
                 "SELECT ID_PRODUCTO, NOMBREPRODUCTO, CANTIDAD, PRECIO " +
                         "FROM PRODUCTO " +
-                        "WHERE PRECIO = ?";
+                        "WHERE PRECIO = ? AND CANTIDAD > 0";
+
         try (PreparedStatement ps = conn.prepareStatement(obtenerProductosPorPrecioQuery)) {
-            ps.setDouble(1, precio);
+            ps.setDouble(1, precio); // Establecer el parámetro del precio
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     int idProducto = rs.getInt("ID_PRODUCTO");
@@ -276,13 +282,13 @@ public class Producto{
             }
         }
 
+        // Si no se encuentran productos, lanzar una excepción
         if (productos.isEmpty()) {
-            throw new Exception("No hay productos con el precio especificado.");
+            throw new Exception("No hay productos con el precio especificado y cantidad mayor a 0.");
         }
 
         return productos;
     }
-
 
 
 
