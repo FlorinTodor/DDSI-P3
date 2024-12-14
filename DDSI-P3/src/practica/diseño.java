@@ -74,194 +74,37 @@ public class diseño {
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea);
         JButton mostrarTablasButton = new JButton("Mostrar Tablas");
-        // Podríamos implementar una funcionalidad para mostrar tablas si se requiere
         mostrarTablasButton.addActionListener(e -> mostrarTablas());
         panelMostrarTablas.add(mostrarTablasButton, BorderLayout.NORTH);
         panelMostrarTablas.add(scrollPane, BorderLayout.CENTER);
 
+        // Crear pestañas específicas
+        JTabbedPane reseñasTabbedPane = crearPestañasReseñas();
+        JTabbedPane productosTabbedPane = crearPestañasProductos();
+
+
+
+
+
+
 
         // -----------------------------------------------------------
-        // PESTAÑA PARA RESEÑAS
+        // Pestañas principales
         // -----------------------------------------------------------
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Mostrar Tablas", panelMostrarTablas);
+        tabbedPane.addTab("Reseñas", reseñasTabbedPane);
+        tabbedPane.addTab("Productos", productosTabbedPane);
 
-        JTabbedPane reseñasTabbedPane = new JTabbedPane();
+        frame.add(tabbedPane, BorderLayout.CENTER);
 
-        // Panel para Añadir Reseña
-        JPanel panelAddReview = new JPanel(new GridLayout(6, 2, 5, 5));
-        JTextField txtIdReseña = new JTextField();
-        JTextField txtIdPedido = new JTextField();
-        JTextField txtIdUsuario = new JTextField();
-        JTextField txtValoracion = new JTextField();
-        JTextField txtComentario = new JTextField();
+        frame.setVisible(true);
+    }
+// -------------------------------------------------------------------------------------------Ç
+    // PESTAÑAS DE CADA SUBSISTEMA
 
-        panelAddReview.add(new JLabel("ID Reseña:"));
-        panelAddReview.add(txtIdReseña);
-        panelAddReview.add(new JLabel("ID Pedido:"));
-        panelAddReview.add(txtIdPedido);
-        panelAddReview.add(new JLabel("ID Usuario:"));
-        panelAddReview.add(txtIdUsuario);
-        panelAddReview.add(new JLabel("Valoración (1-5):"));
-        panelAddReview.add(txtValoracion);
-        panelAddReview.add(new JLabel("Comentario (max 500 chars):"));
-        panelAddReview.add(txtComentario);
-
-        JButton btnAddReview = new JButton("Añadir Reseña");
-        panelAddReview.add(btnAddReview);
-
-        btnAddReview.addActionListener(e -> {
-            try {
-                int idRes = Integer.parseInt(txtIdReseña.getText().trim());
-                int idPed = Integer.parseInt(txtIdPedido.getText().trim());
-                int idUser = Integer.parseInt(txtIdUsuario.getText().trim());
-                int val = Integer.parseInt(txtValoracion.getText().trim());
-                String com = txtComentario.getText().trim();
-
-                // Llamada a método addReview
-                reseña reviewService = new reseña();
-                reviewService.addReview(idRes, idPed, idUser, val, com);
-                JOptionPane.showMessageDialog(panelAddReview, "Reseña añadida con éxito.");
-
-            } catch (Exception ex2) {
-                JOptionPane.showMessageDialog(panelAddReview, "Error al añadir reseña: " + ex2.getMessage());
-            }
-        });
-
-        reseñasTabbedPane.addTab("Añadir Reseña", panelAddReview);
-
-        // Panel para Editar Reseña
-        JPanel panelEditReview = new JPanel(new GridLayout(5, 2, 5, 5));
-        JTextField txtEditIdReseña = new JTextField();
-        JTextField txtEditIdUsuario = new JTextField();
-        JTextField txtEditValoracion = new JTextField();
-        JTextField txtEditComentario = new JTextField();
-
-        panelEditReview.add(new JLabel("ID Reseña:"));
-        panelEditReview.add(txtEditIdReseña);
-        panelEditReview.add(new JLabel("ID Usuario:"));
-        panelEditReview.add(txtEditIdUsuario);
-        panelEditReview.add(new JLabel("Nueva Valoración (1-5):"));
-        panelEditReview.add(txtEditValoracion);
-        panelEditReview.add(new JLabel("Nuevo Comentario:"));
-        panelEditReview.add(txtEditComentario);
-
-        JButton btnEditReview = new JButton("Editar Reseña");
-        panelEditReview.add(btnEditReview);
-
-        btnEditReview.addActionListener(e -> {
-            try {
-                int idRes = Integer.parseInt(txtEditIdReseña.getText().trim());
-                int idUser = Integer.parseInt(txtEditIdUsuario.getText().trim());
-                int val = Integer.parseInt(txtEditValoracion.getText().trim());
-                String com = txtEditComentario.getText().trim();
-
-                reseña reviewService = new reseña();
-                reviewService.editReview(idRes, idUser, val, com);
-                JOptionPane.showMessageDialog(panelEditReview, "Reseña editada con éxito.");
-
-            } catch (Exception ex2) {
-                JOptionPane.showMessageDialog(panelEditReview, "Error al editar reseña: " + ex2.getMessage());
-            }
-        });
-
-        reseñasTabbedPane.addTab("Editar Reseña", panelEditReview);
-
-        // Panel para Eliminar Reseña
-        JPanel panelDeleteReview = new JPanel(new GridLayout(3, 2, 5, 5));
-        JTextField txtDeleteIdReseña = new JTextField();
-        JTextField txtDeleteIdUsuario = new JTextField();
-
-        panelDeleteReview.add(new JLabel("ID Reseña:"));
-        panelDeleteReview.add(txtDeleteIdReseña);
-        panelDeleteReview.add(new JLabel("ID Usuario:"));
-        panelDeleteReview.add(txtDeleteIdUsuario);
-
-        JButton btnDeleteReview = new JButton("Eliminar Reseña");
-        panelDeleteReview.add(btnDeleteReview);
-
-        btnDeleteReview.addActionListener(e -> {
-            try {
-                int idRes = Integer.parseInt(txtDeleteIdReseña.getText().trim());
-                int idUser = Integer.parseInt(txtDeleteIdUsuario.getText().trim());
-
-                reseña reviewService = new reseña();
-                reviewService.deleteReview(idRes, idUser);
-                JOptionPane.showMessageDialog(panelDeleteReview, "Reseña eliminada con éxito.");
-
-            } catch (Exception ex2) {
-                JOptionPane.showMessageDialog(panelDeleteReview, "Error al eliminar reseña: " + ex2.getMessage());
-            }
-        });
-
-        reseñasTabbedPane.addTab("Eliminar Reseña", panelDeleteReview);
-
-        // Panel para Ver Reseñas por Pedido
-        JPanel panelViewByOrder = new JPanel(new BorderLayout(5,5));
-        JPanel inputPanelOrder = new JPanel(new GridLayout(1,2,5,5));
-        JTextField txtViewByOrder = new JTextField();
-        inputPanelOrder.add(new JLabel("ID Pedido:"));
-        inputPanelOrder.add(txtViewByOrder);
-
-        JButton btnViewByOrder = new JButton("Ver Reseñas del Pedido");
-        JPanel topPanelOrder = new JPanel(new FlowLayout());
-        topPanelOrder.add(inputPanelOrder);
-        topPanelOrder.add(btnViewByOrder);
-
-        JTextArea textAreaOrder = new JTextArea(10,40);
-        textAreaOrder.setEditable(false);
-
-        panelViewByOrder.add(topPanelOrder, BorderLayout.NORTH);
-        panelViewByOrder.add(new JScrollPane(textAreaOrder), BorderLayout.CENTER);
-
-        btnViewByOrder.addActionListener(e -> {
-            try {
-                textAreaOrder.setText("");
-                int idPed = Integer.parseInt(txtViewByOrder.getText().trim());
-                reseña reviewService = new reseña();
-                ArrayList<String> reviews = reviewService.getReviewsByOrder(idPed);
-                for (String review : reviews) {
-                    textAreaOrder.append(review + "\n");
-                }
-            } catch (Exception ex2) {
-                JOptionPane.showMessageDialog(panelViewByOrder, "Error al obtener reseñas: " + ex2.getMessage());
-            }
-        });
-
-        reseñasTabbedPane.addTab("Ver Reseñas por Pedido", panelViewByOrder);
-
-        // Panel para Ver Reseñas por Usuario
-        JPanel panelViewByUser = new JPanel(new BorderLayout(5,5));
-        JPanel inputPanelUser = new JPanel(new GridLayout(1,2,5,5));
-        JTextField txtViewByUser = new JTextField();
-        inputPanelUser.add(new JLabel("ID Usuario:"));
-        inputPanelUser.add(txtViewByUser);
-
-        JButton btnViewByUser = new JButton("Ver Reseñas del Usuario");
-        JPanel topPanelUser = new JPanel(new FlowLayout());
-        topPanelUser.add(inputPanelUser);
-        topPanelUser.add(btnViewByUser);
-
-        JTextArea textAreaUser = new JTextArea(10,40);
-        textAreaUser.setEditable(false);
-
-        panelViewByUser.add(topPanelUser, BorderLayout.NORTH);
-        panelViewByUser.add(new JScrollPane(textAreaUser), BorderLayout.CENTER);
-
-        btnViewByUser.addActionListener(e -> {
-            try {
-                textAreaUser.setText("");
-                int idUser = Integer.parseInt(txtViewByUser.getText().trim());
-                reseña reviewService = new reseña();
-                ArrayList<String> reviews = reviewService.getReviewsByUser(idUser);
-                for (String review : reviews) {
-                    textAreaUser.append(review + "\n");
-                }
-            } catch (Exception ex2) {
-                JOptionPane.showMessageDialog(panelViewByUser, "Error al obtener reseñas: " + ex2.getMessage());
-            }
-        });
-
-        reseñasTabbedPane.addTab("Ver Reseñas por Usuario", panelViewByUser);
-
+// -----------------------------------------------------------------------------------------------
+    private static JTabbedPane crearPestañasProductos() {
 
         // -----------------------------------------------------------
         // PESTAÑA PARA PRODUCTOS
@@ -447,89 +290,260 @@ public class diseño {
         JPanel panelFilterByUser = new JPanel(new BorderLayout(10, 10));
         panelFilterByUser.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15)); // Margen
 
-    // Panel superior para la entrada del ID y el botón
-            JPanel inputPanelUser2 = new JPanel(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(5, 5, 5, 5); // Espaciado interno
-            gbc.fill = GridBagConstraints.HORIZONTAL;
+        // Panel superior para la entrada del ID y el botón
+        JPanel inputPanelUser2 = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5); // Espaciado interno
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-    // Etiqueta "ID Usuario"
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            inputPanelUser2.add(new JLabel("Ingrese el ID del Usuario:"), gbc);
+        // Etiqueta "ID Usuario"
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        inputPanelUser2.add(new JLabel("Ingrese el ID del Usuario:"), gbc);
 
-    // Campo de texto para el ID Usuario
-            JTextField txtUserFilter = new JTextField(20);
-            gbc.gridx = 1;
-            gbc.gridy = 0;
-            inputPanelUser2.add(txtUserFilter, gbc);
+        // Campo de texto para el ID Usuario
+        JTextField txtUserFilter = new JTextField(20);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        inputPanelUser2.add(txtUserFilter, gbc);
 
-    // Botón "Filtrar por Usuario"
-            JButton btnFilterByUser = new JButton("Filtrar");
-            gbc.gridx = 2;
-            gbc.gridy = 0;
-            inputPanelUser2.add(btnFilterByUser, gbc);
+        // Botón "Filtrar por Usuario"
+        JButton btnFilterByUser = new JButton("Filtrar");
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        inputPanelUser2.add(btnFilterByUser, gbc);
 
-    // Panel para mostrar resultados
-            JTextArea textAreaUser2 = new JTextArea(10, 40);
-            textAreaUser2.setEditable(false);
-            textAreaUser2.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // Borde ligero
-            JScrollPane scrollPane2 = new JScrollPane(textAreaUser2);
+        // Panel para mostrar resultados
+        JTextArea textAreaUser2 = new JTextArea(10, 40);
+        textAreaUser2.setEditable(false);
+        textAreaUser2.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY)); // Borde ligero
+        JScrollPane scrollPane2 = new JScrollPane(textAreaUser2);
 
-    // Agregar los componentes al panel principal
-            panelFilterByUser.add(inputPanelUser2, BorderLayout.NORTH);
-            panelFilterByUser.add(scrollPane2, BorderLayout.CENTER);
+        // Agregar los componentes al panel principal
+        panelFilterByUser.add(inputPanelUser2, BorderLayout.NORTH);
+        panelFilterByUser.add(scrollPane2, BorderLayout.CENTER);
 
-    // Acción del botón
-            btnFilterByUser.addActionListener(e -> {
-                try {
-                    textAreaUser2.setText(""); // Usar la variable correcta
-                    String input = txtUserFilter.getText().trim(); // Obtener y recortar el texto
+        // Acción del botón
+        btnFilterByUser.addActionListener(e -> {
+            try {
+                textAreaUser2.setText(""); // Usar la variable correcta
+                String input = txtUserFilter.getText().trim(); // Obtener y recortar el texto
 
-                    // Validar el campo
-                    if (input.isEmpty()) {
-                        JOptionPane.showMessageDialog(panelFilterByUser, "El campo ID Usuario no puede estar vacío.", "Error", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    int idUsuario;
-                    try {
-                        idUsuario = Integer.parseInt(input); // Validar que sea un número
-                    } catch (NumberFormatException nfe) {
-                        JOptionPane.showMessageDialog(panelFilterByUser, "El ID de usuario debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    // Obtener productos
-                    Producto productoService = new Producto();
-                    ArrayList<String> productos = productoService.getProductsByUser(idUsuario);
-                    for (String producto : productos) {
-                        textAreaUser2.append(producto + "\n");
-                    }
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panelFilterByUser, "Error al filtrar productos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                // Validar el campo
+                if (input.isEmpty()) {
+                    JOptionPane.showMessageDialog(panelFilterByUser, "El campo ID Usuario no puede estar vacío.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
-            });
 
-    // Agregar el panel mejorado al tabbedPane
-            productosTabbedPane.addTab("Filtrar por Usuario", panelFilterByUser);
+                int idUsuario;
+                try {
+                    idUsuario = Integer.parseInt(input); // Validar que sea un número
+                } catch (NumberFormatException nfe) {
+                    JOptionPane.showMessageDialog(panelFilterByUser, "El ID de usuario debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
+                // Obtener productos
+                Producto productoService = new Producto();
+                ArrayList<String> productos = productoService.getProductsByUser(idUsuario);
+                for (String producto : productos) {
+                    textAreaUser2.append(producto + "\n");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelFilterByUser, "Error al filtrar productos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
-
-        // -----------------------------------------------------------
-        // Pestañas principales
-        // -----------------------------------------------------------
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Mostrar Tablas", panelMostrarTablas);
-        tabbedPane.addTab("Reseñas", reseñasTabbedPane);
-        tabbedPane.addTab("Productos", productosTabbedPane);
-
-        frame.add(tabbedPane, BorderLayout.CENTER);
-
-        frame.setVisible(true);
+        // Agregar el panel mejorado al tabbedPane
+        productosTabbedPane.addTab("Filtrar por Usuario", panelFilterByUser);
+        return productosTabbedPane;
     }
 
+    private static JTabbedPane crearPestañasReseñas() {
+        // -----------------------------------------------------------
+        // PESTAÑA PARA RESEÑAS
+        // -----------------------------------------------------------
 
+        JTabbedPane reseñasTabbedPane = new JTabbedPane();
+
+        // Panel para Añadir Reseña
+        JPanel panelAddReview = new JPanel(new GridLayout(6, 2, 5, 5));
+        JTextField txtIdReseña = new JTextField();
+        JTextField txtIdPedido = new JTextField();
+        JTextField txtIdUsuario = new JTextField();
+        JTextField txtValoracion = new JTextField();
+        JTextField txtComentario = new JTextField();
+
+        panelAddReview.add(new JLabel("ID Reseña:"));
+        panelAddReview.add(txtIdReseña);
+        panelAddReview.add(new JLabel("ID Pedido:"));
+        panelAddReview.add(txtIdPedido);
+        panelAddReview.add(new JLabel("ID Usuario:"));
+        panelAddReview.add(txtIdUsuario);
+        panelAddReview.add(new JLabel("Valoración (1-5):"));
+        panelAddReview.add(txtValoracion);
+        panelAddReview.add(new JLabel("Comentario (max 500 chars):"));
+        panelAddReview.add(txtComentario);
+
+        JButton btnAddReview = new JButton("Añadir Reseña");
+        panelAddReview.add(btnAddReview);
+
+        btnAddReview.addActionListener(e -> {
+            try {
+                int idRes = Integer.parseInt(txtIdReseña.getText().trim());
+                int idPed = Integer.parseInt(txtIdPedido.getText().trim());
+                int idUser = Integer.parseInt(txtIdUsuario.getText().trim());
+                int val = Integer.parseInt(txtValoracion.getText().trim());
+                String com = txtComentario.getText().trim();
+
+                // Llamada a método addReview
+                reseña reviewService = new reseña();
+                reviewService.addReview(idRes, idPed, idUser, val, com);
+                JOptionPane.showMessageDialog(panelAddReview, "Reseña añadida con éxito.");
+
+            } catch (Exception ex2) {
+                JOptionPane.showMessageDialog(panelAddReview, "Error al añadir reseña: " + ex2.getMessage());
+            }
+        });
+
+        reseñasTabbedPane.addTab("Añadir Reseña", panelAddReview);
+
+        // Panel para Editar Reseña
+        JPanel panelEditReview = new JPanel(new GridLayout(5, 2, 5, 5));
+        JTextField txtEditIdReseña = new JTextField();
+        JTextField txtEditIdUsuario = new JTextField();
+        JTextField txtEditValoracion = new JTextField();
+        JTextField txtEditComentario = new JTextField();
+
+        panelEditReview.add(new JLabel("ID Reseña:"));
+        panelEditReview.add(txtEditIdReseña);
+        panelEditReview.add(new JLabel("ID Usuario:"));
+        panelEditReview.add(txtEditIdUsuario);
+        panelEditReview.add(new JLabel("Nueva Valoración (1-5):"));
+        panelEditReview.add(txtEditValoracion);
+        panelEditReview.add(new JLabel("Nuevo Comentario:"));
+        panelEditReview.add(txtEditComentario);
+
+        JButton btnEditReview = new JButton("Editar Reseña");
+        panelEditReview.add(btnEditReview);
+
+        btnEditReview.addActionListener(e -> {
+            try {
+                int idRes = Integer.parseInt(txtEditIdReseña.getText().trim());
+                int idUser = Integer.parseInt(txtEditIdUsuario.getText().trim());
+                int val = Integer.parseInt(txtEditValoracion.getText().trim());
+                String com = txtEditComentario.getText().trim();
+
+                reseña reviewService = new reseña();
+                reviewService.editReview(idRes, idUser, val, com);
+                JOptionPane.showMessageDialog(panelEditReview, "Reseña editada con éxito.");
+
+            } catch (Exception ex2) {
+                JOptionPane.showMessageDialog(panelEditReview, "Error al editar reseña: " + ex2.getMessage());
+            }
+        });
+
+        reseñasTabbedPane.addTab("Editar Reseña", panelEditReview);
+
+        // Panel para Eliminar Reseña
+        JPanel panelDeleteReview = new JPanel(new GridLayout(3, 2, 5, 5));
+        JTextField txtDeleteIdReseña = new JTextField();
+        JTextField txtDeleteIdUsuario = new JTextField();
+
+        panelDeleteReview.add(new JLabel("ID Reseña:"));
+        panelDeleteReview.add(txtDeleteIdReseña);
+        panelDeleteReview.add(new JLabel("ID Usuario:"));
+        panelDeleteReview.add(txtDeleteIdUsuario);
+
+        JButton btnDeleteReview = new JButton("Eliminar Reseña");
+        panelDeleteReview.add(btnDeleteReview);
+
+        btnDeleteReview.addActionListener(e -> {
+            try {
+                int idRes = Integer.parseInt(txtDeleteIdReseña.getText().trim());
+                int idUser = Integer.parseInt(txtDeleteIdUsuario.getText().trim());
+
+                reseña reviewService = new reseña();
+                reviewService.deleteReview(idRes, idUser);
+                JOptionPane.showMessageDialog(panelDeleteReview, "Reseña eliminada con éxito.");
+
+            } catch (Exception ex2) {
+                JOptionPane.showMessageDialog(panelDeleteReview, "Error al eliminar reseña: " + ex2.getMessage());
+            }
+        });
+
+        reseñasTabbedPane.addTab("Eliminar Reseña", panelDeleteReview);
+
+        // Panel para Ver Reseñas por Pedido
+        JPanel panelViewByOrder = new JPanel(new BorderLayout(5,5));
+        JPanel inputPanelOrder = new JPanel(new GridLayout(1,2,5,5));
+        JTextField txtViewByOrder = new JTextField();
+        inputPanelOrder.add(new JLabel("ID Pedido:"));
+        inputPanelOrder.add(txtViewByOrder);
+
+        JButton btnViewByOrder = new JButton("Ver Reseñas del Pedido");
+        JPanel topPanelOrder = new JPanel(new FlowLayout());
+        topPanelOrder.add(inputPanelOrder);
+        topPanelOrder.add(btnViewByOrder);
+
+        JTextArea textAreaOrder = new JTextArea(10,40);
+        textAreaOrder.setEditable(false);
+
+        panelViewByOrder.add(topPanelOrder, BorderLayout.NORTH);
+        panelViewByOrder.add(new JScrollPane(textAreaOrder), BorderLayout.CENTER);
+
+        btnViewByOrder.addActionListener(e -> {
+            try {
+                textAreaOrder.setText("");
+                int idPed = Integer.parseInt(txtViewByOrder.getText().trim());
+                reseña reviewService = new reseña();
+                ArrayList<String> reviews = reviewService.getReviewsByOrder(idPed);
+                for (String review : reviews) {
+                    textAreaOrder.append(review + "\n");
+                }
+            } catch (Exception ex2) {
+                JOptionPane.showMessageDialog(panelViewByOrder, "Error al obtener reseñas: " + ex2.getMessage());
+            }
+        });
+
+        reseñasTabbedPane.addTab("Ver Reseñas por Pedido", panelViewByOrder);
+
+        // Panel para Ver Reseñas por Usuario
+        JPanel panelViewByUser = new JPanel(new BorderLayout(5,5));
+        JPanel inputPanelUser = new JPanel(new GridLayout(1,2,5,5));
+        JTextField txtViewByUser = new JTextField();
+        inputPanelUser.add(new JLabel("ID Usuario:"));
+        inputPanelUser.add(txtViewByUser);
+
+        JButton btnViewByUser = new JButton("Ver Reseñas del Usuario");
+        JPanel topPanelUser = new JPanel(new FlowLayout());
+        topPanelUser.add(inputPanelUser);
+        topPanelUser.add(btnViewByUser);
+
+        JTextArea textAreaUser = new JTextArea(10,40);
+        textAreaUser.setEditable(false);
+
+        panelViewByUser.add(topPanelUser, BorderLayout.NORTH);
+        panelViewByUser.add(new JScrollPane(textAreaUser), BorderLayout.CENTER);
+
+        btnViewByUser.addActionListener(e -> {
+            try {
+                textAreaUser.setText("");
+                int idUser = Integer.parseInt(txtViewByUser.getText().trim());
+                reseña reviewService = new reseña();
+                ArrayList<String> reviews = reviewService.getReviewsByUser(idUser);
+                for (String review : reviews) {
+                    textAreaUser.append(review + "\n");
+                }
+            } catch (Exception ex2) {
+                JOptionPane.showMessageDialog(panelViewByUser, "Error al obtener reseñas: " + ex2.getMessage());
+            }
+        });
+
+        reseñasTabbedPane.addTab("Ver Reseñas por Usuario", panelViewByUser);
+
+        return reseñasTabbedPane;
+    }
 
 
     public static void mostrarTablas() {
