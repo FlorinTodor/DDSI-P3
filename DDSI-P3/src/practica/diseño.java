@@ -261,12 +261,228 @@ public class diseño {
         reseñasTabbedPane.addTab("Ver Reseñas por Usuario", panelViewByUser);
 
         // -----------------------------------------------------------
+// PESTAÑA PARA PRODUCTOS
+// -----------------------------------------------------------
+
+        JTabbedPane productosTabbedPane = new JTabbedPane();
+
+// Panel para Añadir Producto
+        JPanel panelAddProduct = new JPanel(new GridLayout(6, 2, 5, 5));
+        JTextField txtIdProducto = new JTextField();
+        JTextField txtNombreProducto = new JTextField();
+        JTextField txtPrecioProducto = new JTextField();
+        JTextField txtCantidadProducto = new JTextField();
+        JTextField txtIdUsuarioProducto = new JTextField();
+
+        panelAddProduct.add(new JLabel("ID Producto:"));
+        panelAddProduct.add(txtIdProducto);
+        panelAddProduct.add(new JLabel("Nombre:"));
+        panelAddProduct.add(txtNombreProducto);
+        panelAddProduct.add(new JLabel("Precio:"));
+        panelAddProduct.add(txtPrecioProducto);
+        panelAddProduct.add(new JLabel("Cantidad:"));
+        panelAddProduct.add(txtCantidadProducto);
+        panelAddProduct.add(new JLabel("ID Usuario:"));
+        panelAddProduct.add(txtIdUsuarioProducto);
+
+        JButton btnAddProduct = new JButton("Añadir Producto");
+        panelAddProduct.add(btnAddProduct);
+
+        btnAddProduct.addActionListener(e -> {
+            try {
+                int idProducto = Integer.parseInt(txtIdProducto.getText().trim());
+                String nombre = txtNombreProducto.getText().trim();
+                double precio = Double.parseDouble(txtPrecioProducto.getText().trim());
+                int cantidad = Integer.parseInt(txtCantidadProducto.getText().trim());
+                int idUsuario = Integer.parseInt(txtIdUsuarioProducto.getText().trim());
+
+                // Llamada al método addProduct
+                Producto productoService = new Producto();
+                productoService.addProduct(idProducto, nombre, precio, cantidad, idUsuario);
+                JOptionPane.showMessageDialog(panelAddProduct, "Producto añadido con éxito.");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelAddProduct, "Error al añadir producto: " + ex.getMessage());
+            }
+        });
+
+        productosTabbedPane.addTab("Añadir Producto", panelAddProduct);
+
+// Panel para Editar Producto
+        JPanel panelEditProduct = new JPanel(new GridLayout(6, 2, 5, 5));
+        JTextField txtEditIdProducto = new JTextField();
+        JTextField txtEditNombreProducto = new JTextField();
+        JTextField txtEditPrecioProducto = new JTextField();
+        JTextField txtEditCantidadProducto = new JTextField();
+        JTextField txtEditIdUsuarioProducto = new JTextField();
+
+        panelEditProduct.add(new JLabel("ID Producto:"));
+        panelEditProduct.add(txtEditIdProducto);
+        panelEditProduct.add(new JLabel("Nuevo Nombre:"));
+        panelEditProduct.add(txtEditNombreProducto);
+        panelEditProduct.add(new JLabel("Nuevo Precio:"));
+        panelEditProduct.add(txtEditPrecioProducto);
+        panelEditProduct.add(new JLabel("Nueva Cantidad:"));
+        panelEditProduct.add(txtEditCantidadProducto);
+        panelEditProduct.add(new JLabel("ID Usuario:"));
+        panelEditProduct.add(txtEditIdUsuarioProducto);
+
+        JButton btnEditProduct = new JButton("Editar Producto");
+        panelEditProduct.add(btnEditProduct);
+
+        btnEditProduct.addActionListener(e -> {
+            try {
+                int idProducto = Integer.parseInt(txtEditIdProducto.getText().trim());
+                String nombre = txtEditNombreProducto.getText().trim();
+                double precio = Double.parseDouble(txtEditPrecioProducto.getText().trim());
+                int cantidad = Integer.parseInt(txtEditCantidadProducto.getText().trim());
+                int idUsuario = Integer.parseInt(txtEditIdUsuarioProducto.getText().trim());
+
+                Producto productoService = new Producto();
+                productoService.editProduct(idProducto, nombre, cantidad, precio, idUsuario);
+                JOptionPane.showMessageDialog(panelEditProduct, "Producto editado con éxito.");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelEditProduct, "Error al editar producto: " + ex.getMessage());
+            }
+        });
+
+        productosTabbedPane.addTab("Editar Producto", panelEditProduct);
+
+// Panel para Eliminar Producto
+        JPanel panelDeleteProduct = new JPanel(new GridLayout(3, 2, 5, 5));
+        JTextField txtDeleteIdProducto = new JTextField();
+        JTextField txtDeleteIdUsuarioProducto = new JTextField();
+
+        panelDeleteProduct.add(new JLabel("ID Producto:"));
+        panelDeleteProduct.add(txtDeleteIdProducto);
+        panelDeleteProduct.add(new JLabel("ID Usuario:"));
+        panelDeleteProduct.add(txtDeleteIdUsuarioProducto);
+
+        JButton btnDeleteProduct = new JButton("Eliminar Producto");
+        panelDeleteProduct.add(btnDeleteProduct);
+
+        btnDeleteProduct.addActionListener(e -> {
+            try {
+                int idProducto = Integer.parseInt(txtDeleteIdProducto.getText().trim());
+                int idUsuario = Integer.parseInt(txtDeleteIdUsuarioProducto.getText().trim());
+
+                Producto productoService = new Producto();
+                productoService.deleteProduct(idProducto, idUsuario);
+                JOptionPane.showMessageDialog(panelDeleteProduct, "Producto eliminado con éxito.");
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelDeleteProduct, "Error al eliminar producto: " + ex.getMessage());
+            }
+        });
+
+        productosTabbedPane.addTab("Eliminar Producto", panelDeleteProduct);
+
+// Panel para Filtrar Productos por Precio
+        JPanel panelFilterByPrice = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelPrice = new JPanel(new GridLayout(1, 2, 5, 5));
+
+// Campo de texto para introducir el precio
+        JTextField txtPriceFilter = new JTextField();
+        inputPanelPrice.add(new JLabel("Precio:"));
+        inputPanelPrice.add(txtPriceFilter);
+
+// Botón para filtrar por precio
+        JButton btnFilterByPrice = new JButton("Filtrar por Precio");
+        JPanel topPanelPrice = new JPanel(new FlowLayout());
+        topPanelPrice.add(inputPanelPrice);
+        topPanelPrice.add(btnFilterByPrice);
+
+// Área de texto para mostrar los productos filtrados
+        JTextArea textAreaPrice = new JTextArea(10, 40);
+        textAreaPrice.setEditable(false);
+
+// Añade los componentes al panel principal
+        panelFilterByPrice.add(topPanelPrice, BorderLayout.NORTH);
+        panelFilterByPrice.add(new JScrollPane(textAreaPrice), BorderLayout.CENTER);
+
+// Acción del botón para filtrar productos por precio
+        btnFilterByPrice.addActionListener(e -> {
+            try {
+                // Limpia el área de texto antes de mostrar resultados
+                textAreaPrice.setText("");
+
+                // Obtiene y valida el precio introducido por el usuario
+                String precioStr = txtPriceFilter.getText().trim();
+
+                if (precioStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(panelFilterByPrice, "El campo de precio no puede estar vacío.", "Error de entrada", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                double precio = Double.parseDouble(precioStr);
+
+                // Obtiene los productos que coinciden con el precio introducido
+                Producto productoService = new Producto();
+                ArrayList<String> productos = productoService.getProductsByPrice(precio);
+
+                // Muestra los productos en el área de texto
+                if (productos.isEmpty()) {
+                    textAreaPrice.setText("No se encontraron productos con el precio especificado.");
+                } else {
+                    for (String producto : productos) {
+                        textAreaPrice.append(producto + "\n");
+                    }
+                }
+            } catch (NumberFormatException ex) {
+                // Maneja errores en caso de formato inválido
+                JOptionPane.showMessageDialog(panelFilterByPrice, "Por favor, introduce un precio válido.", "Error de formato", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                // Maneja errores generales
+                JOptionPane.showMessageDialog(panelFilterByPrice, "Error al filtrar productos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+// Añade el panel al contenedor principal de pestañas
+        productosTabbedPane.addTab("Filtrar por Precio", panelFilterByPrice);
+
+// Panel para Filtrar Productos por Usuario
+        JPanel panelFilterByUser = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelUser2 = new JPanel(new GridLayout(1, 2, 5, 5));
+        JTextField txtUserFilter = new JTextField();
+        inputPanelUser2.add(new JLabel("ID Usuario:"));
+        inputPanelUser2.add(txtUserFilter);
+
+        JButton btnFilterByUser = new JButton("Filtrar por Usuario");
+        JPanel topPanelUser2 = new JPanel(new FlowLayout());
+        topPanelUser2.add(inputPanelUser);
+        topPanelUser2.add(btnFilterByUser);
+
+        JTextArea textAreaUser2 = new JTextArea(10, 40);
+        textAreaUser2.setEditable(false);
+
+        panelFilterByUser.add(topPanelUser2, BorderLayout.NORTH);
+        panelFilterByUser.add(new JScrollPane(textAreaUser2), BorderLayout.CENTER);
+
+        btnFilterByUser.addActionListener(e -> {
+            try {
+                textAreaUser.setText("");
+                int idUsuario = Integer.parseInt(txtUserFilter.getText().trim());
+                Producto productoService = new Producto();
+                ArrayList<String> productos = productoService.getProductsByUser(idUsuario);
+                for (String producto : productos) {
+                    textAreaUser.append(producto + "\n");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelFilterByUser, "Error al filtrar productos: " + ex.getMessage());
+            }
+        });
+
+        productosTabbedPane.addTab("Filtrar por Usuario", panelFilterByUser);
+
+        // -----------------------------------------------------------
         // Pestañas principales
         // -----------------------------------------------------------
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Mostrar Tablas", panelMostrarTablas);
         tabbedPane.addTab("Dar de alta nuevo pedido", panelAltaPedido);
         tabbedPane.addTab("Reseñas", reseñasTabbedPane);
+        tabbedPane.addTab("Productos", productosTabbedPane);
 
         frame.add(tabbedPane, BorderLayout.CENTER);
 

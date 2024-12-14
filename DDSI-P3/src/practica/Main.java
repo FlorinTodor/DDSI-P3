@@ -13,7 +13,6 @@ public class Main {
         //1. Iniciar sesión o registrarse
         diseño.pantalla_registro(connection.frame);
 
-
         diseño.pantalla_inicio(connection.frame);
 
 
