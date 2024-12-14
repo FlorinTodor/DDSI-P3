@@ -95,6 +95,7 @@ public class Diseño {
         tabbedPane.addTab("Mostrar Tablas", panelMostrarTablas);
         tabbedPane.addTab("Reseñas", reseñasTabbedPane);
         tabbedPane.addTab("Productos", productosTabbedPane);
+        tabbedPane.addTab("Carrito", CarritoTabbedPane);
 
         frame.add(tabbedPane, BorderLayout.CENTER);
 
