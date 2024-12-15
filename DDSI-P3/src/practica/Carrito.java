@@ -28,24 +28,18 @@ public class Carrito {
         java.sql.Connection conn = Connection.connection;
 
         // Verificar que el usuario existe
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_Usuario = ?")) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El usuario no existe.");
-                }
-            }
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
         }
 
-        // Buscar un carrito activo sin pedidos asociados para el usuario actual
         Integer idCarrito = null;
+
+        // 1. Buscar un carrito activo (sin pedido asociado) para el usuario
         try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT t.ID_Carrito " +
-                        "FROM TIENE t " +
-                        "JOIN CARRITO c ON t.ID_Carrito = c.ID_Carrito " +
-                        "LEFT JOIN GESTIONCARRITO gc ON c.ID_Carrito = gc.ID_Carrito " +
-                        "WHERE gc.ID_Pedido IS NULL AND t.ID_Carrito NOT IN (SELECT ID_Carrito FROM GESTIONCARRITO WHERE ID_Pedido IS NOT NULL) " +
-                        "AND EXISTS (SELECT 1 FROM USUARIO u WHERE u.ID_Usuario = ?)")) {
+                "SELECT gc.ID_Carrito " +
+                        "FROM GESTIONCARRITO gc " +
+                        "JOIN PEDIDO p ON gc.ID_Pedido = p.ID_Pedido " +
+                        "WHERE p.ID_Usuario = ? AND p.Estado_Pedido IS NULL")) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -54,27 +48,39 @@ public class Carrito {
             }
         }
 
-        // Si no existe un carrito activo, crear uno nuevo
+        // 2. Si no existe un carrito activo, crear uno nuevo
         if (idCarrito == null) {
-            int nuevoIdCarrito = 1; // Valor inicial
+            int nuevoIdCarrito = 1;
 
-            // Obtener el ID_Carrito más alto y sumarle 1
-            try (PreparedStatement ps = conn.prepareStatement("SELECT MAX(ID_Carrito) FROM CARRITO")) {
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next() && rs.getInt(1) > 0) {
-                        nuevoIdCarrito = rs.getInt(1) + 1;
+            // Obtener el nuevo ID de carrito
+            try (PreparedStatement psMax = conn.prepareStatement("SELECT COALESCE(MAX(ID_Carrito), 0) + 1 FROM CARRITO")) {
+                try (ResultSet rs = psMax.executeQuery()) {
+                    if (rs.next()) {
+                        nuevoIdCarrito = rs.getInt(1);
                     }
                 }
             }
 
-            // Insertar un nuevo carrito
+            // Insertar el nuevo carrito
             try (PreparedStatement psInsert = conn.prepareStatement("INSERT INTO CARRITO (ID_Carrito) VALUES (?)")) {
                 psInsert.setInt(1, nuevoIdCarrito);
                 psInsert.executeUpdate();
             }
 
-            idCarrito = nuevoIdCarrito; // Asignar el nuevo ID del carrito
+            // Asociar el carrito al usuario mediante un pedido "activo"
+            try (PreparedStatement psPedido = conn.prepareStatement(
+                    "INSERT INTO PEDIDO (ID_Pedido, ID_Usuario, Estado_Pedido) VALUES (?, ?, NULL)")) {
+                psPedido.setInt(1, nuevoIdCarrito);
+                psPedido.setInt(2, idUsuario);
+                psPedido.executeUpdate();
+            }
+
+            idCarrito = nuevoIdCarrito;
         }
+
+        // Actualizar las variables locales
+        idUsuarioActual = idUsuario;
+        idCarritoActivo = idCarrito;
 
         return idCarrito;
     }
