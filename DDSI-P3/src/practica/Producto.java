@@ -16,17 +16,13 @@ public class Producto{
         java.sql.Connection conn = Connection.connection;
 
 
-            // Verificar que el usuario existe
-            try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
-                ps.setInt(1, idUsuario);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next() && rs.getInt(1) == 0) {
-                        throw new Exception("El usuario no existe.");
-                    }
-                }
-            }
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
+        }
 
-            // Validar que el precio y la cantidad sean mayores que 0
+
+        // Validar que el precio y la cantidad sean mayores que 0
             if (precio <= 0) {
                 throw new Exception("El precio debe ser mayor que 0.");
             }
@@ -75,15 +71,11 @@ public class Producto{
 
         java.sql.Connection conn = Connection.connection;
 
-        // Verificar que el usuario existe
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El usuario no existe.");
-                }
-            }
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
         }
+
 
         // Comprobar existencia del producto y detalles actuales
         String nombreActual = null;
@@ -152,15 +144,11 @@ public class Producto{
 
         java.sql.Connection conn = Connection.connection;
 
-        // Verificar que el usuario existe
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El usuario no existe.");
-                }
-            }
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
         }
+
 
         // Comprobar existencia y cantidad del producto
         Integer cantidadActual = null;
@@ -206,16 +194,11 @@ public class Producto{
         ArrayList<String> productos = new ArrayList<>();
         java.sql.Connection conn = Connection.connection;
 
-        // Comprobar que el usuario existe
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El usuario no existe.");
-                }
-            }
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
         }
+
 
         // Obtener productos asociados al usuario desde la tabla MODIFICA_PRODUCTO
         String obtenerProductosQuery =

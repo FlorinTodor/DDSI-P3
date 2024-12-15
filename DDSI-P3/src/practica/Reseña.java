@@ -15,15 +15,11 @@ public class Reseña {
 
         java.sql.Connection conn =  Connection.connection;
 
-        // Comprobar que exista el usuario
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El usuario no existe.");
-                }
-            }
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
         }
+
 
         // Comprobar que exista el pedido, que pertenece al usuario y está en estado 'Entregado'
         try (PreparedStatement ps = conn.prepareStatement(
@@ -72,6 +68,11 @@ public class Reseña {
     public void editReview(int idReseña, int idUsuario, int nuevaValoracion, String nuevoComentario) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
         }
 
         java.sql.Connection conn = Connection.connection;
@@ -126,6 +127,11 @@ public class Reseña {
         }
 
         java.sql.Connection conn = Connection.connection;
+
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
+        }
 
         // Comprobar existencia y detalles
         int userFromPedido = -1;
@@ -225,16 +231,11 @@ public class Reseña {
         ArrayList<String> reviews = new ArrayList<>();
         java.sql.Connection conn = Connection.connection;
 
-        // Comprobar que el usuario existe
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El usuario no existe.");
-                }
-            }
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
         }
+
 
         // Obtener las reseñas asociadas al usuario
         try (PreparedStatement ps = conn.prepareStatement(

@@ -64,6 +64,28 @@ public class Connection {
 
 
 
+    /**
+     * Método auxiliar para verificar si un usuario existe en la base de datos.
+     */
+    public static boolean doesUserExist(int idUsuario) throws Exception {
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        java.sql.Connection conn = Connection.connection;
+
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_Usuario = ?")) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
 
 
 
