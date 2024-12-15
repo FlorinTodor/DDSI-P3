@@ -72,15 +72,22 @@ public class Carrito {
 
         java.sql.Connection conn =  Connection.connection;
 
-        // Comprobar que el producto existe y obtener stock
+        // Comprobar que el producto existe
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS Cnt FROM PRODUCTO WHERE ID_Producto = ?")) {
+            ps.setInt(1, idProducto);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt("Cnt") == 0) {
+                    throw new Exception("El producto no existe.");
+                }
+            }
+        }
+
+        // Obtener el stock disponible
         int stockDisponible = 0;
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS Cnt, Cantidad FROM PRODUCTO WHERE ID_Producto = ?")) {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT Cantidad FROM PRODUCTO WHERE ID_Producto = ?")) {
             ps.setInt(1, idProducto);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    if (rs.getInt("Cnt") == 0) {
-                        throw new Exception("El producto no existe.");
-                    }
                     stockDisponible = rs.getInt("Cantidad");
                 }
             }
