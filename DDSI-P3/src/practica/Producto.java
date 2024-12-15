@@ -48,7 +48,6 @@ public class Producto{
                 ps.setInt(3, cantidad);
                 ps.setDouble(4, precio);
                 ps.executeUpdate();
-                hola;
             }
 
             // Asociar el producto con el usuario en la tabla Modifica_Producto
