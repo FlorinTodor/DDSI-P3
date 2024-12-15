@@ -812,25 +812,28 @@ public class Diseño {
 
     private static void eliminarDatos_tabla() {
         try (Statement stmt = Connection.connection.createStatement()) {
-            // Truncar tablas dependientes primero
-            stmt.executeUpdate("TRUNCATE TABLE Gestion_Reseña");
-            stmt.executeUpdate("TRUNCATE TABLE Realiza");
-            stmt.executeUpdate("TRUNCATE TABLE GestionPago");
+            // Eliminar datos en el orden correcto respetando las dependencias
+            stmt.executeUpdate("DELETE FROM Gestion_Reseña");
+            stmt.executeUpdate("DELETE FROM Realiza");
+            stmt.executeUpdate("DELETE FROM GestionPago");
+            stmt.executeUpdate("DELETE FROM GestionCarrito");
+            stmt.executeUpdate("DELETE FROM tiene");
+            stmt.executeUpdate("DELETE FROM GestionPedido");
+            stmt.executeUpdate("DELETE FROM modificaProducto");
 
-            // Truncar tablas principales después
-            stmt.executeUpdate("TRUNCATE TABLE reseña");
-            stmt.executeUpdate("TRUNCATE TABLE pedido");
-            stmt.executeUpdate("TRUNCATE TABLE producto");
-            stmt.executeUpdate("TRUNCATE TABLE pago");
-            stmt.executeUpdate("TRUNCATE TABLE carrito");
-            stmt.executeUpdate("TRUNCATE TABLE usuario");
+            // Eliminar datos de las tablas principales
+            stmt.executeUpdate("DELETE FROM reseña");
+            stmt.executeUpdate("DELETE FROM pedido");
+            stmt.executeUpdate("DELETE FROM producto");
+            stmt.executeUpdate("DELETE FROM pago");
+            stmt.executeUpdate("DELETE FROM carrito");
+            stmt.executeUpdate("DELETE FROM usuario");
 
             Connection.connection.commit();
             JOptionPane.showMessageDialog(Connection.frame, "Datos eliminados correctamente.");
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(Connection.frame, "Error al eliminar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
     }
 
 

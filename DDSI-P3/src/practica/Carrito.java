@@ -17,8 +17,8 @@ public class Carrito {
     private Integer idUsuarioActual = null; // Usuario actual asociado al carrito
 
     /**
-     * Método auxiliar para obtener o crear el ID del carrito asociado a un usuario.
-     * Si no existe un carrito, se crea uno nuevo en la tabla CARRITO.
+     * Método auxiliar para obtener o crear el ID del carrito activo asociado a un usuario.
+     * Si no existe un carrito activo, se crea uno nuevo.
      */
     private int getOrCreateCarritoIdByUsuario(int idUsuario) throws Exception {
         if (Connection.connection == null) {
@@ -27,23 +27,25 @@ public class Carrito {
 
         java.sql.Connection conn = Connection.connection;
 
-        // Si el usuario cambia, reiniciamos el carrito activo
-        if (idUsuarioActual == null || !idUsuarioActual.equals(idUsuario)) {
-            idCarritoActivo = null;
-            idUsuarioActual = idUsuario;
+        // Verificar que el usuario existe
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_Usuario = ?")) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    throw new Exception("El usuario no existe.");
+                }
+            }
         }
 
-        // Reutilizar el carrito activo si existe
-        if (idCarritoActivo != null) {
-            return idCarritoActivo;
-        }
-
-        // Intentar obtener el carrito existente para el usuario desde la tabla TIENE
+        // Buscar un carrito activo sin pedidos asociados para el usuario actual
         Integer idCarrito = null;
         try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT t.ID_Carrito FROM TIENE t " +
+                "SELECT t.ID_Carrito " +
+                        "FROM TIENE t " +
                         "JOIN CARRITO c ON t.ID_Carrito = c.ID_Carrito " +
-                        "WHERE EXISTS (SELECT 1 FROM USUARIO u WHERE u.ID_Usuario = ?) FETCH FIRST 1 ROWS ONLY")) {
+                        "LEFT JOIN GESTIONCARRITO gc ON c.ID_Carrito = gc.ID_Carrito " +
+                        "WHERE gc.ID_Pedido IS NULL AND t.ID_Carrito NOT IN (SELECT ID_Carrito FROM GESTIONCARRITO WHERE ID_Pedido IS NOT NULL) " +
+                        "AND EXISTS (SELECT 1 FROM USUARIO u WHERE u.ID_Usuario = ?)")) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -52,11 +54,11 @@ public class Carrito {
             }
         }
 
-        // Si no existe un carrito, crearlo en la tabla CARRITO
+        // Si no existe un carrito activo, crear uno nuevo
         if (idCarrito == null) {
-            int nuevoIdCarrito = 1; // Iniciar en 1 si no hay registros
+            int nuevoIdCarrito = 1; // Valor inicial
 
-            // Obtener el máximo ID_Carrito existente
+            // Obtener el ID_Carrito más alto y sumarle 1
             try (PreparedStatement ps = conn.prepareStatement("SELECT MAX(ID_Carrito) FROM CARRITO")) {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next() && rs.getInt(1) > 0) {
@@ -65,18 +67,14 @@ public class Carrito {
                 }
             }
 
-            // Insertar el nuevo carrito en la tabla CARRITO
-            try (PreparedStatement psInsert = conn.prepareStatement(
-                    "INSERT INTO CARRITO (ID_Carrito) VALUES (?)")) {
+            // Insertar un nuevo carrito
+            try (PreparedStatement psInsert = conn.prepareStatement("INSERT INTO CARRITO (ID_Carrito) VALUES (?)")) {
                 psInsert.setInt(1, nuevoIdCarrito);
                 psInsert.executeUpdate();
             }
 
-            idCarrito = nuevoIdCarrito; // Asignar el nuevo ID_Carrito
+            idCarrito = nuevoIdCarrito; // Asignar el nuevo ID del carrito
         }
-
-        // Actualizar la variable global
-        idCarritoActivo = idCarrito;
 
         return idCarrito;
     }
