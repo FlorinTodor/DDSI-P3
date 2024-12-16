@@ -1,7 +1,6 @@
 package practica;
 
 import java.sql.*;
-import java.util.ArrayList;
 
 public class Usuario {
 
@@ -26,12 +25,16 @@ public class Usuario {
             }
         }
 
-        // Insertar nuevo usuario sin ID (autogenerado)
+        // Insertar nuevo usuario sin especificar ID (se genera automáticamente)
         String sql = "INSERT INTO USUARIO (CORREO, NOMBRE, TELEFONO, ESTADO, DIRECCION, CONTRASEÑA) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, correo);
             ps.setString(2, nombre);
             ps.setString(3, telefono);
+            // Asegurarse de que el estado sea 'A' o 'I', si se quiere otro valor, truncar a 'I' (inactivo)
+            if (estado == null || (!estado.equals("A") && !estado.equals("I"))) {
+                estado = "A"; // Por defecto activo
+            }
             ps.setString(4, estado);
             ps.setString(5, direccion);
             ps.setString(6, contraseña);
@@ -70,8 +73,8 @@ public class Usuario {
             }
         }
 
-        // Cambiar estado a 'Eliminado'
-        try (PreparedStatement ps = conn.prepareStatement("UPDATE USUARIO SET ESTADO = 'Eliminado' WHERE ID_USUARIO = ?")) {
+        // Cambiar estado a 'I' para "Inactivo"
+        try (PreparedStatement ps = conn.prepareStatement("UPDATE USUARIO SET ESTADO = 'I' WHERE ID_USUARIO = ?")) {
             ps.setInt(1, idUsuario);
             ps.executeUpdate();
         }
@@ -100,8 +103,8 @@ public class Usuario {
         }
 
         // Actualizar datos del usuario
-        try (PreparedStatement ps = conn.prepareStatement(
-                "UPDATE USUARIO SET CORREO = ?, NOMBRE = ?, TELEFONO = ?, DIRECCION = ? WHERE ID_USUARIO = ?")) {
+        String sql = "UPDATE USUARIO SET CORREO = ?, NOMBRE = ?, TELEFONO = ?, DIRECCION = ? WHERE ID_USUARIO = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nuevoCorreo);
             ps.setString(2, nuevoNombre);
             ps.setString(3, nuevoTelefono);
@@ -151,7 +154,7 @@ public class Usuario {
         boolean isAuthenticated = false;
 
         // Verificar credenciales
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ?")) {
+        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ? AND ESTADO = 'A'")) {
             ps.setString(1, correo);
             ps.setString(2, contraseña);
             try (ResultSet rs = ps.executeQuery()) {

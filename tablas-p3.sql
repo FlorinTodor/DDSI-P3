@@ -5,6 +5,7 @@ CREATE TABLE usuario (
     Nombre varchar(30),
     Estado CHAR(1) CHECK (Estado IN ('A', 'I')),
     Direccion varchar(50),
+    Contraseña varchar(50,
     PRIMARY KEY(ID_Usuario)
 );
 

@@ -1094,8 +1094,8 @@ public class Diseño {
     private static void insertarDatosPrueba_tabla(){
         try (Statement stmt = Connection.connection.createStatement()) {
             // Insertar Usuarios
-            stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion) VALUES (1, 'user1@example.com', 'Juan', 'A', 'Calle Falsa 123')");
-            stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Direccion) VALUES (2, 'user2@example.com', 'Maria', 'A', 'Avenida Principal 456')");
+       //     stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado,Contraseña, Direccion) VALUES (1, 'user1@example.com', 'Juan', 'A', 'contraseña','Calle Falsa 123')");
+         //   stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Contraseña,Direccion) VALUES (2, 'user2@example.com', 'Maria', 'A','contraseña', 'Avenida Principal 456')");
 
             // Insertar Productos
             stmt.executeUpdate("INSERT INTO producto (ID_Producto, NombreProducto, Cantidad, Precio) VALUES (10, 'Camisa', 50, 19.99)");
@@ -1157,7 +1157,9 @@ public class Diseño {
                     "    Nombre varchar(30),\n" +
                     "    Estado CHAR(1) CHECK (Estado IN ('A', 'I')),\n" +
                     "    Direccion varchar(50),\n" +
+                    "    Contraseña varchar(50),\n" +
                     "    PRIMARY KEY(ID_Usuario)\n" +
+                    "    UNIQUE(Correo)\n" +
                     ")");
 
             stmt.executeUpdate("CREATE TABLE producto (\n" +
