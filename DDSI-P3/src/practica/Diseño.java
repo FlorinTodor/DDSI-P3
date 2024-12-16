@@ -548,8 +548,6 @@ public class Diseño {
     }
 
     private static JTabbedPane crearPestañasUsuarios() {
-
-        //PESTAÑAS PARA USUARIO
         JTabbedPane usuariosTabbedPane = new JTabbedPane();
 
         // -----------------------------------------------------------
@@ -665,8 +663,64 @@ public class Diseño {
 
         usuariosTabbedPane.addTab("Modificar Datos de Usuario", panelUpdateUser);
 
+        // -----------------------------------------------------------
+        // RF2.4: Recuperar Contraseña
+        // -----------------------------------------------------------
+        JPanel panelRecoverPassword = new JPanel(new GridLayout(3, 2, 5, 5));
+        JTextField txtCorreoRecover = new JTextField();
+
+        panelRecoverPassword.add(new JLabel("Correo:"));
+        panelRecoverPassword.add(txtCorreoRecover);
+
+        JButton btnRecoverPassword = new JButton("Recuperar Contraseña");
+        panelRecoverPassword.add(btnRecoverPassword);
+
+        btnRecoverPassword.addActionListener(e -> {
+            try {
+                Usuario userService = new Usuario();
+                String password = userService.recoverPassword(txtCorreoRecover.getText());
+                JOptionPane.showMessageDialog(panelRecoverPassword, "Contraseña: " + password);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelRecoverPassword, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        usuariosTabbedPane.addTab("Recuperar Contraseña", panelRecoverPassword);
+
+        // -----------------------------------------------------------
+        // RF2.5: Iniciar Sesión
+        // -----------------------------------------------------------
+        JPanel panelLogin = new JPanel(new GridLayout(4, 2, 5, 5));
+        JTextField txtCorreoLogin = new JTextField();
+        JTextField txtPasswordLogin = new JTextField();
+
+        panelLogin.add(new JLabel("Correo:"));
+        panelLogin.add(txtCorreoLogin);
+        panelLogin.add(new JLabel("Contraseña:"));
+        panelLogin.add(txtPasswordLogin);
+
+        JButton btnLogin = new JButton("Iniciar Sesión");
+        panelLogin.add(btnLogin);
+
+        btnLogin.addActionListener(e -> {
+            try {
+                Usuario userService = new Usuario();
+                boolean success = userService.loginUser(txtCorreoLogin.getText(), txtPasswordLogin.getText());
+                if (success) {
+                    JOptionPane.showMessageDialog(panelLogin, "Inicio de sesión exitoso.");
+                } else {
+                    JOptionPane.showMessageDialog(panelLogin, "Credenciales incorrectas.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelLogin, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        usuariosTabbedPane.addTab("Iniciar Sesión", panelLogin);
+
         return usuariosTabbedPane;
     }
+
 
 
     private static JTabbedPane crearPestañasReseñas() {
