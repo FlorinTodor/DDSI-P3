@@ -16,7 +16,7 @@ public class Usuario {
 
         java.sql.Connection conn = Connection.connection;
 
-        // Validar correo
+        // Validar que el correo no esté registrado
         try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ?")) {
             ps.setString(1, correo);
             try (ResultSet rs = ps.executeQuery()) {
@@ -26,24 +26,25 @@ public class Usuario {
             }
         }
 
-        // Insertar y obtener ID generado
-        String insertSQL = "INSERT INTO USUARIO (CORREO, NOMBRE, DIRECCION, CONTRASEÑA, ESTADO) VALUES (?, ?, ?, ?, 'Activo')";
-        try (PreparedStatement ps = conn.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
+        // Insertar nuevo usuario
+        String insertSQL = "INSERT INTO USUARIO (ID_USUARIO, CORREO, NOMBRE, DIRECCION, CONTRASEÑA, ESTADO) " +
+                "VALUES (USER_SEQ.NEXTVAL, ?, ?, ?, ?, 'Activo') RETURNING ID_USUARIO INTO ?";
+        try (PreparedStatement ps = conn.prepareStatement(insertSQL)) {
             ps.setString(1, correo);
             ps.setString(2, nombre);
             ps.setString(3, direccion);
             ps.setString(4, contraseña);
 
-            ps.executeUpdate();
-
-            // Obtener clave generada
-            ResultSet rs = ps.getGeneratedKeys();
+            // Recuperar el ID generado automáticamente (RETURNING)
+            ResultSet rs = ps.executeQuery();
             int idUsuario = -1;
             if (rs.next()) {
                 idUsuario = rs.getInt(1);
             }
             conn.commit();
             return idUsuario;
+        } catch (SQLException ex) {
+            throw new Exception("Error al registrar usuario: " + ex.getMessage());
         }
     }
 
