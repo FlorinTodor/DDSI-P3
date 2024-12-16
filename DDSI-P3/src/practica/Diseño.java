@@ -3,6 +3,7 @@ package practica;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
+import java.util.List;
 import java.util.ArrayList;
 
 public class Diseño {
@@ -81,6 +82,7 @@ public class Diseño {
         JTabbedPane productosTabbedPane = crearPestañasProductos();
         JTabbedPane CarritoTabbedPane = crearPestañasCarrito();
         JTabbedPane usuariosTabbedPane = crearPestañasUsuarios();
+        JTabbedPane pedidosTabbedPane = crearPestañasPedidos();
 
 
         // -----------------------------------------------------------
@@ -92,8 +94,9 @@ public class Diseño {
         tabbedPane.addTab("Productos", productosTabbedPane);
         tabbedPane.addTab("Carrito", CarritoTabbedPane);
         tabbedPane.addTab("Usuarios", usuariosTabbedPane);
-        tabbedPane.addTab("Pedidos", usuariosTabbedPane);
-        tabbedPane.addTab("Pagos", usuariosTabbedPane);
+        tabbedPane.addTab("Pedidos", pedidosTabbedPane);
+      //  tabbedPane.addTab("Pagos", usuariosTabbedPane);
+
 
 
         frame.add(tabbedPane, BorderLayout.CENTER);
@@ -926,6 +929,56 @@ public class Diseño {
         JTextField txtMetodoEnvio = new JTextField();
         JTextField txtIdUsuario = new JTextField();
         JTextField txtCarrito = new JTextField();
+
+        panelRealizarPedido.add(new JLabel("Dirección:"));
+        panelRealizarPedido.add(txtDireccion);
+
+        panelRealizarPedido.add(new JLabel("ID Pedido:"));
+        panelRealizarPedido.add(txtIdPedido);
+
+        panelRealizarPedido.add(new JLabel("Estado Pedido:"));
+        panelRealizarPedido.add(txtEstadoPedido);
+
+        panelRealizarPedido.add(new JLabel("Tipo de Pago:"));
+        panelRealizarPedido.add(txtTipoPago);
+
+        panelRealizarPedido.add(new JLabel("Método de Envío:"));
+        panelRealizarPedido.add(txtMetodoEnvio);
+
+        panelRealizarPedido.add(new JLabel("ID Usuario:"));
+        panelRealizarPedido.add(txtIdUsuario);
+
+        panelRealizarPedido.add(new JLabel("Carrito (IDs de productos separados por comas):"));
+        panelRealizarPedido.add(txtCarrito);
+
+        JButton btnRealizarPedido = new JButton("Añadir Pedido");
+        panelRealizarPedido.add(btnRealizarPedido);
+
+        btnRealizarPedido.addActionListener(e -> {
+            try {
+                String direcc = txtDireccion.getText().trim();
+                String idPed = txtIdPedido.getText().trim();
+                String estPed = txtEstadoPedido .getText().trim();
+                String tipPag = txtTipoPago.getText().trim();
+                String metEnv= txtMetodoEnvio .getText().trim();
+                String[] carritoArray = txtCarrito.getText().trim().split(",");
+                List<Integer> carrito = new ArrayList<>();
+                for (String idProducto : carritoArray) {
+                    carrito.add(Integer.parseInt(idProducto.trim()));
+                }
+                int idUser = Integer.parseInt(txtIdUsuario.getText().trim());
+
+                // Llamada a metodo realizarPedido
+                Pedido orderService = new Pedido(idPed,carrito,estPed,idUser);
+                orderService.realizarPedido(direcc,idPed,estPed,tipPag,metEnv,idUser,carrito);
+                JOptionPane.showMessageDialog(panelRealizarPedido, "Reseña añadida con éxito.");
+
+            } catch (Exception ex2) {
+                JOptionPane.showMessageDialog(panelRealizarPedido, "Error al añadir reseña: " + ex2.getMessage());
+            }
+        });
+
+        pedidosTabbedPane.addTab("Añadir Pedido", panelRealizarPedido);
 
         return pedidosTabbedPane;
     }
