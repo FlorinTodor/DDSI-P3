@@ -926,6 +926,8 @@ public class Diseño {
         JTextField txtMetodoEnvio = new JTextField();
         JTextField txtIdUsuario = new JTextField();
         JTextField txtCarrito = new JTextField();
+
+        return pedidosTabbedPane;
     }
 
 
