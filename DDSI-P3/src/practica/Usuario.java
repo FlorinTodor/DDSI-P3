@@ -8,12 +8,13 @@ public class Usuario {
     /**
      * RF2.1: Registrar Usuario
      */
-    public void registerUser(int idUsuario, String correo, String nombre, String telefono, String estado, String direccion, String contraseña) throws Exception {
+    public int registerUser(String correo, String nombre, String telefono, String estado, String direccion, String contraseña) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
         java.sql.Connection conn = Connection.connection;
+        int generatedId = -1;
 
         // Validar que el correo no esté registrado
         try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ?")) {
@@ -25,21 +26,29 @@ public class Usuario {
             }
         }
 
-        // Insertar nuevo usuario
-        try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO USUARIO (ID_USUARIO, CORREO, NOMBRE, TELEFONO, ESTADO, DIRECCION, CONTRASEÑA) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
-            ps.setInt(1, idUsuario);
-            ps.setString(2, correo);
-            ps.setString(3, nombre);
-            ps.setString(4, telefono);
-            ps.setString(5, estado);
-            ps.setString(6, direccion);
-            ps.setString(7, contraseña);
+        // Insertar nuevo usuario sin ID (autogenerado)
+        String sql = "INSERT INTO USUARIO (CORREO, NOMBRE, TELEFONO, ESTADO, DIRECCION, CONTRASEÑA) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, correo);
+            ps.setString(2, nombre);
+            ps.setString(3, telefono);
+            ps.setString(4, estado);
+            ps.setString(5, direccion);
+            ps.setString(6, contraseña);
             ps.executeUpdate();
+
+            // Recuperar el ID generado
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    generatedId = generatedKeys.getInt(1);
+                }
+            }
         }
 
         conn.commit(); // Confirmar cambios
+        return generatedId; // Devolver el ID generado
     }
+
 
     /**
      * RF2.2: Dar de Baja Usuario
