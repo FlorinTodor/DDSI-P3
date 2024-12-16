@@ -971,10 +971,10 @@ public class Diseño {
                 // Llamada a metodo realizarPedido
                 Pedido orderService = new Pedido(idPed,carrito,estPed,idUser);
                 orderService.realizarPedido(direcc,idPed,estPed,tipPag,metEnv,idUser,carrito);
-                JOptionPane.showMessageDialog(panelRealizarPedido, "Reseña añadida con éxito.");
+                JOptionPane.showMessageDialog(panelRealizarPedido, "Pedido realizado con exito");
 
             } catch (Exception ex2) {
-                JOptionPane.showMessageDialog(panelRealizarPedido, "Error al añadir reseña: " + ex2.getMessage());
+                JOptionPane.showMessageDialog(panelRealizarPedido, "Error al añadir pedido: " + ex2.getMessage());
             }
         });
 
