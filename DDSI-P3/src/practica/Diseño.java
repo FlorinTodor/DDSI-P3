@@ -92,6 +92,8 @@ public class Diseño {
         tabbedPane.addTab("Productos", productosTabbedPane);
         tabbedPane.addTab("Carrito", CarritoTabbedPane);
         tabbedPane.addTab("Usuarios", usuariosTabbedPane);
+        tabbedPane.addTab("Pedidos", usuariosTabbedPane);
+        tabbedPane.addTab("Pagos", usuariosTabbedPane);
 
 
         frame.add(tabbedPane, BorderLayout.CENTER);
@@ -905,6 +907,25 @@ public class Diseño {
         reseñasTabbedPane.addTab("Ver Reseñas por Usuario", panelViewByUser);
 
         return reseñasTabbedPane;
+    }
+
+    private static JTabbedPane crearPestañasPedidos(){
+        // -----------------------------------------------------------
+        // PESTAÑA PARA PEDIDOS
+        // -----------------------------------------------------------
+
+        JTabbedPane pedidosTabbedPane = new JTabbedPane();
+
+        //Panel para añadir pedido
+
+        JPanel panelRealizarPedido = new JPanel(new GridLayout(6, 2, 5, 5));
+        JTextField txtDireccion = new JTextField();
+        JTextField txtIdPedido = new JTextField();
+        JTextField txtEstadoPedido = new JTextField();
+        JTextField txtTipoPago = new JTextField();
+        JTextField txtMetodoEnvio = new JTextField();
+        JTextField txtIdUsuario = new JTextField();
+        JTextField txtCarrito = new JTextField();
     }
 
 
