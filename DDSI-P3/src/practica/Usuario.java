@@ -1,22 +1,22 @@
 package practica;
 
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.UUID;
 
 public class Usuario {
 
     /**
-     * RF2.1: Registrar Usuario
+     * RF1.1: Registro de Usuario
+     * Devuelve el ID del usuario registrado.
      */
-    public int registerUser(String correo, String nombre, String telefono, String estado, String direccion, String contraseña) throws Exception {
+    public int registerUser(String correo, String nombre, String direccion, String contraseña) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
         java.sql.Connection conn = Connection.connection;
-        int generatedId = -1;
 
-        // Validar que el correo no esté registrado
+        // Validar correo
         try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ?")) {
             ps.setString(1, correo);
             try (ResultSet rs = ps.executeQuery()) {
@@ -26,141 +26,159 @@ public class Usuario {
             }
         }
 
-        // Insertar nuevo usuario sin ID (autogenerado)
-        String sql = "INSERT INTO USUARIO (CORREO, NOMBRE, TELEFONO, ESTADO, DIRECCION, CONTRASEÑA) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        // Insertar y obtener ID generado
+        String insertSQL = "INSERT INTO USUARIO (CORREO, NOMBRE, DIRECCION, CONTRASEÑA, ESTADO) VALUES (?, ?, ?, ?, 'Activo')";
+        try (PreparedStatement ps = conn.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, correo);
             ps.setString(2, nombre);
-            ps.setString(3, telefono);
-            ps.setString(4, estado);
-            ps.setString(5, direccion);
-            ps.setString(6, contraseña);
+            ps.setString(3, direccion);
+            ps.setString(4, contraseña);
+
             ps.executeUpdate();
 
-            // Recuperar el ID generado
-            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    generatedId = generatedKeys.getInt(1);
-                }
+            // Obtener clave generada
+            ResultSet rs = ps.getGeneratedKeys();
+            int idUsuario = -1;
+            if (rs.next()) {
+                idUsuario = rs.getInt(1);
             }
+            conn.commit();
+            return idUsuario;
         }
-
-        conn.commit(); // Confirmar cambios
-        return generatedId; // Devolver el ID generado
     }
 
 
     /**
-     * RF2.2: Dar de Baja Usuario
+     * RF1.2: Dar de Baja Usuario
+     * Deshabilita la cuenta si la contraseña es correcta.
      */
-    public void deleteUser(int idUsuario) throws Exception {
+    public void deleteUser(int idUsuario, String contraseña) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        java.sql.Connection conn = Connection.connection;
-
-        // Verificar si el usuario existe
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
+        // Verificar si la cuenta existe y está activa
+        String estadoCuenta = null;
+        try (PreparedStatement ps = Connection.connection.prepareStatement(
+                "SELECT ESTADO, CONTRASEÑA FROM USUARIO WHERE ID_USUARIO = ?")) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
+                if (rs.next()) {
+                    estadoCuenta = rs.getString("ESTADO");
+                    String storedPassword = rs.getString("CONTRASEÑA");
+                    if (!storedPassword.equals(contraseña)) {
+                        throw new Exception("La contraseña proporcionada es incorrecta.");
+                    }
+                    if (estadoCuenta.equalsIgnoreCase("Inactivo")) {
+                        throw new Exception("La cuenta ya está deshabilitada.");
+                    }
+                } else {
                     throw new Exception("El usuario no existe.");
                 }
             }
         }
 
-        // Cambiar estado a 'Eliminado'
-        try (PreparedStatement ps = conn.prepareStatement("UPDATE USUARIO SET ESTADO = 'Eliminado' WHERE ID_USUARIO = ?")) {
+        // Deshabilitar la cuenta
+        try (PreparedStatement ps = Connection.connection.prepareStatement(
+                "UPDATE USUARIO SET ESTADO = 'Inactivo', FECHA_DESACTIVACION = SYSTIMESTAMP WHERE ID_USUARIO = ?")) {
             ps.setInt(1, idUsuario);
             ps.executeUpdate();
         }
-
-        conn.commit(); // Confirmar cambios
     }
 
     /**
-     * RF2.3: Modificar Datos de Usuario
+     * RF1.3: Modificar Datos del Usuario
      */
-    public void updateUser(int idUsuario, String nuevoCorreo, String nuevoNombre, String nuevoTelefono, String nuevaDireccion) throws Exception {
+    public void updateUser(int idUsuario, String nuevoCorreo, String nuevoNombre, String nuevaDireccion, String nuevaContraseña) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        java.sql.Connection conn = Connection.connection;
-
-        // Comprobar si el usuario existe
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE ID_USUARIO = ?")) {
+        // Validar que la cuenta esté activa
+        try (PreparedStatement ps = Connection.connection.prepareStatement(
+                "SELECT ESTADO FROM USUARIO WHERE ID_USUARIO = ?")) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El usuario no existe.");
+                if (rs.next() && rs.getString("ESTADO").equalsIgnoreCase("Inactivo")) {
+                    throw new Exception("No se pueden modificar los datos de una cuenta deshabilitada.");
                 }
             }
         }
 
-        // Actualizar datos del usuario
-        try (PreparedStatement ps = conn.prepareStatement(
-                "UPDATE USUARIO SET CORREO = ?, NOMBRE = ?, TELEFONO = ?, DIRECCION = ? WHERE ID_USUARIO = ?")) {
+        // Actualizar datos
+        try (PreparedStatement ps = Connection.connection.prepareStatement(
+                "UPDATE USUARIO SET CORREO = ?, NOMBRE = ?, DIRECCION = ?, CONTRASEÑA = ? WHERE ID_USUARIO = ?")) {
             ps.setString(1, nuevoCorreo);
             ps.setString(2, nuevoNombre);
-            ps.setString(3, nuevoTelefono);
-            ps.setString(4, nuevaDireccion);
+            ps.setString(3, nuevaDireccion);
+            ps.setString(4, nuevaContraseña);
             ps.setInt(5, idUsuario);
             ps.executeUpdate();
         }
-
-        conn.commit(); // Confirmar cambios
     }
 
     /**
-     * RF2.4: Recuperar Contraseña
+     * RF1.4: Recuperar Contraseña
+     * Genera y devuelve un token de recuperación.
      */
     public String recoverPassword(String correo) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        java.sql.Connection conn = Connection.connection;
-        String contraseña = null;
+        String token = UUID.randomUUID().toString().substring(0, 8);
+        String estadoCuenta = null;
 
-        // Recuperar contraseña
-        try (PreparedStatement ps = conn.prepareStatement("SELECT CONTRASEÑA FROM USUARIO WHERE CORREO = ?")) {
+        // Verificar si el correo está registrado y activo
+        try (PreparedStatement ps = Connection.connection.prepareStatement(
+                "SELECT ESTADO FROM USUARIO WHERE CORREO = ?")) {
             ps.setString(1, correo);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    contraseña = rs.getString("CONTRASEÑA");
+                    estadoCuenta = rs.getString("ESTADO");
+                    if (estadoCuenta.equalsIgnoreCase("Inactivo")) {
+                        throw new Exception("No se puede recuperar contraseña para cuentas deshabilitadas.");
+                    }
                 } else {
                     throw new Exception("El correo no está registrado.");
                 }
             }
         }
 
-        return contraseña;
+        // Guardar el token en la base de datos
+        try (PreparedStatement ps = Connection.connection.prepareStatement(
+                "UPDATE USUARIO SET ID_TOKEN = ? WHERE CORREO = ?")) {
+            ps.setString(1, token);
+            ps.setString(2, correo);
+            ps.executeUpdate();
+        }
+        return token; // Devuelve el token generado
     }
 
     /**
-     * RF2.5: Iniciar Sesión
+     * RF1.5: Iniciar Sesión
      */
     public boolean loginUser(String correo, String contraseña) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        java.sql.Connection conn = Connection.connection;
-        boolean isAuthenticated = false;
+        boolean authenticated = false;
 
-        // Verificar credenciales
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ?")) {
+        try (PreparedStatement ps = Connection.connection.prepareStatement(
+                "SELECT ESTADO FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ?")) {
             ps.setString(1, correo);
             ps.setString(2, contraseña);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    isAuthenticated = true;
+                if (rs.next()) {
+                    String estado = rs.getString("ESTADO");
+                    if (estado.equalsIgnoreCase("Inactivo")) {
+                        throw new Exception("La cuenta está deshabilitada.");
+                    }
+                    authenticated = true;
                 }
             }
         }
-
-        return isAuthenticated;
+        return authenticated;
     }
 }

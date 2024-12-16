@@ -550,12 +550,11 @@ public class Diseño {
         JTabbedPane usuariosTabbedPane = new JTabbedPane();
 
         // -----------------------------------------------------------
-        // RF2.1: Registrar Usuario
+        // RF1.1: Registrar Usuario (Devuelve ID generado)
         // -----------------------------------------------------------
-        JPanel panelRegisterUser = new JPanel(new GridLayout(7, 2, 5, 5));
+        JPanel panelRegisterUser = new JPanel(new GridLayout(5, 2, 5, 5));
         JTextField txtCorreo = new JTextField();
         JTextField txtNombre = new JTextField();
-        JTextField txtTelefono = new JTextField();
         JTextField txtDireccion = new JTextField();
         JTextField txtContraseña = new JTextField();
 
@@ -563,8 +562,6 @@ public class Diseño {
         panelRegisterUser.add(txtCorreo);
         panelRegisterUser.add(new JLabel("Nombre:"));
         panelRegisterUser.add(txtNombre);
-        panelRegisterUser.add(new JLabel("Teléfono:"));
-        panelRegisterUser.add(txtTelefono);
         panelRegisterUser.add(new JLabel("Dirección:"));
         panelRegisterUser.add(txtDireccion);
         panelRegisterUser.add(new JLabel("Contraseña:"));
@@ -578,15 +575,13 @@ public class Diseño {
             try {
                 Usuario userService = new Usuario();
                 int idGenerado = userService.registerUser(
-                        txtCorreo.getText(),
-                        txtNombre.getText(),
-                        txtTelefono.getText(),
-                        "Activo", // Estado por defecto
-                        txtDireccion.getText(),
-                        txtContraseña.getText()
+                        txtCorreo.getText().trim(),
+                        txtNombre.getText().trim(),
+                        txtDireccion.getText().trim(),
+                        txtContraseña.getText().trim()
                 );
                 JOptionPane.showMessageDialog(panelRegisterUser,
-                        "Usuario registrado con éxito. ID generado: " + idGenerado);
+                        "Usuario registrado con éxito.\nID de Usuario generado: " + idGenerado);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelRegisterUser,
                         "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -596,39 +591,46 @@ public class Diseño {
         usuariosTabbedPane.addTab("Registrar Usuario", panelRegisterUser);
 
         // -----------------------------------------------------------
-        // RF2.2: Dar de Baja Usuario
+        // RF1.2: Dar de Baja Usuario (Contraseña obligatoria)
         // -----------------------------------------------------------
         JPanel panelDeleteUser = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtIdUserDelete = new JTextField();
+        JTextField txtPasswordDelete = new JTextField();
 
         panelDeleteUser.add(new JLabel("ID Usuario:"));
         panelDeleteUser.add(txtIdUserDelete);
+        panelDeleteUser.add(new JLabel("Contraseña:"));
+        panelDeleteUser.add(txtPasswordDelete);
 
         JButton btnDeleteUser = new JButton("Dar de Baja");
-        panelDeleteUser.add(new JLabel(""));
         panelDeleteUser.add(btnDeleteUser);
 
         btnDeleteUser.addActionListener(e -> {
             try {
                 Usuario userService = new Usuario();
-                userService.deleteUser(Integer.parseInt(txtIdUserDelete.getText()));
-                JOptionPane.showMessageDialog(panelDeleteUser, "Usuario dado de baja con éxito.");
+                userService.deleteUser(
+                        Integer.parseInt(txtIdUserDelete.getText().trim()),
+                        txtPasswordDelete.getText().trim()
+                );
+                JOptionPane.showMessageDialog(panelDeleteUser,
+                        "Usuario dado de baja con éxito.");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelDeleteUser, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(panelDeleteUser,
+                        "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         usuariosTabbedPane.addTab("Dar de Baja Usuario", panelDeleteUser);
 
         // -----------------------------------------------------------
-        // RF2.3: Modificar Datos de Usuario
+        // RF1.3: Modificar Datos de Usuario
         // -----------------------------------------------------------
         JPanel panelUpdateUser = new JPanel(new GridLayout(6, 2, 5, 5));
         JTextField txtIdUserUpdate = new JTextField();
         JTextField txtCorreoUpdate = new JTextField();
         JTextField txtNombreUpdate = new JTextField();
-        JTextField txtTelefonoUpdate = new JTextField();
         JTextField txtDireccionUpdate = new JTextField();
+        JTextField txtPasswordUpdate = new JTextField();
 
         panelUpdateUser.add(new JLabel("ID Usuario:"));
         panelUpdateUser.add(txtIdUserUpdate);
@@ -636,35 +638,36 @@ public class Diseño {
         panelUpdateUser.add(txtCorreoUpdate);
         panelUpdateUser.add(new JLabel("Nuevo Nombre:"));
         panelUpdateUser.add(txtNombreUpdate);
-        panelUpdateUser.add(new JLabel("Nuevo Teléfono:"));
-        panelUpdateUser.add(txtTelefonoUpdate);
         panelUpdateUser.add(new JLabel("Nueva Dirección:"));
         panelUpdateUser.add(txtDireccionUpdate);
+        panelUpdateUser.add(new JLabel("Nueva Contraseña:"));
+        panelUpdateUser.add(txtPasswordUpdate);
 
         JButton btnUpdateUser = new JButton("Modificar Datos");
-        panelUpdateUser.add(new JLabel(""));
         panelUpdateUser.add(btnUpdateUser);
 
         btnUpdateUser.addActionListener(e -> {
             try {
                 Usuario userService = new Usuario();
                 userService.updateUser(
-                        Integer.parseInt(txtIdUserUpdate.getText()),
-                        txtCorreoUpdate.getText(),
-                        txtNombreUpdate.getText(),
-                        txtTelefonoUpdate.getText(),
-                        txtDireccionUpdate.getText()
+                        Integer.parseInt(txtIdUserUpdate.getText().trim()),
+                        txtCorreoUpdate.getText().trim(),
+                        txtNombreUpdate.getText().trim(),
+                        txtDireccionUpdate.getText().trim(),
+                        txtPasswordUpdate.getText().trim()
                 );
-                JOptionPane.showMessageDialog(panelUpdateUser, "Datos actualizados con éxito.");
+                JOptionPane.showMessageDialog(panelUpdateUser,
+                        "Datos actualizados con éxito.");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelUpdateUser, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(panelUpdateUser,
+                        "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         usuariosTabbedPane.addTab("Modificar Datos de Usuario", panelUpdateUser);
 
         // -----------------------------------------------------------
-        // RF2.4: Recuperar Contraseña
+        // RF1.4: Recuperar Contraseña (Muestra Token Generado)
         // -----------------------------------------------------------
         JPanel panelRecoverPassword = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtCorreoRecover = new JTextField();
@@ -673,23 +676,24 @@ public class Diseño {
         panelRecoverPassword.add(txtCorreoRecover);
 
         JButton btnRecoverPassword = new JButton("Recuperar Contraseña");
-        panelRecoverPassword.add(new JLabel(""));
         panelRecoverPassword.add(btnRecoverPassword);
 
         btnRecoverPassword.addActionListener(e -> {
             try {
                 Usuario userService = new Usuario();
-                String password = userService.recoverPassword(txtCorreoRecover.getText());
-                JOptionPane.showMessageDialog(panelRecoverPassword, "Contraseña: " + password);
+                String token = userService.recoverPassword(txtCorreoRecover.getText().trim());
+                JOptionPane.showMessageDialog(panelRecoverPassword,
+                        "Token de recuperación generado: " + token);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelRecoverPassword, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(panelRecoverPassword,
+                        "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         usuariosTabbedPane.addTab("Recuperar Contraseña", panelRecoverPassword);
 
         // -----------------------------------------------------------
-        // RF2.5: Iniciar Sesión
+        // RF1.5: Iniciar Sesión
         // -----------------------------------------------------------
         JPanel panelLogin = new JPanel(new GridLayout(4, 2, 5, 5));
         JTextField txtCorreoLogin = new JTextField();
@@ -701,20 +705,24 @@ public class Diseño {
         panelLogin.add(txtPasswordLogin);
 
         JButton btnLogin = new JButton("Iniciar Sesión");
-        panelLogin.add(new JLabel(""));
         panelLogin.add(btnLogin);
 
         btnLogin.addActionListener(e -> {
             try {
                 Usuario userService = new Usuario();
-                boolean success = userService.loginUser(txtCorreoLogin.getText(), txtPasswordLogin.getText());
+                boolean success = userService.loginUser(
+                        txtCorreoLogin.getText().trim(),
+                        txtPasswordLogin.getText().trim()
+                );
                 if (success) {
                     JOptionPane.showMessageDialog(panelLogin, "Inicio de sesión exitoso.");
                 } else {
-                    JOptionPane.showMessageDialog(panelLogin, "Credenciales incorrectas.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(panelLogin,
+                            "Credenciales incorrectas.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelLogin, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(panelLogin,
+                        "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -722,6 +730,7 @@ public class Diseño {
 
         return usuariosTabbedPane;
     }
+
 
 
 
