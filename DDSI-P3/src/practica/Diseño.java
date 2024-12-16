@@ -80,6 +80,7 @@ public class Diseño {
         JTabbedPane reseñasTabbedPane = crearPestañasReseñas();
         JTabbedPane productosTabbedPane = crearPestañasProductos();
         JTabbedPane CarritoTabbedPane = crearPestañasCarrito();
+        JTabbedPane usuariosTabbedPane = crearPestañasUsuarios();
 
 
 
@@ -96,6 +97,8 @@ public class Diseño {
         tabbedPane.addTab("Reseñas", reseñasTabbedPane);
         tabbedPane.addTab("Productos", productosTabbedPane);
         tabbedPane.addTab("Carrito", CarritoTabbedPane);
+        tabbedPane.addTab("Usuarios", usuariosTabbedPane);
+
 
         frame.add(tabbedPane, BorderLayout.CENTER);
 
@@ -543,6 +546,128 @@ public class Diseño {
         productosTabbedPane.addTab("Filtrar por Usuario", panelFilterByUser);
         return productosTabbedPane;
     }
+
+    private static JTabbedPane crearPestañasUsuarios() {
+
+        //PESTAÑAS PARA USUARIO
+        JTabbedPane usuariosTabbedPane = new JTabbedPane();
+
+        // -----------------------------------------------------------
+        // RF2.1: Registrar Usuario
+        // -----------------------------------------------------------
+        JPanel panelRegisterUser = new JPanel(new GridLayout(8, 2, 5, 5));
+        JTextField txtIdUser = new JTextField();
+        JTextField txtCorreo = new JTextField();
+        JTextField txtNombre = new JTextField();
+        JTextField txtTelefono = new JTextField();
+        JTextField txtDireccion = new JTextField();
+        JTextField txtContraseña = new JTextField();
+
+        panelRegisterUser.add(new JLabel("ID Usuario:"));
+        panelRegisterUser.add(txtIdUser);
+        panelRegisterUser.add(new JLabel("Correo:"));
+        panelRegisterUser.add(txtCorreo);
+        panelRegisterUser.add(new JLabel("Nombre:"));
+        panelRegisterUser.add(txtNombre);
+        panelRegisterUser.add(new JLabel("Teléfono:"));
+        panelRegisterUser.add(txtTelefono);
+        panelRegisterUser.add(new JLabel("Dirección:"));
+        panelRegisterUser.add(txtDireccion);
+        panelRegisterUser.add(new JLabel("Contraseña:"));
+        panelRegisterUser.add(txtContraseña);
+
+        JButton btnRegister = new JButton("Registrar Usuario");
+        panelRegisterUser.add(btnRegister);
+
+        btnRegister.addActionListener(e -> {
+            try {
+                Usuario userService = new Usuario();
+                userService.registerUser(
+                        Integer.parseInt(txtIdUser.getText()),
+                        txtCorreo.getText(),
+                        txtNombre.getText(),
+                        txtTelefono.getText(),
+                        "Activo",
+                        txtDireccion.getText(),
+                        txtContraseña.getText()
+                );
+                JOptionPane.showMessageDialog(panelRegisterUser, "Usuario registrado con éxito.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelRegisterUser, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        usuariosTabbedPane.addTab("Registrar Usuario", panelRegisterUser);
+
+        // -----------------------------------------------------------
+        // RF2.2: Dar de Baja Usuario
+        // -----------------------------------------------------------
+        JPanel panelDeleteUser = new JPanel(new GridLayout(3, 2, 5, 5));
+        JTextField txtIdUserDelete = new JTextField();
+
+        panelDeleteUser.add(new JLabel("ID Usuario:"));
+        panelDeleteUser.add(txtIdUserDelete);
+
+        JButton btnDeleteUser = new JButton("Dar de Baja");
+        panelDeleteUser.add(btnDeleteUser);
+
+        btnDeleteUser.addActionListener(e -> {
+            try {
+                Usuario userService = new Usuario();
+                userService.deleteUser(Integer.parseInt(txtIdUserDelete.getText()));
+                JOptionPane.showMessageDialog(panelDeleteUser, "Usuario dado de baja con éxito.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelDeleteUser, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        usuariosTabbedPane.addTab("Dar de Baja Usuario", panelDeleteUser);
+
+        // -----------------------------------------------------------
+        // RF2.3: Modificar Datos de Usuario
+        // -----------------------------------------------------------
+        JPanel panelUpdateUser = new JPanel(new GridLayout(6, 2, 5, 5));
+        JTextField txtIdUserUpdate = new JTextField();
+        JTextField txtCorreoUpdate = new JTextField();
+        JTextField txtNombreUpdate = new JTextField();
+        JTextField txtTelefonoUpdate = new JTextField();
+        JTextField txtDireccionUpdate = new JTextField();
+
+        panelUpdateUser.add(new JLabel("ID Usuario:"));
+        panelUpdateUser.add(txtIdUserUpdate);
+        panelUpdateUser.add(new JLabel("Nuevo Correo:"));
+        panelUpdateUser.add(txtCorreoUpdate);
+        panelUpdateUser.add(new JLabel("Nuevo Nombre:"));
+        panelUpdateUser.add(txtNombreUpdate);
+        panelUpdateUser.add(new JLabel("Nuevo Teléfono:"));
+        panelUpdateUser.add(txtTelefonoUpdate);
+        panelUpdateUser.add(new JLabel("Nueva Dirección:"));
+        panelUpdateUser.add(txtDireccionUpdate);
+
+        JButton btnUpdateUser = new JButton("Modificar Datos");
+        panelUpdateUser.add(btnUpdateUser);
+
+        btnUpdateUser.addActionListener(e -> {
+            try {
+                Usuario userService = new Usuario();
+                userService.updateUser(
+                        Integer.parseInt(txtIdUserUpdate.getText()),
+                        txtCorreoUpdate.getText(),
+                        txtNombreUpdate.getText(),
+                        txtTelefonoUpdate.getText(),
+                        txtDireccionUpdate.getText()
+                );
+                JOptionPane.showMessageDialog(panelUpdateUser, "Datos actualizados con éxito.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelUpdateUser, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        usuariosTabbedPane.addTab("Modificar Datos de Usuario", panelUpdateUser);
+
+        return usuariosTabbedPane;
+    }
+
 
     private static JTabbedPane crearPestañasReseñas() {
         // -----------------------------------------------------------
