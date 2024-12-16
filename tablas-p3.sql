@@ -5,8 +5,11 @@ CREATE TABLE usuario (
     Nombre varchar(30),
     Estado CHAR(1) CHECK (Estado IN ('A', 'I')),
     Direccion varchar(50),
-    Contraseña varchar(50,
-    PRIMARY KEY(ID_Usuario)
+    Contraseña varchar(50),
+    Fecha_Registro TIMESTAMP DEFAULT SYSTIMESTAMP,
+    Fecha_Activacion TIMESTAMP,
+    PRIMARY KEY(ID_Usuario),
+    UNIQUE(Correo)
 );
 
 -- Subsistema Producto

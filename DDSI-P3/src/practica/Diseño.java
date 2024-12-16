@@ -1161,13 +1161,15 @@ public class Diseño {
 
             // Crear tablas base
             stmt.executeUpdate("CREATE TABLE usuario (\n" +
-                    "    ID_Usuario integer NOT NULL,\n" +
-                    "    Correo varchar(30),\n" +
-                    "    Nombre varchar(30),\n" +
+                    "    ID_Usuario INTEGER NOT NULL,\n" +
+                    "    Correo VARCHAR(30),\n" +
+                    "    Nombre VARCHAR(30),\n" +
                     "    Estado CHAR(1) CHECK (Estado IN ('A', 'I')),\n" +
-                    "    Direccion varchar(50),\n" +
-                    "    Contraseña varchar(50),\n" +
-                    "    PRIMARY KEY(ID_Usuario)\n" +
+                    "    Direccion VARCHAR(50),\n" +
+                    "    Contraseña VARCHAR(50),\n" +
+                    "    Fecha_Registro TIMESTAMP DEFAULT SYSTIMESTAMP,\n" +
+                    "    Fecha_Desactivacion TIMESTAMP DEFAULT NULL,\n" +
+                    "    PRIMARY KEY(ID_Usuario),\n" +
                     "    UNIQUE(Correo)\n" +
                     ")");
 

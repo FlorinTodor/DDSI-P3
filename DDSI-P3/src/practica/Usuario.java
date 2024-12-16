@@ -15,38 +15,51 @@ public class Usuario {
         }
 
         java.sql.Connection conn = Connection.connection;
+        int nextId = -1;
 
-        // Validar que el correo no esté registrado
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ?")) {
-            ps.setString(1, correo);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    throw new Exception("El correo ya está registrado.");
+        try {
+            // 1. Obtener el valor máximo actual de ID_USUARIO
+            String maxIdQuery = "SELECT NVL(MAX(ID_USUARIO), 0) + 1 FROM USUARIO";
+            try (PreparedStatement ps = conn.prepareStatement(maxIdQuery);
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    nextId = rs.getInt(1);
                 }
             }
-        }
 
-        // Insertar nuevo usuario
-        String insertSQL = "INSERT INTO USUARIO (ID_USUARIO, CORREO, NOMBRE, DIRECCION, CONTRASEÑA, ESTADO) " +
-                "VALUES (USER_SEQ.NEXTVAL, ?, ?, ?, ?, 'Activo') RETURNING ID_USUARIO INTO ?";
-        try (PreparedStatement ps = conn.prepareStatement(insertSQL)) {
-            ps.setString(1, correo);
-            ps.setString(2, nombre);
-            ps.setString(3, direccion);
-            ps.setString(4, contraseña);
-
-            // Recuperar el ID generado automáticamente (RETURNING)
-            ResultSet rs = ps.executeQuery();
-            int idUsuario = -1;
-            if (rs.next()) {
-                idUsuario = rs.getInt(1);
+            // 2. Validar que el correo no esté registrado
+            try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM USUARIO WHERE CORREO = ?")) {
+                ps.setString(1, correo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        throw new Exception("El correo ya está registrado.");
+                    }
+                }
             }
-            conn.commit();
-            return idUsuario;
+
+            // 3. Insertar el nuevo usuario y establecer FECHA_ACTIVACION como fecha actual
+            String insertSQL = "INSERT INTO USUARIO (ID_USUARIO, CORREO, NOMBRE, DIRECCION, CONTRASEÑA, ESTADO, FECHA_REGISTRO) " +
+                    "VALUES (?, ?, ?, ?, ?, 'A', SYSTIMESTAMP)";
+            try (PreparedStatement ps = conn.prepareStatement(insertSQL)) {
+                ps.setInt(1, nextId);
+                ps.setString(2, correo);
+                ps.setString(3, nombre);
+                ps.setString(4, direccion);
+                ps.setString(5, contraseña);
+
+                ps.executeUpdate();
+                conn.commit();
+            }
+
+            return nextId;
+
         } catch (SQLException ex) {
-            throw new Exception("Error al registrar usuario: " + ex.getMessage());
+            conn.rollback();
+            throw new Exception("Error al registrar usuario: " + ex.getMessage(), ex);
         }
     }
+
+
 
 
     /**
@@ -59,18 +72,17 @@ public class Usuario {
         }
 
         // Verificar si la cuenta existe y está activa
-        String estadoCuenta = null;
         try (PreparedStatement ps = Connection.connection.prepareStatement(
                 "SELECT ESTADO, CONTRASEÑA FROM USUARIO WHERE ID_USUARIO = ?")) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    estadoCuenta = rs.getString("ESTADO");
+                    String estadoCuenta = rs.getString("ESTADO");
                     String storedPassword = rs.getString("CONTRASEÑA");
                     if (!storedPassword.equals(contraseña)) {
                         throw new Exception("La contraseña proporcionada es incorrecta.");
                     }
-                    if (estadoCuenta.equalsIgnoreCase("Inactivo")) {
+                    if (estadoCuenta.equalsIgnoreCase("I")) {
                         throw new Exception("La cuenta ya está deshabilitada.");
                     }
                 } else {
@@ -79,13 +91,16 @@ public class Usuario {
             }
         }
 
-        // Deshabilitar la cuenta
+        // Deshabilitar la cuenta y actualizar FECHA_ACTIVACION a NULL
         try (PreparedStatement ps = Connection.connection.prepareStatement(
-                "UPDATE USUARIO SET ESTADO = 'Inactivo', FECHA_DESACTIVACION = SYSTIMESTAMP WHERE ID_USUARIO = ?")) {
+                "UPDATE USUARIO SET ESTADO = 'I', FECHA_DESACTIVACION = SYSTIMESTAMP WHERE ID_USUARIO = ?")) {
             ps.setInt(1, idUsuario);
             ps.executeUpdate();
+            Connection.connection.commit();
         }
     }
+
+
 
     /**
      * RF1.3: Modificar Datos del Usuario
@@ -167,19 +182,26 @@ public class Usuario {
         boolean authenticated = false;
 
         try (PreparedStatement ps = Connection.connection.prepareStatement(
-                "SELECT ESTADO FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ?")) {
+                "SELECT ESTADO, FECHA_ACTIVACION FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ?")) {
             ps.setString(1, correo);
             ps.setString(2, contraseña);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String estado = rs.getString("ESTADO");
-                    if (estado.equalsIgnoreCase("Inactivo")) {
-                        throw new Exception("La cuenta está deshabilitada.");
+                    Timestamp fechaActivacion = rs.getTimestamp("FECHA_ACTIVACION");
+
+                    if (!"A".equalsIgnoreCase(estado) || fechaActivacion == null) {
+                        throw new Exception("La cuenta está deshabilitada o no está activada.");
                     }
                     authenticated = true;
+                } else {
+                    throw new Exception("Credenciales incorrectas.");
                 }
             }
         }
         return authenticated;
     }
+
+
 }
+
