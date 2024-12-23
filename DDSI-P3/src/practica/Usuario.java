@@ -174,32 +174,33 @@ public class Usuario {
     /**
      * RF1.5: Iniciar Sesión
      */
-    public boolean loginUser(String correo, String contraseña) throws Exception {
+    public int loginUser(String correo, String contraseña) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        boolean authenticated = false;
+        int idUsuario = -1;
 
         try (PreparedStatement ps = Connection.connection.prepareStatement(
-                "SELECT ESTADO, FECHA_ACTIVACION FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ?")) {
+                "SELECT ESTADO, FECHA_DESACTIVACION, ID_USUARIO FROM USUARIO WHERE CORREO = ? AND CONTRASEÑA = ?")) {
             ps.setString(1, correo);
             ps.setString(2, contraseña);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String estado = rs.getString("ESTADO");
-                    Timestamp fechaActivacion = rs.getTimestamp("FECHA_ACTIVACION");
+                    Timestamp fechaDesactivacion = rs.getTimestamp("FECHA_DESACTIVACION");
 
-                    if (!"A".equalsIgnoreCase(estado) || fechaActivacion == null) {
+                    if (!"A".equalsIgnoreCase(estado) || fechaDesactivacion != null) {
                         throw new Exception("La cuenta está deshabilitada o no está activada.");
                     }
-                    authenticated = true;
+                    idUsuario = rs.getInt("ID_USUARIO");
                 } else {
                     throw new Exception("Credenciales incorrectas.");
                 }
             }
         }
-        return authenticated;
+
+        return idUsuario;
     }
 
 

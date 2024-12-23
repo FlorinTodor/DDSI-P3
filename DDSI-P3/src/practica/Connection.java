@@ -11,9 +11,12 @@ public class Connection {
     private static final String PASSWORD = "x4049463";
     public static java.sql.Connection connection;
     public static JFrame frame;
+    public static JFrame frame_registro;
+    public static int id_user = -1;
 
     /* MÉTODOS */
 
+    /*
     // Inicializador de la interfaz gráfica y configuración de cierre
     public static JFrame inicializarFrame() {
         frame = new JFrame("Gestión de Base de Datos Oracle");
@@ -21,6 +24,16 @@ public class Connection {
         frame.setSize(600, 400);
         frame.setLayout(new BorderLayout());
 
+
+        return frame;
+    }
+*/
+    // Inicializador del frame principal
+    public static JFrame inicializarFramePrincipal() {
+        frame = new JFrame("Gestión de Base de Datos Oracle - Principal");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setLayout(new BorderLayout());
         // Asegurar cierre de conexión al cerrar la aplicación
         Runtime.getRuntime().addShutdownHook(new Thread(() -> cerrarConexion(false)));
 
@@ -32,6 +45,25 @@ public class Connection {
             }
         });
         return frame;
+    }
+
+    // Inicializador del frame de registro
+    public static JFrame inicializarFrameRegistro() {
+        frame_registro = new JFrame("Registro / Inicio de Sesión");
+        frame_registro.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Cierra solo este frame
+        frame_registro.setSize(400, 300);
+        frame_registro.setLayout(new BorderLayout());
+        // Asegurar cierre de conexión al cerrar la aplicación
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> cerrarConexion(false)));
+
+        frame_registro.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                cerrarConexion(true);
+                System.exit(0);
+            }
+        });
+        return frame_registro;
     }
 
     // Método para conectar a la base de datos

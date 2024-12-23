@@ -3,14 +3,17 @@ package practica;  //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 
 public class Main {
     public static void main(String[] args) {
-
-        Connection.inicializarFrame();
+        Connection.inicializarFrameRegistro();
+        Connection.inicializarFramePrincipal();
         Connection.conectarBD();
-        //1. Iniciar sesión o registrarse
-        Diseño.pantalla_registro(Connection.frame);
 
-        Diseño.pantalla_inicio(Connection.frame);
+        // Iniciar sesión o registrarse
+        int idUsuario = Diseño.pantalla_registro(Connection.frame_registro);
 
-
+        if (idUsuario != -1) {
+            Connection.id_user = idUsuario;
+            Connection.frame_registro.dispose(); // Cerrar frame de registro
+            Diseño.pantalla_inicio(Connection.frame); // Mostrar frame principal
         }
+    }
 }

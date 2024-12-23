@@ -5,6 +5,9 @@ import java.awt.*;
 import java.sql.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.lang.Thread.sleep;
 
 public class Diseño {
 
@@ -12,13 +15,116 @@ public class Diseño {
     private Reseña reviewService = new Reseña(); // Instancia de la clase reseña con los métodos JDBC
 
 
-    public static void pantalla_registro(JFrame frame) {
-        /**
-         * COdigo de registro/Iniciar sesión
-         * Cuando se inice sesion o se registre, tenemos que guardar como variable global el id_usuario
-         * ESto implica modificar las interfaces para no pedir el id_usuario ya que se debería de recoger de forma interna
-         */
+    public static int pantalla_registro(JFrame frame) {
+        AtomicInteger id_usuario = new AtomicInteger();
 
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        // Panel de Registro
+        JPanel panelRegistro = new JPanel(new GridLayout(5, 2, 10, 10));
+        JTextField txtCorreo = new JTextField();
+        JTextField txtNombre = new JTextField();
+        JTextField txtDireccion = new JTextField();
+        JTextField txtContraseña = new JTextField();
+
+        panelRegistro.add(new JLabel("Correo:"));
+        panelRegistro.add(txtCorreo);
+        panelRegistro.add(new JLabel("Nombre:"));
+        panelRegistro.add(txtNombre);
+        panelRegistro.add(new JLabel("Dirección:"));
+        panelRegistro.add(txtDireccion);
+        panelRegistro.add(new JLabel("Contraseña:"));
+        panelRegistro.add(txtContraseña);
+
+        JButton btnRegistrar = new JButton("Registrar");
+        panelRegistro.add(new JLabel("")); // Espacio vacío
+        panelRegistro.add(btnRegistrar);
+
+        btnRegistrar.addActionListener(e -> {
+            try {
+                String correo = txtCorreo.getText().trim();
+                String nombre = txtNombre.getText().trim();
+                String direccion = txtDireccion.getText().trim();
+                String contraseña = txtContraseña.getText().trim();
+
+                // Validaciones de entrada
+                if (correo.isEmpty() || nombre.isEmpty() || direccion.isEmpty() || contraseña.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Todos los campos son obligatorios.", "Error de entrada", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!correo.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                    JOptionPane.showMessageDialog(frame, "El correo no tiene un formato válido.", "Error de entrada", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Usuario userService = new Usuario();
+                int idGenerado = userService.registerUser(correo, nombre, direccion, contraseña);
+                id_usuario.set(idGenerado);
+                JOptionPane.showMessageDialog(frame, "Usuario registrado con éxito. ID: " + idGenerado);
+                frame.dispose(); // Cerrar la ventana después del registro
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Error al registrar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        tabbedPane.addTab("Registrar", panelRegistro);
+
+        // Panel de Inicio de Sesión
+        JPanel panelLogin = new JPanel(new GridLayout(3, 2, 10, 10));
+        JTextField txtCorreoLogin = new JTextField();
+        JTextField txtContraseñaLogin = new JTextField();
+
+        panelLogin.add(new JLabel("Correo:"));
+        panelLogin.add(txtCorreoLogin);
+        panelLogin.add(new JLabel("Contraseña:"));
+        panelLogin.add(txtContraseñaLogin);
+
+        JButton btnLogin = new JButton("Iniciar Sesión");
+        panelLogin.add(new JLabel("")); // Espacio vacío
+        panelLogin.add(btnLogin);
+
+        btnLogin.addActionListener(e -> {
+            try {
+                String correo = txtCorreoLogin.getText().trim();
+                String contraseña = txtContraseñaLogin.getText().trim();
+
+                // Validaciones de entrada
+                if (correo.isEmpty() || contraseña.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Correo y contraseña son obligatorios.", "Error de entrada", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!correo.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                    JOptionPane.showMessageDialog(frame, "El correo no tiene un formato válido.", "Error de entrada", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Usuario userService = new Usuario();
+                int id = userService.loginUser(correo, contraseña);
+
+                if (id > 0) {
+                    id_usuario.set(id);
+                    JOptionPane.showMessageDialog(frame, "Inicio de sesión exitoso.");
+                    frame.dispose(); // Cerrar la ventana después del inicio de sesión
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Error al iniciar sesión: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        tabbedPane.addTab("Iniciar Sesión", panelLogin);
+
+        frame.getContentPane().removeAll();
+        frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+        frame.setVisible(true);
+
+        while (id_usuario.get() == 0) {
+            try {
+                sleep(100);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        return id_usuario.get();
     }
 
     public static void pantalla_inicio(JFrame frame) {
@@ -710,11 +816,11 @@ public class Diseño {
         btnLogin.addActionListener(e -> {
             try {
                 Usuario userService = new Usuario();
-                boolean success = userService.loginUser(
+                int success = userService.loginUser(
                         txtCorreoLogin.getText().trim(),
                         txtPasswordLogin.getText().trim()
                 );
-                if (success) {
+                if (success > 0) {
                     JOptionPane.showMessageDialog(panelLogin, "Inicio de sesión exitoso.");
                 } else {
                     JOptionPane.showMessageDialog(panelLogin,
