@@ -7,7 +7,7 @@ CREATE TABLE usuario (
     Direccion varchar(50),
     Contraseña varchar(50),
     Fecha_Registro TIMESTAMP DEFAULT SYSTIMESTAMP,
-    Fecha_Activacion TIMESTAMP,
+    Fecha_Desactivacion TIMESTAMP,
     PRIMARY KEY(ID_Usuario),
     UNIQUE(Correo)
 );
