@@ -16,18 +16,6 @@ public class Connection {
 
     /* MÉTODOS */
 
-    /*
-    // Inicializador de la interfaz gráfica y configuración de cierre
-    public static JFrame inicializarFrame() {
-        frame = new JFrame("Gestión de Base de Datos Oracle");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
-        frame.setLayout(new BorderLayout());
-
-
-        return frame;
-    }
-*/
     // Inicializador del frame principal
     public static JFrame inicializarFramePrincipal() {
         frame = new JFrame("Gestión de Base de Datos Oracle - Principal");
