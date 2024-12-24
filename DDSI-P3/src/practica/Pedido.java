@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 public class Pedido {
-    private String idPedido;
+    private int idPedido;
     private List<Integer> productos;
     private String estado;
     private int idUsuario;
@@ -17,7 +17,7 @@ public class Pedido {
     public Pedido() {
     }
 
-    public Pedido(String idPedido, List<Integer> productos, String estado, int idUsuario) {
+    public Pedido(int idPedido, List<Integer> productos, String estado, int idUsuario) {
         this.idPedido = idPedido;
         this.productos = productos;
         this.estado = estado;
@@ -36,7 +36,7 @@ public class Pedido {
     /**
      * RF4.1: Añadir reseña sobre un pedido
      */
-    public void realizarPedido(String direccion, String idPedido, String estadoPedido, String tipoPago, String metodoEnvio, int idUsuario, List<Integer> carrito) throws SQLException {
+    public void realizarPedido(String direccion, int idPedido, String estadoPedido, int tipoPago, String metodoEnvio, int idUsuario, List<Integer> carrito) throws SQLException {
         java.sql.Connection  conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -68,10 +68,10 @@ public class Pedido {
             // Registrar el pedido
             String sqlPedido = "INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario) VALUES (?, ?, ?, ?, ?, ?)";
             pstmt = conn.prepareStatement(sqlPedido);
-            pstmt.setString(1, idPedido);
+            pstmt.setInt(1, idPedido);
             pstmt.setString(2, direccion);
             pstmt.setString(3, estadoPedido);
-            pstmt.setString(4, tipoPago);
+            pstmt.setInt(4, tipoPago);
             pstmt.setString(5, metodoEnvio);
             pstmt.setInt(6, idUsuario);
             pstmt.executeUpdate();
@@ -116,14 +116,14 @@ public class Pedido {
             rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                String idPedido = rs.getString("ID_Pedido");
+                int idPedido = rs.getInt("ID_Pedido");
                 String estadoPedido = rs.getString("Estado_Pedido");
 
                 // Consultar los productos asociados a cada pedido
                 List<Integer> productos = new ArrayList<>();
                 String sqlProductos = "SELECT ID_Producto FROM tiene WHERE ID_Carrito IN (SELECT ID_Carrito FROM GestionCarrito WHERE ID_Pedido = ?)";
                 PreparedStatement pstmtProductos = conn.prepareStatement(sqlProductos);
-                pstmtProductos.setString(1, idPedido);
+                pstmtProductos.setInt(1, idPedido);
                 ResultSet rsProductos = pstmtProductos.executeQuery();
 
                 while (rsProductos.next()) {

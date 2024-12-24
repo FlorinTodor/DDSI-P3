@@ -1009,9 +1009,9 @@ public class Diseño {
         btnRealizarPedido.addActionListener(e -> {
             try {
                 String direcc = txtDireccion.getText().trim();
-                String idPed = txtIdPedido.getText().trim();
+                int idPed = Integer.parseInt(txtIdPedido.getText().trim());
                 String estPed = txtEstadoPedido .getText().trim();
-                String tipPag = txtTipoPago.getText().trim();
+                int tipPag = Integer.parseInt(txtTipoPago.getText().trim());
                 String metEnv= txtMetodoEnvio .getText().trim();
                 String[] carritoArray = txtCarrito.getText().trim().split(",");
                 List<Integer> carrito = new ArrayList<>();
