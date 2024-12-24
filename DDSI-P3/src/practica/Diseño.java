@@ -190,6 +190,8 @@ public class Diseño {
         JTabbedPane CarritoTabbedPane = crearPestañasCarrito();
         JTabbedPane usuariosTabbedPane = crearPestañasUsuarios();
         JTabbedPane pedidosTabbedPane = crearPestañasPedidos();
+        JTabbedPane pagosTabbedPane = crearPestañasPago();
+
 
 
         // -----------------------------------------------------------
@@ -202,7 +204,7 @@ public class Diseño {
         tabbedPane.addTab("Carrito", CarritoTabbedPane);
         tabbedPane.addTab("Usuarios", usuariosTabbedPane);
         tabbedPane.addTab("Pedidos", pedidosTabbedPane);
-      //  tabbedPane.addTab("Pagos", usuariosTabbedPane);
+        tabbedPane.addTab("Pagos", pagosTabbedPane);
 
 
 
@@ -1232,6 +1234,170 @@ public class Diseño {
         return pedidosTabbedPane;
     }
 
+    private static JTabbedPane crearPestañasPago(){
+        JTabbedPane pagosTabbedPane = new JTabbedPane();
+        // -----------------------------------------------------------
+        // RF6.1 Agregar Método de Pago
+        // -----------------------------------------------------------
+        JPanel panelAgregarMetodo = new JPanel(new GridLayout(7, 2, 5, 5));
+        JTextField txtTipoPago = new JTextField();
+        JTextField txtNumeroTarjeta = new JTextField();
+        JTextField txtFechaExpiracion = new JTextField();
+        JTextField txtCodigoCVV = new JTextField();
+        JTextField txtNombreTitular = new JTextField();
+        JTextField txtCorreoPayPal = new JTextField();
+
+        panelAgregarMetodo.add(new JLabel("Tipo de Método de Pago:"));
+        panelAgregarMetodo.add(txtTipoPago);
+        panelAgregarMetodo.add(new JLabel("Número de Tarjeta:"));
+        panelAgregarMetodo.add(txtNumeroTarjeta);
+        panelAgregarMetodo.add(new JLabel("Fecha de Expiración (MM/YY):"));
+        panelAgregarMetodo.add(txtFechaExpiracion);
+        panelAgregarMetodo.add(new JLabel("Código CVV:"));
+        panelAgregarMetodo.add(txtCodigoCVV);
+        panelAgregarMetodo.add(new JLabel("Nombre del Titular:"));
+        panelAgregarMetodo.add(txtNombreTitular);
+        panelAgregarMetodo.add(new JLabel("Correo PayPal:"));
+        panelAgregarMetodo.add(txtCorreoPayPal);
+
+        JButton btnAgregarMetodo = new JButton("Agregar Método de Pago");
+        panelAgregarMetodo.add(btnAgregarMetodo);
+
+        btnAgregarMetodo.addActionListener(e -> {
+            try {
+                String tipoPago = txtTipoPago.getText().trim();
+                String numeroTarjeta = txtNumeroTarjeta.getText().trim();
+                String fechaExpiracion = txtFechaExpiracion.getText().trim();
+                String codigoCVV = txtCodigoCVV.getText().trim();
+                String nombreTitular = txtNombreTitular.getText().trim();
+                String correoPayPal = txtCorreoPayPal.getText().trim();
+
+                Pago pagoService = new Pago();
+                int idMetodo = pagoService.agregarMetodoPago(id_user, tipoPago, numeroTarjeta, fechaExpiracion, codigoCVV, nombreTitular, correoPayPal);
+                JOptionPane.showMessageDialog(panelAgregarMetodo, "Método de pago agregado con éxito. ID: " + idMetodo);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelAgregarMetodo, "Error al agregar método de pago: " + ex.getMessage());
+            }
+        });
+
+        pagosTabbedPane.addTab("Agregar Método de Pago", panelAgregarMetodo);
+
+        // -----------------------------------------------------------
+        // RF6.2 Eliminar Método de Pago
+        // -----------------------------------------------------------
+        JPanel panelEliminarMetodo = new JPanel(new GridLayout(2, 2, 5, 5));
+        JTextField txtIdMetodoEliminar = new JTextField();
+
+        panelEliminarMetodo.add(new JLabel("ID Método de Pago:"));
+        panelEliminarMetodo.add(txtIdMetodoEliminar);
+
+        JButton btnEliminarMetodo = new JButton("Eliminar Método de Pago");
+        panelEliminarMetodo.add(btnEliminarMetodo);
+
+        btnEliminarMetodo.addActionListener(e -> {
+            try {
+                int idMetodo = Integer.parseInt(txtIdMetodoEliminar.getText().trim());
+
+                Pago pagoService = new Pago();
+                String resultado = pagoService.eliminarMetodoPago(id_user, idMetodo);
+                JOptionPane.showMessageDialog(panelEliminarMetodo, resultado);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelEliminarMetodo, "Error al eliminar método de pago: " + ex.getMessage());
+            }
+        });
+
+        pagosTabbedPane.addTab("Eliminar Método de Pago", panelEliminarMetodo);
+
+        // -----------------------------------------------------------
+        // RF6.3 Ver Métodos de Pago
+        // -----------------------------------------------------------
+        JPanel panelVerMetodos = new JPanel(new BorderLayout(5, 5));
+        JTextArea textAreaMetodos = new JTextArea(10, 40);
+        textAreaMetodos.setEditable(false);
+        JButton btnVerMetodos = new JButton("Ver Métodos de Pago");
+
+        panelVerMetodos.add(new JScrollPane(textAreaMetodos), BorderLayout.CENTER);
+        panelVerMetodos.add(btnVerMetodos, BorderLayout.SOUTH);
+
+        btnVerMetodos.addActionListener(e -> {
+            try {
+                Pago pagoService = new Pago();
+                List<Pago.MetodoPago> metodos = pagoService.verMetodosPago(id_user);
+
+                textAreaMetodos.setText("");
+                for (Pago.MetodoPago metodo : metodos) {
+                    textAreaMetodos.append(metodo.toString() + "\n");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelVerMetodos, "Error al ver métodos de pago: " + ex.getMessage());
+            }
+        });
+
+        pagosTabbedPane.addTab("Ver Métodos de Pago", panelVerMetodos);
+
+        // -----------------------------------------------------------
+        // RF6.4 Realizar Pago
+        // -----------------------------------------------------------
+        JPanel panelRealizarPago = new JPanel(new GridLayout(4, 2, 5, 5));
+        JTextField txtIdPedidoPago = new JTextField();
+        JTextField txtIdMetodoPago = new JTextField();
+        JTextField txtCantidadPago = new JTextField();
+
+        panelRealizarPago.add(new JLabel("ID Pedido:"));
+        panelRealizarPago.add(txtIdPedidoPago);
+        panelRealizarPago.add(new JLabel("ID Método de Pago:"));
+        panelRealizarPago.add(txtIdMetodoPago);
+        panelRealizarPago.add(new JLabel("Cantidad a Pagar:"));
+        panelRealizarPago.add(txtCantidadPago);
+
+        JButton btnRealizarPago = new JButton("Realizar Pago");
+        panelRealizarPago.add(btnRealizarPago);
+
+        btnRealizarPago.addActionListener(e -> {
+            try {
+                int idPedido = Integer.parseInt(txtIdPedidoPago.getText().trim());
+                int idMetodo = Integer.parseInt(txtIdMetodoPago.getText().trim());
+                double cantidad = Double.parseDouble(txtCantidadPago.getText().trim());
+
+                Pago pagoService = new Pago();
+                String resultado = pagoService.realizarPago(idPedido, idMetodo, cantidad, id_user);
+                JOptionPane.showMessageDialog(panelRealizarPago, resultado);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelRealizarPago, "Error al realizar el pago: " + ex.getMessage());
+            }
+        });
+
+        pagosTabbedPane.addTab("Realizar Pago", panelRealizarPago);
+
+        // -----------------------------------------------------------
+        // RF6.5 Ver Historial de Transacciones
+        // -----------------------------------------------------------
+        JPanel panelHistorialTransacciones = new JPanel(new BorderLayout(5, 5));
+        JTextArea textAreaHistorial = new JTextArea(10, 40);
+        textAreaHistorial.setEditable(false);
+        JButton btnVerHistorial = new JButton("Ver Historial de Transacciones");
+
+        panelHistorialTransacciones.add(new JScrollPane(textAreaHistorial), BorderLayout.CENTER);
+        panelHistorialTransacciones.add(btnVerHistorial, BorderLayout.SOUTH);
+
+        btnVerHistorial.addActionListener(e -> {
+            try {
+                Pago pagoService = new Pago();
+                List<Pago.Transaccion> transacciones = pagoService.verHistorialTransacciones(id_user);
+
+                textAreaHistorial.setText("");
+                for (Pago.Transaccion transaccion : transacciones) {
+                    textAreaHistorial.append(transaccion.toString() + "\n");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelHistorialTransacciones, "Error al ver historial: " + ex.getMessage());
+            }
+        });
+
+        pagosTabbedPane.addTab("Ver Historial de Transacciones", panelHistorialTransacciones);
+
+        return pagosTabbedPane;
+    }
 
 
 
