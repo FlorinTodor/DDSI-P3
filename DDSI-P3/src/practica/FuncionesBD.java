@@ -196,10 +196,10 @@ public class FuncionesBD {
                     ")");
 
             stmt.executeUpdate("CREATE TABLE producto (\n" +
-                    "    ID_Producto integer NOT NULL,\n" +
+                    "    ID_Producto integer,\n" +
                     "    NombreProducto varchar(30),\n" +
-                    "    Cantidad integer,\n" +
-                    "    Precio float,\n" +
+                    "    Cantidad integer NOT NULL CHECK ( cantidad > 0 ),\n" +
+                    "    Precio float NOT NULL CHECK (precio > 0),\n" +
                     "    PRIMARY KEY(ID_Producto)\n" +
                     ")");
 
@@ -266,7 +266,7 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE tiene (\n" +
                     "    ID_Carrito integer REFERENCES carrito(ID_Carrito),\n" +
                     "    ID_Producto integer REFERENCES producto(ID_Producto),\n" +
-                    "    Cantidad integer,\n" +
+                    "    Cantidad integer CHECK ( Cantidad > 0 ),\n" +
                     "    PRIMARY KEY(ID_Carrito, ID_Producto)\n" +
                     ")");
 
