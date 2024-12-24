@@ -231,8 +231,7 @@ public class Diseño {
         JTextField txtIdProductoAdd = new JTextField();
         JTextField txtCantidadAdd = new JTextField();
 
-        panelAddToCart.add(new JLabel("ID Usuario:"));
-        panelAddToCart.add(txtIdUsuarioAdd);
+        panelAddToCart.add(new JLabel("ID Usuario: eres el usuario " + id_user));
 
         panelAddToCart.add(new JLabel("ID Producto:"));
         panelAddToCart.add(txtIdProductoAdd);
@@ -245,7 +244,6 @@ public class Diseño {
 
         btnAddToCart.addActionListener(e -> {
             try {
-                int idUsuario = Integer.parseInt(txtIdUsuarioAdd.getText().trim());
                 int idProducto = Integer.parseInt(txtIdProductoAdd.getText().trim());
                 int cantidad = Integer.parseInt(txtCantidadAdd.getText().trim());
 
@@ -267,8 +265,7 @@ public class Diseño {
         JPanel inputPanelView = new JPanel(new GridLayout(1, 2, 5, 5));
         JTextField txtIdUsuarioView = new JTextField();
 
-        inputPanelView.add(new JLabel("ID Usuario:"));
-        inputPanelView.add(txtIdUsuarioView);
+        inputPanelView.add(new JLabel("ID Usuario: eres el usuario " + id_user));
 
         JButton btnViewCart = new JButton("Ver Carrito");
         JPanel topPanelView = new JPanel(new FlowLayout());
@@ -284,10 +281,9 @@ public class Diseño {
         btnViewCart.addActionListener(e -> {
             try {
                 textAreaViewCart.setText("");
-                int idUsuario = Integer.parseInt(txtIdUsuarioView.getText().trim());
 
                 Carrito carritoService = new Carrito();
-                ArrayList<String> productos = carritoService.viewCart(idUsuario);
+                ArrayList<String> productos = carritoService.viewCart(id_user);
 
                 for (String linea : productos) {
                     textAreaViewCart.append(linea + "\n");
@@ -308,8 +304,7 @@ public class Diseño {
         JTextField txtIdProductoModify = new JTextField();
         JTextField txtNuevaCantidad = new JTextField();
 
-        panelModifyQuantity.add(new JLabel("ID Usuario:"));
-        panelModifyQuantity.add(txtIdUsuarioModify);
+        panelModifyQuantity.add(new JLabel("ID Usuario: eres el usuario " + id_user));
 
         panelModifyQuantity.add(new JLabel("ID Producto:"));
         panelModifyQuantity.add(txtIdProductoModify);
@@ -322,12 +317,11 @@ public class Diseño {
 
         btnModifyQuantity.addActionListener(e -> {
             try {
-                int idUsuario = Integer.parseInt(txtIdUsuarioModify.getText().trim());
                 int idProducto = Integer.parseInt(txtIdProductoModify.getText().trim());
                 int cantidad = Integer.parseInt(txtNuevaCantidad.getText().trim());
 
                 Carrito carritoService = new Carrito();
-                carritoService.modifyCartQuantity(idUsuario, idProducto, cantidad);
+                carritoService.modifyCartQuantity(id_user, idProducto, cantidad);
                 JOptionPane.showMessageDialog(panelModifyQuantity, "Cantidad modificada con éxito.");
 
             } catch (Exception ex) {
@@ -344,8 +338,7 @@ public class Diseño {
         JTextField txtIdUsuarioRemove = new JTextField();
         JTextField txtIdProductoRemove = new JTextField();
 
-        panelRemoveProduct.add(new JLabel("ID Usuario:"));
-        panelRemoveProduct.add(txtIdUsuarioRemove);
+        panelRemoveProduct.add(new JLabel("ID Usuario: eres el usuario " + id_user));
 
         panelRemoveProduct.add(new JLabel("ID Producto:"));
         panelRemoveProduct.add(txtIdProductoRemove);
@@ -355,11 +348,10 @@ public class Diseño {
 
         btnRemoveProduct.addActionListener(e -> {
             try {
-                int idUsuario = Integer.parseInt(txtIdUsuarioRemove.getText().trim());
                 int idProducto = Integer.parseInt(txtIdProductoRemove.getText().trim());
 
                 Carrito carritoService = new Carrito();
-                carritoService.removeProductFromCart(idUsuario, idProducto);
+                carritoService.removeProductFromCart(id_user, idProducto);
                 JOptionPane.showMessageDialog(panelRemoveProduct, "Producto eliminado del carrito con éxito.");
 
             } catch (Exception ex) {
@@ -375,18 +367,15 @@ public class Diseño {
         JPanel panelEmptyCart = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdUsuarioEmpty = new JTextField();
 
-        panelEmptyCart.add(new JLabel("ID Usuario:"));
-        panelEmptyCart.add(txtIdUsuarioEmpty);
+        panelEmptyCart.add(new JLabel("ID Usuario: eres el usuario " + id_user));
 
         JButton btnEmptyCart = new JButton("Vaciar Carrito");
         panelEmptyCart.add(btnEmptyCart);
 
         btnEmptyCart.addActionListener(e -> {
             try {
-                int idUsuario = Integer.parseInt(txtIdUsuarioEmpty.getText().trim());
-
                 Carrito carritoService = new Carrito();
-                carritoService.emptyCart(idUsuario);
+                carritoService.emptyCart(id_user);
                 JOptionPane.showMessageDialog(panelEmptyCart, "Carrito vaciado con éxito.");
 
             } catch (Exception ex) {
