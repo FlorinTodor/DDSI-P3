@@ -973,7 +973,7 @@ public class Diseño {
 
         //Panel para añadir pedido
 
-        JPanel panelRealizarPedido = new JPanel(new GridLayout(6, 2, 5, 5));
+        JPanel panelRealizarPedido = new JPanel(new GridLayout(0, 1, 5, 5));
         JTextField txtDireccion = new JTextField();
         JTextField txtIdPedido = new JTextField();
         JTextField txtEstadoPedido = new JTextField();
@@ -1032,6 +1032,203 @@ public class Diseño {
 
         pedidosTabbedPane.addTab("Añadir Pedido", panelRealizarPedido);
 
+        // Panel para Ver Historial de Pedidos
+        JPanel panelVerHistorialPedidos = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelHistorial = new JPanel(new GridLayout(1, 2, 5, 5));
+        JTextField txtIdUsuarioHistorial = new JTextField();
+        inputPanelHistorial.add(new JLabel("ID Usuario:"));
+        inputPanelHistorial.add(txtIdUsuarioHistorial);
+
+        JButton btnVerHistorial = new JButton("Ver Historial de Pedidos");
+        JPanel topPanelHistorial = new JPanel(new FlowLayout());
+        topPanelHistorial.add(inputPanelHistorial);
+        topPanelHistorial.add(btnVerHistorial);
+
+        JTextArea textAreaHistorial = new JTextArea(10, 40);
+        textAreaHistorial.setEditable(false);
+
+        panelVerHistorialPedidos.add(topPanelHistorial, BorderLayout.NORTH);
+        panelVerHistorialPedidos.add(new JScrollPane(textAreaHistorial), BorderLayout.CENTER);
+
+        btnVerHistorial.addActionListener(e -> {
+            try {
+                textAreaHistorial.setText("");
+                int idUsuario = Integer.parseInt(txtIdUsuarioHistorial.getText().trim());
+                Pedido pedidoService = new Pedido();
+                List<Pedido> pedidos = pedidoService.verHistorialPedidos(idUsuario);
+                for (Pedido pedido : pedidos) {
+                    textAreaHistorial.append(pedido.toString() + "\n");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelVerHistorialPedidos, "Error al obtener el historial de pedidos: " + ex.getMessage());
+            }
+        });
+
+        pedidosTabbedPane.addTab("Ver Historial de Pedidos", panelVerHistorialPedidos);
+
+        // Panel para Cancelar Pedido
+        JPanel panelCancelarPedido = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelCancelar = new JPanel(new GridLayout(2, 2, 5, 5));
+        JTextField txtIdPedidoCancelar = new JTextField();
+        JTextField txtIdUsuarioCancelar = new JTextField();
+
+        inputPanelCancelar.add(new JLabel("ID Pedido:"));
+        inputPanelCancelar.add(txtIdPedidoCancelar);
+        inputPanelCancelar.add(new JLabel("ID Usuario:"));
+        inputPanelCancelar.add(txtIdUsuarioCancelar);
+
+        JButton btnCancelarPedido = new JButton("Cancelar Pedido");
+        JPanel topPanelCancelar = new JPanel(new FlowLayout());
+        topPanelCancelar.add(inputPanelCancelar);
+        topPanelCancelar.add(btnCancelarPedido);
+
+        JTextArea textAreaCancelar = new JTextArea(10, 40);
+        textAreaCancelar.setEditable(false);
+
+        panelCancelarPedido.add(topPanelCancelar, BorderLayout.NORTH);
+        panelCancelarPedido.add(new JScrollPane(textAreaCancelar), BorderLayout.CENTER);
+
+        btnCancelarPedido.addActionListener(e -> {
+            try {
+                textAreaCancelar.setText("");
+                int idPedido = Integer.parseInt(txtIdPedidoCancelar.getText().trim());
+                int idUsuario = Integer.parseInt(txtIdUsuarioCancelar.getText().trim());
+
+                Pedido pedidoService = new Pedido();
+                pedidoService.cancelarPedido(idPedido, idUsuario);
+                textAreaCancelar.append("Pedido cancelado con éxito.\n");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelCancelarPedido, "Error al cancelar el pedido: " + ex.getMessage());
+            }
+        });
+
+        pedidosTabbedPane.addTab("Cancelar Pedido", panelCancelarPedido);
+
+        // Panel para Elegir Método de Envío
+        JPanel panelElegirMetodoEnvio = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelEnvio = new JPanel(new GridLayout(3, 2, 5, 5));
+        JTextField txtIdPedidoEnvio = new JTextField();
+        JTextField txtIdUsuarioEnvio = new JTextField();
+        JTextField txtnuevoMetodoEnvio = new JTextField();
+
+        inputPanelEnvio.add(new JLabel("ID Pedido:"));
+        inputPanelEnvio.add(txtIdPedidoEnvio);
+        inputPanelEnvio.add(new JLabel("ID Usuario:"));
+        inputPanelEnvio.add(txtIdUsuarioEnvio);
+        inputPanelEnvio.add(new JLabel("Método de Envío:"));
+        inputPanelEnvio.add(txtnuevoMetodoEnvio);
+
+        JButton btnElegirMetodoEnvio = new JButton("Elegir Método de Envío");
+        JPanel topPanelEnvio = new JPanel(new FlowLayout());
+        topPanelEnvio.add(inputPanelEnvio);
+        topPanelEnvio.add(btnElegirMetodoEnvio);
+
+        JTextArea textAreaEnvio = new JTextArea(10, 40);
+        textAreaEnvio.setEditable(false);
+
+        panelElegirMetodoEnvio.add(topPanelEnvio, BorderLayout.NORTH);
+        panelElegirMetodoEnvio.add(new JScrollPane(textAreaEnvio), BorderLayout.CENTER);
+
+        btnElegirMetodoEnvio.addActionListener(e -> {
+            try {
+                textAreaEnvio.setText("");
+                int idPedido = Integer.parseInt(txtIdPedidoEnvio.getText().trim());
+                int idUsuario = Integer.parseInt(txtIdUsuarioEnvio.getText().trim());
+                String metodoEnvio = txtMetodoEnvio.getText().trim();
+
+                Pedido pedidoService = new Pedido();
+                pedidoService.elegirMetodoEnvio(metodoEnvio, idUsuario, idPedido);
+                textAreaEnvio.append("Método de envío elegido con éxito.\n");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelElegirMetodoEnvio, "Error al elegir el método de envío: " + ex.getMessage());
+            }
+        });
+
+        pedidosTabbedPane.addTab("Elegir Método de Envío", panelElegirMetodoEnvio);
+
+// Panel para Confirmar Recepción del Pedido
+        JPanel panelConfirmarRecepcion = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelRecepcion = new JPanel(new GridLayout(2, 2, 5, 5));
+        JTextField txtIdPedidoRecepcion = new JTextField();
+        JTextField txtIdUsuarioRecepcion = new JTextField();
+
+        inputPanelRecepcion.add(new JLabel("ID Pedido:"));
+        inputPanelRecepcion.add(txtIdPedidoRecepcion);
+        inputPanelRecepcion.add(new JLabel("ID Usuario:"));
+        inputPanelRecepcion.add(txtIdUsuarioRecepcion);
+
+        JButton btnConfirmarRecepcion = new JButton("Confirmar Recepción");
+        JPanel topPanelRecepcion = new JPanel(new FlowLayout());
+        topPanelRecepcion.add(inputPanelRecepcion);
+        topPanelRecepcion.add(btnConfirmarRecepcion);
+
+        JTextArea textAreaRecepcion = new JTextArea(10, 40);
+        textAreaRecepcion.setEditable(false);
+
+        panelConfirmarRecepcion.add(topPanelRecepcion, BorderLayout.NORTH);
+        panelConfirmarRecepcion.add(new JScrollPane(textAreaRecepcion), BorderLayout.CENTER);
+
+        btnConfirmarRecepcion.addActionListener(e -> {
+            try {
+                textAreaRecepcion.setText("");
+                int idPedido = Integer.parseInt(txtIdPedidoRecepcion.getText().trim());
+                int idUsuario = Integer.parseInt(txtIdUsuarioRecepcion.getText().trim());
+
+                Pedido pedidoService = new Pedido();
+                pedidoService.confirmarRecepcionPedido(idUsuario, idPedido);
+                textAreaRecepcion.append("Recepción del pedido confirmada con éxito.\n");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelConfirmarRecepcion, "Error al confirmar la recepción del pedido: " + ex.getMessage());
+            }
+        });
+
+        pedidosTabbedPane.addTab("Confirmar Recepción", panelConfirmarRecepcion);
+
+        // Panel para Elegir Método de Pago
+        JPanel panelElegirMetodoPago = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelPago = new JPanel(new GridLayout(4, 2, 5, 5));
+        JTextField txtIdPedidoPago = new JTextField();
+        JTextField txtIdUsuarioPago = new JTextField();
+        JTextField txtIdMetodoPago = new JTextField();
+        JTextField txtTipoMetodoPago = new JTextField();
+
+        inputPanelPago.add(new JLabel("ID Pedido:"));
+        inputPanelPago.add(txtIdPedidoPago);
+        inputPanelPago.add(new JLabel("ID Usuario:"));
+        inputPanelPago.add(txtIdUsuarioPago);
+        inputPanelPago.add(new JLabel("ID Método de Pago:"));
+        inputPanelPago.add(txtIdMetodoPago);
+        inputPanelPago.add(new JLabel("Tipo de Método de Pago:"));
+        inputPanelPago.add(txtTipoMetodoPago);
+
+        JButton btnElegirMetodoPago = new JButton("Elegir Método de Pago");
+        JPanel topPanelPago = new JPanel(new FlowLayout());
+        topPanelPago.add(inputPanelPago);
+        topPanelPago.add(btnElegirMetodoPago);
+
+        JTextArea textAreaPago = new JTextArea(10, 40);
+        textAreaPago.setEditable(false);
+
+        panelElegirMetodoPago.add(topPanelPago, BorderLayout.NORTH);
+        panelElegirMetodoPago.add(new JScrollPane(textAreaPago), BorderLayout.CENTER);
+
+        btnElegirMetodoPago.addActionListener(e -> {
+            try {
+                textAreaPago.setText("");
+                int idPedido = Integer.parseInt(txtIdPedidoPago.getText().trim());
+                int idUsuario = Integer.parseInt(txtIdUsuarioPago.getText().trim());
+                int idMetodoPago = Integer.parseInt(txtIdMetodoPago.getText().trim());
+                String tipoMetodoPago = txtTipoMetodoPago.getText().trim();
+
+                Pedido pedidoService = new Pedido();
+                pedidoService.elegirMetodoPago(idMetodoPago, tipoMetodoPago, idPedido, idUsuario);
+                textAreaPago.append("Método de pago elegido con éxito.\n");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelElegirMetodoPago, "Error al elegir el método de pago: " + ex.getMessage());
+            }
+        });
+
+        pedidosTabbedPane.addTab("Elegir Método de Pago", panelElegirMetodoPago);
         return pedidosTabbedPane;
     }
 

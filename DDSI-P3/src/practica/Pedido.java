@@ -14,6 +14,9 @@ public class Pedido {
     private String estado;
     private int idUsuario;
 
+    public Pedido() {
+    }
+
     public Pedido(String idPedido, List<Integer> productos, String estado, int idUsuario) {
         this.idPedido = idPedido;
         this.productos = productos;
@@ -42,13 +45,13 @@ public class Pedido {
             conn = Connection.connection;
             conn.setAutoCommit(false); // Iniciar transacción
 
-            // Verificar que el usuario esté dado de alta
-            String sqlUsuario = "SELECT Estado FROM usuario WHERE ID_Usuario = ?";
-            pstmt = conn.prepareStatement(sqlUsuario);
-            pstmt.setInt(1, idUsuario);
-            rs = pstmt.executeQuery();
-            if (!rs.next() || !"A".equals(rs.getString("Estado"))) {
-                throw new SQLException("El usuario no está dado de alta.");
+            // Verificar si el usuario existe
+            try {
+                if (!Connection.doesUserExist(idUsuario)) {
+                    throw new Exception("El usuario no existe.");
+                }
+            } catch (Exception e) {
+                throw new SQLException("Error al verificar si el usuario existe.", e);
             }
 
             // Verificar stock y estado de los productos en el carrito
