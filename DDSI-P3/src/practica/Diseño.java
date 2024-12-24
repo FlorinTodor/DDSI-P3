@@ -1106,8 +1106,8 @@ public class Diseño {
 
         pedidosTabbedPane.addTab("Cancelar Pedido", panelCancelarPedido);
 
-        // Panel para Elegir Método de Envío
-        JPanel panelElegirMetodoEnvio = new JPanel(new BorderLayout(5, 5));
+        // Panel para cambiar  Método de Envío
+        JPanel panelCambiarMetodoEnvio = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelEnvio = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtIdPedidoEnvio = new JTextField();
         JTextField txtIdUsuarioEnvio = new JTextField();
@@ -1120,18 +1120,18 @@ public class Diseño {
         inputPanelEnvio.add(new JLabel("Método de Envío:"));
         inputPanelEnvio.add(txtnuevoMetodoEnvio);
 
-        JButton btnElegirMetodoEnvio = new JButton("Elegir Método de Envío");
+        JButton btnCambiarMetodoEnvio = new JButton("Cambiar Método de Envío");
         JPanel topPanelEnvio = new JPanel(new FlowLayout());
         topPanelEnvio.add(inputPanelEnvio);
-        topPanelEnvio.add(btnElegirMetodoEnvio);
+        topPanelEnvio.add(btnCambiarMetodoEnvio);
 
         JTextArea textAreaEnvio = new JTextArea(10, 40);
         textAreaEnvio.setEditable(false);
 
-        panelElegirMetodoEnvio.add(topPanelEnvio, BorderLayout.NORTH);
-        panelElegirMetodoEnvio.add(new JScrollPane(textAreaEnvio), BorderLayout.CENTER);
+        panelCambiarMetodoEnvio.add(topPanelEnvio, BorderLayout.NORTH);
+        panelCambiarMetodoEnvio.add(new JScrollPane(textAreaEnvio), BorderLayout.CENTER);
 
-        btnElegirMetodoEnvio.addActionListener(e -> {
+        btnCambiarMetodoEnvio.addActionListener(e -> {
             try {
                 textAreaEnvio.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoEnvio.getText().trim());
@@ -1142,11 +1142,11 @@ public class Diseño {
                 pedidoService.elegirMetodoEnvio(metodoEnvio, idUsuario, idPedido);
                 textAreaEnvio.append("Método de envío elegido con éxito.\n");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelElegirMetodoEnvio, "Error al elegir el método de envío: " + ex.getMessage());
+                JOptionPane.showMessageDialog(panelCambiarMetodoEnvio, "Error al elegir el método de envío: " + ex.getMessage());
             }
         });
 
-        pedidosTabbedPane.addTab("Elegir Método de Envío", panelElegirMetodoEnvio);
+        pedidosTabbedPane.addTab("Cambiar Método de Envío", panelCambiarMetodoEnvio);
 
 // Panel para Confirmar Recepción del Pedido
         JPanel panelConfirmarRecepcion = new JPanel(new BorderLayout(5, 5));
@@ -1186,8 +1186,8 @@ public class Diseño {
 
         pedidosTabbedPane.addTab("Confirmar Recepción", panelConfirmarRecepcion);
 
-        // Panel para Elegir Método de Pago
-        JPanel panelElegirMetodoPago = new JPanel(new BorderLayout(5, 5));
+        // Panel para Cambiar el metodo de pago
+        JPanel panelCambiarMetodoPago = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelPago = new JPanel(new GridLayout(4, 2, 5, 5));
         JTextField txtIdPedidoPago = new JTextField();
         JTextField txtIdUsuarioPago = new JTextField();
@@ -1203,7 +1203,7 @@ public class Diseño {
         inputPanelPago.add(new JLabel("Tipo de Método de Pago:"));
         inputPanelPago.add(txtTipoMetodoPago);
 
-        JButton btnElegirMetodoPago = new JButton("Elegir Método de Pago");
+        JButton btnElegirMetodoPago = new JButton("Cmabiar Método de Pago");
         JPanel topPanelPago = new JPanel(new FlowLayout());
         topPanelPago.add(inputPanelPago);
         topPanelPago.add(btnElegirMetodoPago);
@@ -1211,8 +1211,8 @@ public class Diseño {
         JTextArea textAreaPago = new JTextArea(10, 40);
         textAreaPago.setEditable(false);
 
-        panelElegirMetodoPago.add(topPanelPago, BorderLayout.NORTH);
-        panelElegirMetodoPago.add(new JScrollPane(textAreaPago), BorderLayout.CENTER);
+        panelCambiarMetodoPago.add(topPanelPago, BorderLayout.NORTH);
+        panelCambiarMetodoPago.add(new JScrollPane(textAreaPago), BorderLayout.CENTER);
 
         btnElegirMetodoPago.addActionListener(e -> {
             try {
@@ -1226,11 +1226,11 @@ public class Diseño {
                 pedidoService.elegirMetodoPago(idMetodoPago, tipoMetodoPago, idPedido, idUsuario);
                 textAreaPago.append("Método de pago elegido con éxito.\n");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelElegirMetodoPago, "Error al elegir el método de pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(panelCambiarMetodoPago, "Error al cambiar el método de pago: " + ex.getMessage());
             }
         });
 
-        pedidosTabbedPane.addTab("Elegir Método de Pago", panelElegirMetodoPago);
+        pedidosTabbedPane.addTab("Cambiar Método de Pago", panelCambiarMetodoPago);
         return pedidosTabbedPane;
     }
 
