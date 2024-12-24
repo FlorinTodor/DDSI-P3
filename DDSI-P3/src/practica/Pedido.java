@@ -8,12 +8,14 @@ import java.util.Map;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+
 public class Pedido {
     private int idPedido;
     private List<Integer> productos;
     private String estado;
     private int idUsuario;
 
+    //constructor sin parámetros
     public Pedido() {
     }
 
