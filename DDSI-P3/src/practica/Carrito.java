@@ -7,16 +7,6 @@ import java.util.ArrayList;
 
 public class Carrito {
 
-
-    /**
-     * VARIABLES GLOBALES
-     *
-     */
-
-    private Integer idCarritoActivo = null; // Carrito actual activo por usuario
-    private Integer idUsuarioActual = null; // Usuario actual asociado al carrito
-
-
     private int addCarritoEntry(int idUsuario) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
@@ -119,10 +109,6 @@ public class Carrito {
         if (idCarrito == null) {
             idCarrito = addCarritoEntry(idUsuario);
         }
-
-        // Actualizar las variables locales
-        idUsuarioActual = idUsuario;
-        idCarritoActivo = idCarrito;
 
         return idCarrito;
     }
