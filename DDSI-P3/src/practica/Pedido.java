@@ -3,6 +3,7 @@ package practica;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDate;
@@ -12,17 +13,17 @@ import java.time.temporal.ChronoUnit;
 public class Pedido {
     private int idPedido;
     private List<Integer> productos;
-    private String estado;
+    private String estadoPedido;
     private int idUsuario;
 
     //constructor sin parámetros
     public Pedido() {
     }
 
-    public Pedido(int idPedido, List<Integer> productos, String estado, int idUsuario) {
+    public Pedido(int idPedido, List<Integer> productos, String estadoPedido, int idUsuario) {
         this.idPedido = idPedido;
         this.productos = productos;
-        this.estado = estado;
+        this.estadoPedido = estadoPedido;
         this.idUsuario = idUsuario;
     }
 
@@ -31,7 +32,7 @@ public class Pedido {
         return "Pedido{" +
                 "idPedido='" + idPedido + '\'' +
                 ", productos=" + productos +
-                ", estado='" + estado + '\'' +
+                ", estadoPedido='" + estadoPedido + '\'' +
                 ", idUsuario=" + idUsuario +
                 '}';
     }
@@ -42,6 +43,15 @@ public class Pedido {
         java.sql.Connection  conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
+
+        // EStados validos para un pedido
+        String[] validStates = {"pendiente", "procesando", "enviado", "entregado"};
+
+        // Comprobar si es valido el estado del pedido
+        if (!Arrays.asList(validStates).contains(estadoPedido)) {
+            throw new IllegalArgumentException("El estado del pedido no es válido.");
+        }
+
 
         try {
             conn = Connection.connection;
@@ -58,7 +68,7 @@ public class Pedido {
 
             // Verificar stock y estado de los productos en el carrito
             for (int idProducto : carrito) {
-                String sqlProducto = "SELECT Cantidad FROM producto WHERE ID_Producto = ? AND Estado = 'A'";
+                String sqlProducto = "SELECT Cantidad FROM producto WHERE ID_Producto = ?";
                 pstmt = conn.prepareStatement(sqlProducto);
                 pstmt.setInt(1, idProducto);
                 rs = pstmt.executeQuery();
