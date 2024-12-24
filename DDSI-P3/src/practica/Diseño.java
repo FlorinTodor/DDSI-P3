@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Thread.sleep;
+import static practica.Connection.id_user;
 
 public class Diseño {
 
@@ -247,7 +248,7 @@ public class Diseño {
                 int cantidad = Integer.parseInt(txtCantidadAdd.getText().trim());
 
                 Carrito carritoService = new Carrito();
-                carritoService.addProductToCart(idUsuario, idProducto, cantidad);
+                carritoService.addProductToCart(id_user, idProducto, cantidad);
                 JOptionPane.showMessageDialog(panelAddToCart, "Producto añadido con éxito al carrito.");
 
             } catch (Exception ex) {
@@ -421,8 +422,7 @@ public class Diseño {
         panelAddProduct.add(txtPrecioProducto);
         panelAddProduct.add(new JLabel("Cantidad:"));
         panelAddProduct.add(txtCantidadProducto);
-        panelAddProduct.add(new JLabel("ID Usuario:"));
-        panelAddProduct.add(txtIdUsuarioProducto);
+        panelAddProduct.add(new JLabel("ID Usuario: eres el usuario " + id_user));
 
         JButton btnAddProduct = new JButton("Añadir Producto");
         panelAddProduct.add(btnAddProduct);
@@ -433,7 +433,7 @@ public class Diseño {
                 String nombre = txtNombreProducto.getText().trim();
                 double precio = Double.parseDouble(txtPrecioProducto.getText().trim());
                 int cantidad = Integer.parseInt(txtCantidadProducto.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioProducto.getText().trim());
+                int idUsuario = id_user;
 
                 // Llamada al método addProduct
                 Producto productoService = new Producto();
@@ -789,7 +789,7 @@ public class Diseño {
         JPanel panelAddReview = new JPanel(new GridLayout(6, 2, 5, 5));
         JTextField txtIdReseña = new JTextField();
         JTextField txtIdPedido = new JTextField();
-        JLabel txtIdUsuario = new JLabel( "Eres el usuario: " + Integer.toString(Connection.id_user));
+        JLabel txtIdUsuario = new JLabel( "Eres el usuario: " + Integer.toString(id_user));
         JTextField txtValoracion = new JTextField();
         JTextField txtComentario = new JTextField();
 
@@ -811,7 +811,7 @@ public class Diseño {
             try {
                 int idRes = Integer.parseInt(txtIdReseña.getText().trim());
                 int idPed = Integer.parseInt(txtIdPedido.getText().trim());
-                int idUser = Connection.id_user;
+                int idUser = id_user;
                 int val = Integer.parseInt(txtValoracion.getText().trim());
                 String com = txtComentario.getText().trim();
 
@@ -830,7 +830,7 @@ public class Diseño {
         // Panel para Editar Reseña
         JPanel panelEditReview = new JPanel(new GridLayout(5, 2, 5, 5));
         JTextField txtEditIdReseña = new JTextField();
-        JLabel txtIdUsuario_2 = new JLabel( "Eres el usuario: " + Integer.toString(Connection.id_user));
+        JLabel txtIdUsuario_2 = new JLabel( "Eres el usuario: " + Integer.toString(id_user));
         JTextField txtEditValoracion = new JTextField();
         JTextField txtEditComentario = new JTextField();
 
@@ -849,7 +849,7 @@ public class Diseño {
         btnEditReview.addActionListener(e -> {
             try {
                 int idRes = Integer.parseInt(txtEditIdReseña.getText().trim());
-                int idUser = Connection.id_user;
+                int idUser = id_user;
                 int val = Integer.parseInt(txtEditValoracion.getText().trim());
                 String com = txtEditComentario.getText().trim();
 
@@ -867,7 +867,7 @@ public class Diseño {
         // Panel para Eliminar Reseña
         JPanel panelDeleteReview = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtDeleteIdReseña = new JTextField();
-        JLabel txtIdUsuario_3 = new JLabel( "Eres el usuario: " + Integer.toString(Connection.id_user)); // Se elimina las reseñas del propio usuario
+        JLabel txtIdUsuario_3 = new JLabel( "Eres el usuario: " + Integer.toString(id_user)); // Se elimina las reseñas del propio usuario
 
         panelDeleteReview.add(new JLabel("ID Reseña:"));
         panelDeleteReview.add(txtDeleteIdReseña);
@@ -880,7 +880,7 @@ public class Diseño {
         btnDeleteReview.addActionListener(e -> {
             try {
                 int idRes = Integer.parseInt(txtDeleteIdReseña.getText().trim());
-                int idUser = Connection.id_user;
+                int idUser = id_user;
 
                 Reseña reviewService = new Reseña();
                 reviewService.deleteReview(idRes, idUser);
