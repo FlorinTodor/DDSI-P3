@@ -1,0 +1,110 @@
+package practica;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class Disparadores {
+
+    // 1) TRIGGER TRIG_VerificaPedidoYUsuario
+    private static final String TRIG_VERIFICA_PEDIDO_USUARIO =
+            "CREATE OR REPLACE TRIGGER TRIG_VerificaPedidoYUsuario "
+                    + "BEFORE INSERT OR UPDATE ON Gestion_Reseña "
+                    + "FOR EACH ROW "
+                    + "DECLARE "
+                    + "   v_contador NUMBER; "
+                    + "BEGIN "
+                    + "   -- 1) Verificar que el ID_Pedido exista en la tabla Pedido "
+                    + "   SELECT COUNT(*) INTO v_contador "
+                    + "     FROM pedido "
+                    + "    WHERE ID_Pedido = :NEW.ID_Pedido; "
+                    + "   IF v_contador = 0 THEN "
+                    + "      RAISE_APPLICATION_ERROR(-20000, "
+                    + "         'Error RS5.1.1: El ID_Pedido ' || :NEW.ID_Pedido || ' no existe en la tabla Pedido.' "
+                    + "      ); "
+                    + "   END IF; "
+                    + "   -- 2) Verificar que el ID_Usuario asociado a ese Pedido exista "
+                    + "   SELECT COUNT(*) INTO v_contador "
+                    + "     FROM pedido p "
+                    + "          JOIN usuario u ON p.ID_Usuario = u.ID_Usuario "
+                    + "    WHERE p.ID_Pedido = :NEW.ID_Pedido; "
+                    + "   IF v_contador = 0 THEN "
+                    + "      RAISE_APPLICATION_ERROR(-20001, "
+                    + "         'Error RS5.1.1: El Pedido ' || :NEW.ID_Pedido || ' no tiene un Usuario válido asociado.' "
+                    + "      ); "
+                    + "   END IF; "
+                    + "END;";
+
+    // 2) TRIGGER validar_usuario_en_modificaProducto
+    private static final String TRIG_VALIDAR_USUARIO_MODIFICAPRODUCTO =
+            "CREATE OR REPLACE TRIGGER validar_usuario_en_modificaProducto "
+                    + "AFTER INSERT OR UPDATE ON modificaProducto "
+                    + "FOR EACH ROW "
+                    + "DECLARE "
+                    + "   usuario_existe INTEGER; "
+                    + "BEGIN "
+                    + "   -- Verificar si el usuario asociado al producto existe "
+                    + "   SELECT COUNT(*) INTO usuario_existe "
+                    + "     FROM usuario "
+                    + "    WHERE ID_Usuario = :NEW.ID_Usuario; "
+                    + "   -- Opcional: Lanzar un error si se requiere notificar el problema "
+                    + "   RAISE_APPLICATION_ERROR(-20002, "
+                    + "       'El usuario asociado al producto no existe. Producto eliminado.' "
+                    + "   ); "
+                    + "END;";
+
+    // 3) TRIGGER validar_producto_en_modificaProducto
+    private static final String TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO =
+            "CREATE OR REPLACE TRIGGER validar_producto_en_modificaProducto "
+                    + "AFTER INSERT OR UPDATE ON modificaProducto "
+                    + "FOR EACH ROW "
+                    + "DECLARE "
+                    + "   producto_existe INTEGER; "
+                    + "BEGIN "
+                    + "   -- Verificar si el producto existe en la tabla producto "
+                    + "   SELECT COUNT(*) INTO producto_existe "
+                    + "     FROM producto "
+                    + "    WHERE ID_Producto = :NEW.ID_Producto; "
+                    + "   -- Opcional: Lanzar un error para notificar el problema "
+                    + "   RAISE_APPLICATION_ERROR(-20003, "
+                    + "       'El producto asociado no existe. Relación eliminada de modificaProducto.' "
+                    + "   ); "
+                    + "END;";
+
+    // 4) TRIGGER validar_relacion_producto_modificaProducto
+    private static final String TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO =
+            "CREATE OR REPLACE TRIGGER validar_relacion_producto_modificaProducto "
+                    + "AFTER INSERT OR UPDATE ON producto "
+                    + "FOR EACH ROW "
+                    + "DECLARE "
+                    + "   relacion_valida INTEGER; "
+                    + "BEGIN "
+                    + "   -- Verificar si el producto tiene una relación válida en modificaProducto "
+                    + "   SELECT COUNT(*) INTO relacion_valida "
+                    + "     FROM modificaProducto "
+                    + "    WHERE ID_Producto = :NEW.ID_Producto; "
+                    + "   -- Opcional: Lanzar un error para informar sobre la eliminación "
+                    + "   RAISE_APPLICATION_ERROR(-20004, "
+                    + "       'El producto no tiene una relación válida en modificaProducto. Producto eliminado.' "
+                    + "   ); "
+                    + "END;";
+
+    /**
+     * Método que crea (o reemplaza) todos los disparadores en la BD.
+     * Recibe una conexión abierta y ejecuta cada sentencia CREATE TRIGGER.
+     */
+    public static void crearDisparadores(Connection conn) throws SQLException {
+        // Usa try-with-resources para asegurar que se cierra el Statement
+        try (Statement st = conn.createStatement()) {
+            // Ejecutar cada disparador
+            st.execute(TRIG_VERIFICA_PEDIDO_USUARIO);
+            st.execute(TRIG_VALIDAR_USUARIO_MODIFICAPRODUCTO);
+            st.execute(TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO);
+            st.execute(TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO);
+
+            System.out.println("Disparadores creados/reemplazados con éxito.");
+        }
+    }
+
+}
+

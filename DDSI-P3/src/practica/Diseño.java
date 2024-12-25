@@ -168,6 +168,19 @@ public class Diseño {
         });
         menuGestion.add(insertarDatosPrueba);
 
+        // Opción 4: Insertar disparadores
+        JMenuItem insertarDisparadores = new JMenuItem("Insertar disparadores");
+        insertarDisparadores.addActionListener(e -> {
+            try {
+                Disparadores.crearDisparadores(Connection.connection);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        menuGestion.add(insertarDisparadores);
+
+
+
 
         // Añadir menús a la barra de menú
         menuBar.add(menuArchivo);
