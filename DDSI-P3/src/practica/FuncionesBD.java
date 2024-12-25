@@ -127,6 +127,10 @@ public class FuncionesBD {
                     "VALUES (10, 'Camisa', 50, 19.99)");
             stmt.executeUpdate("INSERT INTO producto (ID_Producto, NombreProducto, Cantidad, Precio) " +
                     "VALUES (11, 'Pantalón', 20, 29.99)");
+            stmt.executeUpdate("INSERT INTO modificaProducto (ID_Usuario, ID_Producto) " +
+                    "VALUES (1, 11)");
+            stmt.executeUpdate("INSERT INTO modificaProducto (ID_Usuario, ID_Producto) " +
+                    "VALUES (1, 10)");
 
             // Insertar Pagos
             stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (1, SYSDATE)");
