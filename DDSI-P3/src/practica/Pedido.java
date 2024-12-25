@@ -279,22 +279,12 @@ public class Pedido {
                 throw new SQLException("El pedido no pertenece al usuario.");
             }
 
-            // Obtener la fecha de entrega del pedido
-            Date fechaEntrega = rs.getDate("Fecha_Entrega");
-            LocalDate fechaEntregaLocal = fechaEntrega.toLocalDate();
-            LocalDate fechaActual = LocalDate.now();
+            // Actualizar Estado_Pedido a 'entregado'
+            String sqlActualizarEstado = "UPDATE pedido SET Estado_Pedido = 'entregado' WHERE ID_Pedido = ?";
+            pstmt = conn.prepareStatement(sqlActualizarEstado);
+            pstmt.setInt(1, idPedido);
+            pstmt.executeUpdate();
 
-            // Verificar si han pasado 3 días desde la fecha de entrega
-            long diasPasados = ChronoUnit.DAYS.between(fechaEntregaLocal, fechaActual);
-            if (diasPasados >= 3) {
-                // Actualizar el estado del pedido a "completado"
-                String sqlActualizarEstado = "UPDATE pedido SET Estado_Pedido = 'completado' WHERE ID_Pedido = ?";
-                pstmt = conn.prepareStatement(sqlActualizarEstado);
-                pstmt.setInt(1, idPedido);
-                pstmt.executeUpdate();
-            } else {
-                throw new SQLException("No han pasado 3 días desde la entrega del pedido.");
-            }
 
             conn.commit(); // Confirmar transacción
         } catch (SQLException e) {
