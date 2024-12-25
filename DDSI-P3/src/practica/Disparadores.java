@@ -6,7 +6,7 @@ import java.sql.Statement;
 
 public class Disparadores {
 
-    // 1) TRIGGER TRIG_VerificaPedidoYUsuario
+    // 1) TRIGGER TRIG_VerificaPedidoYUsuario FLorin
     private static final String TRIG_VERIFICA_PEDIDO_USUARIO =
             "CREATE OR REPLACE TRIGGER TRIG_VerificaPedidoYUsuario "
                     + "BEFORE INSERT OR UPDATE ON Gestion_Reseña "
