@@ -1273,8 +1273,8 @@ public class Diseño {
                 String correoPayPal = txtCorreoPayPal.getText().trim();
 
                 Pago pagoService = new Pago();
-                int idMetodo = pagoService.agregarMetodoPago(id_user, tipoPago, numeroTarjeta, fechaExpiracion, codigoCVV, nombreTitular, correoPayPal);
-                JOptionPane.showMessageDialog(panelAgregarMetodo, "Método de pago agregado con éxito. ID: " + idMetodo);
+                pagoService.agregarMetodoPago(id_user, tipoPago, numeroTarjeta, fechaExpiracion, codigoCVV, nombreTitular, correoPayPal);
+                JOptionPane.showMessageDialog(panelAgregarMetodo, "Método de pago agregado con éxito. ID: \n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelAgregarMetodo, "Error al agregar método de pago: " + ex.getMessage());
             }
@@ -1299,8 +1299,8 @@ public class Diseño {
                 int idMetodo = Integer.parseInt(txtIdMetodoEliminar.getText().trim());
 
                 Pago pagoService = new Pago();
-                String resultado = pagoService.eliminarMetodoPago(id_user, idMetodo);
-                JOptionPane.showMessageDialog(panelEliminarMetodo, resultado);
+                pagoService.eliminarMetodoPago(id_user, idMetodo);
+                JOptionPane.showMessageDialog(panelEliminarMetodo, "Método de pago eliminado con éxito\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelEliminarMetodo, "Error al eliminar método de pago: " + ex.getMessage());
             }
@@ -1360,8 +1360,8 @@ public class Diseño {
                 double cantidad = Double.parseDouble(txtCantidadPago.getText().trim());
 
                 Pago pagoService = new Pago();
-                String resultado = pagoService.realizarPago(idPedido, idMetodo, cantidad, id_user);
-                JOptionPane.showMessageDialog(panelRealizarPago, resultado);
+                pagoService.realizarPago(idPedido, idMetodo, cantidad, id_user);
+                JOptionPane.showMessageDialog(panelRealizarPago, "Pago realizado con éxito \n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelRealizarPago, "Error al realizar el pago: " + ex.getMessage());
             }
