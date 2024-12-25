@@ -111,6 +111,49 @@ CREATE TABLE GestionPedido (
     UNIQUE(ID_Usuario)
 );
 
+
+
+-- DISPARADORES --
+
+CREATE OR REPLACE TRIGGER TRIG_VerificaPedidoYUsuario
+BEFORE INSERT OR UPDATE ON Gestion_Reseña
+                            FOR EACH ROW
+DECLARE
+v_contador NUMBER;
+BEGIN
+   ------------------------------------------------------------------
+   -- 1) Verificar que el ID_Pedido exista en la tabla Pedido
+   ------------------------------------------------------------------
+SELECT COUNT(*)
+INTO v_contador
+FROM pedido
+WHERE ID_Pedido = :NEW.ID_Pedido;
+
+IF v_contador = 0 THEN
+      RAISE_APPLICATION_ERROR(
+         -20000,
+         'Error RS5.1.1: El ID_Pedido ' || :NEW.ID_Pedido ||
+         ' no existe en la tabla Pedido.'
+      );
+END IF;
+
+   ------------------------------------------------------------------
+   -- 2) Verificar que el ID_Usuario asociado a ese Pedido exista
+   ------------------------------------------------------------------
+SELECT COUNT(*)
+INTO v_contador
+FROM pedido p
+         JOIN usuario u ON p.ID_Usuario = u.ID_Usuario
+WHERE p.ID_Pedido = :NEW.ID_Pedido;
+
+IF v_contador = 0 THEN
+      RAISE_APPLICATION_ERROR(
+         -20001,
+         'Error RS5.1.1: El Pedido ' || :NEW.ID_Pedido ||
+         ' no tiene un Usuario válido asociado.'
+      );
+END IF;
+END;
 --Disparador que comprueba que usuario asociado a producto en modificaProducto existe
 
 CREATE OR REPLACE TRIGGER validar_usuario_en_modificaProducto
