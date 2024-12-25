@@ -13,13 +13,12 @@ public class Reseña {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        java.sql.Connection conn =  Connection.connection;
+        java.sql.Connection conn = Connection.connection;
 
         // Verificar si el usuario existe
         if (!Connection.doesUserExist(idUsuario)) {
             throw new Exception("El usuario no existe.");
         }
-
 
         // Comprobar que exista el pedido, que pertenece al usuario y está en estado 'Entregado'
         try (PreparedStatement ps = conn.prepareStatement(
@@ -42,6 +41,26 @@ public class Reseña {
             }
         }
 
+        // Verificar si ya existe una reseña asociada al pedido
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT gr.ID_RESENA, r.COMENTARIO, r.VALORACION " +
+                        "FROM GESTION_RESEÑA gr " +
+                        "JOIN RESEÑA r ON gr.ID_RESENA = r.ID_RESENA " +
+                        "WHERE gr.ID_PEDIDO = ?")) {
+            ps.setInt(1, idPedido);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String comentarioExistente = rs.getString("COMENTARIO");
+                    int valoracionExistente = rs.getInt("VALORACION");
+
+                    if (comentarioExistente == null && valoracionExistente == 0) {
+                        throw new Exception("Ya existe una reseña eliminada para este pedido. No se puede añadir una nueva.");
+                    } else {
+                        throw new Exception("Ya existe una reseña para este pedido.");
+                    }
+                }
+            }
+        }
         // Insertar la reseña
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO RESEÑA (ID_RESENA, COMENTARIO, VALORACION) VALUES (?, ?, ?)")) {
