@@ -105,7 +105,6 @@ public class Pedido {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
     }
 
@@ -152,7 +151,6 @@ public class Pedido {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
 
         return pedidos;
@@ -217,7 +215,6 @@ public class Pedido {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
     }
 
@@ -258,7 +255,6 @@ public class Pedido {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
     }
 
@@ -309,7 +305,6 @@ public class Pedido {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
     }
     /**
@@ -360,7 +355,6 @@ public class Pedido {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
     }
 
