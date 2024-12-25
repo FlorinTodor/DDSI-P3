@@ -111,6 +111,81 @@ CREATE TABLE GestionPedido (
     UNIQUE(ID_Usuario)
 );
 
+--Disparador que comprueba que usuario asociado a producto en modificaProducto existe
+
+CREATE OR REPLACE TRIGGER validar_usuario_en_modificaProducto
+AFTER INSERT OR UPDATE ON modificaProducto
+                           FOR EACH ROW
+DECLARE
+    usuario_existe INTEGER;
+        BEGIN
+            -- Verificar si el usuario asociado al producto existe
+                SELECT COUNT(*)
+                INTO usuario_existe
+                FROM usuario
+                WHERE ID_Usuario = :NEW.ID_Usuario;
+
+            -- Si el usuario no existe, eliminar el producto correspondiente
+                IF usuario_existe = 0 THEN
+                DELETE FROM producto
+                WHERE ID_Producto = :NEW.ID_Producto;
+
+            -- Opcional: Lanzar un error si se requiere notificar el problema
+                RAISE_APPLICATION_ERROR(-20002, 'El usuario asociado al producto no existe. Producto eliminado.');
+        END IF;
+    END;
+    /
+
+--Disparador que verifica que el producto en tabla ModificaProducto existe
+CREATE OR REPLACE TRIGGER validar_producto_en_modificaProducto
+AFTER INSERT OR UPDATE ON modificaProducto
+                           FOR EACH ROW
+DECLARE
+producto_existe INTEGER;
+    BEGIN
+        -- Verificar si el producto existe en la tabla producto
+            SELECT COUNT(*)
+            INTO producto_existe
+            FROM producto
+            WHERE ID_Producto = :NEW.ID_Producto;
+
+        -- Si el producto no existe, eliminar la relación de modificaProducto
+            IF producto_existe = 0 THEN
+            DELETE FROM modificaProducto
+            WHERE ID_Usuario = :NEW.ID_Usuario
+              AND ID_Producto = :NEW.ID_Producto;
+
+        -- Opcional: Lanzar un error para notificar el problema
+            RAISE_APPLICATION_ERROR(-20003, 'El producto asociado no existe. Relación eliminada de modificaProducto.');
+    END IF;
+END;
+/
+
+--Disparador que comprueba que el producto agregado haya sido subido por un usuario
+CREATE OR REPLACE TRIGGER validar_relacion_producto_modificaProducto
+AFTER INSERT OR UPDATE ON producto
+                           FOR EACH ROW
+DECLARE
+relacion_valida INTEGER;
+    BEGIN
+        -- Verificar si el producto tiene una relación válida en modificaProducto
+            SELECT COUNT(*)
+            INTO relacion_valida
+            FROM modificaProducto
+            WHERE ID_Producto = :NEW.ID_Producto;
+
+        -- Si no hay una relación válida, eliminar el producto
+            IF relacion_valida = 0 THEN
+            DELETE FROM producto
+            WHERE ID_Producto = :NEW.ID_Producto;
+
+        -- Opcional: Lanzar un error para informar sobre la eliminación
+            RAISE_APPLICATION_ERROR(-20004, 'El producto no tiene una relación válida en modificaProducto. Producto eliminado.');
+    END IF;
+END;
+/
+
+
 
 
 
