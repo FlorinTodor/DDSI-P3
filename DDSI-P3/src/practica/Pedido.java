@@ -271,7 +271,7 @@ public class Pedido {
             conn.setAutoCommit(false); // Iniciar transacción
 
             // Verificar que el pedido pertenece al usuario
-            String sqlVerificarPedido = "SELECT ID_Usuario, Fecha_Entrega FROM pedido WHERE ID_Pedido = ?";
+            String sqlVerificarPedido = "SELECT ID_Usuario FROM pedido WHERE ID_Pedido = ?";
             pstmt = conn.prepareStatement(sqlVerificarPedido);
             pstmt.setInt(1, idPedido);
             rs = pstmt.executeQuery();
