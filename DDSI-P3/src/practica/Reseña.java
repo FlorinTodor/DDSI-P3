@@ -233,6 +233,11 @@ public class Reseña {
             }
         }
 
+        // Verificar si no hay reseñas
+        if (reviews.isEmpty()) {
+            throw new Exception("El pedido no tiene reseñas asociadas.");
+        }
+
         return reviews;
     }
 
@@ -272,6 +277,12 @@ public class Reseña {
                     reviews.add("ID_Reseña: " + idReseña + ", Valoración: " + valoracion + ", Comentario: " + comentario);
                 }
             }
+        }
+
+
+        // Verificar si no hay reseñas
+        if (reviews.isEmpty()) {
+            throw new Exception("El usuario no tiene reseñas asociadas.");
         }
 
         return reviews;
