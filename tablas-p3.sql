@@ -154,6 +154,7 @@ IF v_contador = 0 THEN
       );
 END IF;
 END;
+/
 --Disparador que comprueba que usuario asociado a producto en modificaProducto existe
 
 CREATE OR REPLACE TRIGGER validar_usuario_en_modificaProducto
@@ -177,7 +178,7 @@ DECLARE
                 RAISE_APPLICATION_ERROR(-20002, 'El usuario asociado al producto no existe. Producto eliminado.');
         END IF;
     END;
-    /
+/
 
 --Disparador que verifica que el producto en tabla ModificaProducto existe
 CREATE OR REPLACE TRIGGER validar_producto_en_modificaProducto
