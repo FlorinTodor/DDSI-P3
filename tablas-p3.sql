@@ -169,11 +169,6 @@ DECLARE
                 FROM usuario
                 WHERE ID_Usuario = :NEW.ID_Usuario;
 
-            -- Si el usuario no existe, eliminar el producto correspondiente
-                IF usuario_existe = 0 THEN
-                DELETE FROM producto
-                WHERE ID_Producto = :NEW.ID_Producto;
-
             -- Opcional: Lanzar un error si se requiere notificar el problema
                 RAISE_APPLICATION_ERROR(-20002, 'El usuario asociado al producto no existe. Producto eliminado.');
         END IF;
@@ -193,12 +188,6 @@ producto_existe INTEGER;
             FROM producto
             WHERE ID_Producto = :NEW.ID_Producto;
 
-        -- Si el producto no existe, eliminar la relación de modificaProducto
-            IF producto_existe = 0 THEN
-            DELETE FROM modificaProducto
-            WHERE ID_Usuario = :NEW.ID_Usuario
-              AND ID_Producto = :NEW.ID_Producto;
-
         -- Opcional: Lanzar un error para notificar el problema
             RAISE_APPLICATION_ERROR(-20003, 'El producto asociado no existe. Relación eliminada de modificaProducto.');
     END IF;
@@ -216,11 +205,6 @@ relacion_valida INTEGER;
             SELECT COUNT(*)
             INTO relacion_valida
             FROM modificaProducto
-            WHERE ID_Producto = :NEW.ID_Producto;
-
-        -- Si no hay una relación válida, eliminar el producto
-            IF relacion_valida = 0 THEN
-            DELETE FROM producto
             WHERE ID_Producto = :NEW.ID_Producto;
 
         -- Opcional: Lanzar un error para informar sobre la eliminación
