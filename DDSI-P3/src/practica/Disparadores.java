@@ -48,7 +48,7 @@ public class Disparadores {
                     + "     FROM usuario "
                     + "    WHERE ID_Usuario = :NEW.ID_Usuario; "
                     + "   -- Opcional: Lanzar un error si se requiere notificar el problema "
-                    + "   RAISE_APPLICATION_ERROR(-20002, "
+                    + "   RAISE_APPLICATION_ERROR(-20002, " //este error hace un rollback automático
                     + "       'El usuario asociado al producto no existe.' "
                     + "   ); "
                     + "END;";
