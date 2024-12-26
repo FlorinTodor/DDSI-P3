@@ -89,6 +89,39 @@ public class Disparadores {
                     + "   ); "
                     + "END;";
 */
+    // 5) TRIGGER garantizar que existe el usuario cuando vas a añadir metodo pago
+    private static final String TRIG_VERIFICAR_USUARIO_EXISTE =
+            "CREATE OR REPLACE TRIGGER TRIG_VERIFICAR_USUARIO_EXISTE " +
+                    "BEFORE INSERT ON pago " +
+                    "FOR EACH ROW " +
+                    "DECLARE " +
+                    "    usuario_existe NUMBER; " +
+                    "BEGIN " +
+                    "    SELECT COUNT(*) INTO usuario_existe " +
+                    "    FROM usuario " +
+                    "    WHERE ID_Usuario = :NEW.ID_Usuario; " +
+                    "    IF usuario_existe = 0 THEN " +
+                    "        RAISE_APPLICATION_ERROR(-20002, 'Error: El usuario asociado al método de pago no existe.'); " +
+                    "    END IF; " +
+                    "END;";
+
+    // 6) TRIGGER garantizar si existe el metodo de pago cuando vayas a hacer un pago
+    private static final String TRIG_VERIFICAR_METODO_PAGO_EXISTE =
+            "CREATE OR REPLACE TRIGGER TRIG_VERIFICAR_METODO_PAGO_EXISTE " +
+                    "BEFORE INSERT ON transaccion " +
+                    "FOR EACH ROW " +
+                    "DECLARE " +
+                    "    metodo_pago_existe NUMBER; " +
+                    "BEGIN " +
+                    "    SELECT COUNT(*) INTO metodo_pago_existe " +
+                    "    FROM pago " +
+                    "    WHERE ID_metodoPago = :NEW.ID_metodoPago; " +
+                    "    IF metodo_pago_existe = 0 THEN " +
+                    "        RAISE_APPLICATION_ERROR(-20003, 'Error: El método de pago especificado no existe.'); " +
+                    "    END IF; " +
+                    "END;";
+
+
     /**
      * Método que crea (o reemplaza) todos los disparadores en la BD.
      * Recibe una conexión abierta y ejecuta cada sentencia CREATE TRIGGER.
@@ -100,6 +133,8 @@ public class Disparadores {
             st.execute(TRIG_VERIFICA_PEDIDO_USUARIO);
             st.execute(TRIG_VALIDAR_USUARIO_MODIFICAPRODUCTO);
             st.execute(TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO);
+            st.execute(TRIG_VERIFICAR_USUARIO_EXISTE);
+            st.execute(TRIG_VERIFICAR_METODO_PAGO_EXISTE);
             //st.execute(TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO);
             System.out.println("Disparadores creados/reemplazados con éxito.");
         }
