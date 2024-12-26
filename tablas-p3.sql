@@ -111,7 +111,8 @@ CREATE TABLE GestionPedido (
     UNIQUE(ID_Usuario)
 );
 
-
+--Secuencia para los id_pedido
+CREATE SEQUENCE seq_id_pedido START WITH 1 INCREMENT BY 1;
 
 -- DISPARADORES --
 

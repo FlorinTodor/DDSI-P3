@@ -51,7 +51,7 @@ public class Carrito {
             psCarrito.setInt(1, idCarrito);
             psCarrito.executeUpdate();
         }
-
+        /*
         // Crear un nuevo ID de pedido
         int nextId = -1;
 
@@ -62,14 +62,28 @@ public class Carrito {
             if (rs.next()) {
                 nextId = rs.getInt(1);
             }
-        }
+        }*/
 
         // Insertar el nuevo pedido en la tabla PEDIDO
-        String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
+        String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (seq_id_pedido.NEXTVAL, ?)";
         try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
-            psPedido.setInt(1, nextId);
-            psPedido.setInt(2, idUsuario);
+            //psPedido.setInt(1, nextId);
+            psPedido.setInt(1, idUsuario);
             psPedido.executeUpdate();
+        }
+
+        // Obtener el ID_PEDIDO recién generado por la secuencia
+        int nextId;
+        String getGeneratedIdPedidoSQL = "SELECT MAX(ID_PEDIDO) FROM PEDIDO WHERE ID_USUARIO = ?"; //Forma más segura de obtener el id que le corresponde a este usuario
+        try (PreparedStatement psGetIdPedido = conn.prepareStatement(getGeneratedIdPedidoSQL)) {
+            psGetIdPedido.setInt(1, idUsuario);
+            try (ResultSet rs = psGetIdPedido.executeQuery()) {
+                if (rs.next()) {
+                    nextId = rs.getInt(1);
+                } else {
+                    throw new SQLException("No se pudo obtener el ID_PEDIDO generado.");
+                }
+            }
         }
 
         // Insertar la entrada en la tabla GESTIONCARRITO

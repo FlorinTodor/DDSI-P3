@@ -74,15 +74,15 @@ public class Pedido {
             }
 
             // Verificar si el carrito existe para el usuario
-            /*try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM carrito WHERE ID_Carrito = ?")) {
+            try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM carrito WHERE ID_Carrito = ?")) {
                 ps.setInt(1, idUsuario);
-                try (rs = ps.executeQuery()) {
-                    if (rs.next() && rs.getInt(1) == 0) {
+                try (ResultSet rs2 = ps.executeQuery()) {
+                    if (rs2.next() && rs2.getInt(1) == 0) {
                         throw new Exception("No existe un carrito asociado al usuario con ID: " + idUsuario);
                     }
                 }
-            } catch (SQLException e) {
-                throw new Exception("Error al verificar la existencia del carrito: " + e.getMessage(), e);
+            } catch (Exception e) {
+                throw new SQLException("Error al verificar la existencia del carrito: " + e.getMessage(), e);
             }
 
 // Verificar si el carrito está vacío
@@ -92,8 +92,8 @@ public class Pedido {
                     throw new Exception("El carrito está vacío. No se puede realizar el pedido.");
                 }
             } catch (Exception e) {
-                throw new Exception("Error al verificar el contenido del carrito: " + e.getMessage(), e);
-            }*/
+                throw new SQLException("Error al verificar el contenido del carrito: " + e.getMessage(), e);
+            }
 
             int idCarrito = 0;
             try {
@@ -151,14 +151,28 @@ public class Pedido {
                 pstmt.executeUpdate();
             }
 
-            nextIdPedido = nextIdPedido + 1;
-/*
+            //nextIdPedido = nextIdPedido + 1;
+
 // Crear nuevo pedido vacío
-            String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
+            String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (seq_id_pedido.NEXTVAL, ?)";
             try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
-                psPedido.setInt(1, nextIdPedido);
-                psPedido.setInt(2, idUsuario);
+                //psPedido.setInt(1, nextIdPedido);
+                psPedido.setInt(1, idUsuario);
                 psPedido.executeUpdate();
+            }
+
+            // Obtener el ID_PEDIDO recién generado por la secuencia
+            int nextidPedido;
+            String getGeneratedIdPedidoSQL = "SELECT MAX(ID_PEDIDO) FROM PEDIDO WHERE ID_USUARIO = ?"; //Forma más segura de obtener el id que le corresponde a este usuario
+            try (PreparedStatement psGetIdPedido = conn.prepareStatement(getGeneratedIdPedidoSQL)) {
+                psGetIdPedido.setInt(1, idUsuario);
+                try (ResultSet rs1 = psGetIdPedido.executeQuery()) {
+                    if (rs1.next()) {
+                        nextidPedido = rs1.getInt(1);
+                    } else {
+                        throw new SQLException("No se pudo obtener el ID_PEDIDO generado.");
+                    }
+                }
             }
 
 // Crear una nueva entrada en la tabla GestionCarrito
@@ -166,7 +180,7 @@ public class Pedido {
             pstmt = conn.prepareStatement(sqlGestionCarrito);
             pstmt.setInt(1, idCarrito);
             pstmt.setInt(2, nextIdPedido);
-            pstmt.executeUpdate();*/
+            pstmt.executeUpdate();
 
 // Vaciar el carrito
             try {
