@@ -118,7 +118,7 @@ public class Pedido {
      * RF4.2: Ver historial de pedidos
      */
     public List<Pedido> verHistorialPedidos(int idUsuario) throws SQLException {
-        java.sql.Connection  conn = null;
+        java.sql.Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         List<Pedido> pedidos = new ArrayList<>();
@@ -127,7 +127,7 @@ public class Pedido {
             conn = Connection.connection;
 
             // Consultar los pedidos del usuario
-            String sqlPedidos = "SELECT ID_Pedido, Estado_Pedido FROM pedido WHERE ID_Usuario = ?";
+            String sqlPedidos = "SELECT ID_Pedido, Estado_Pedido, Metodo_Envio, Direccion FROM pedido WHERE ID_Usuario = ?";
             pstmt = conn.prepareStatement(sqlPedidos);
             pstmt.setInt(1, idUsuario);
             rs = pstmt.executeQuery();
@@ -135,6 +135,8 @@ public class Pedido {
             while (rs.next()) {
                 int idPedido = rs.getInt("ID_Pedido");
                 String estadoPedido = rs.getString("Estado_Pedido");
+                String metodoEnvio = rs.getString("Metodo_Envio");
+                String direccion = rs.getString("Direccion");
 
                 // Consultar los productos asociados a cada pedido
                 List<Integer> productos = new ArrayList<>();
@@ -151,7 +153,8 @@ public class Pedido {
                 pstmtProductos.close();
 
                 // Crear un objeto Pedido y agregarlo a la lista
-                Pedido pedido = new Pedido(idPedido, productos, estadoPedido, idUsuario, metodoEnvio, direccion);                pedidos.add(pedido);
+                Pedido pedido = new Pedido(idPedido, productos, estadoPedido, idUsuario, metodoEnvio, direccion);
+                pedidos.add(pedido);
             }
         } finally {
             if (rs != null) rs.close();

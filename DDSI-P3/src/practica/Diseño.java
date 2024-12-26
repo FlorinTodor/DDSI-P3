@@ -1103,6 +1103,7 @@ public class Diseño {
 
 
         inputPanelCancelar.add(new JLabel("ID Usuario: " + id_user));
+        inputPanelCancelar.add(new JLabel(""));
         inputPanelCancelar.add(new JLabel("ID Pedido:"));
         inputPanelCancelar.add(txtIdPedidoCancelar);
 
@@ -1138,11 +1139,13 @@ public class Diseño {
         JTextField txtIdPedidoEnvio = new JTextField();
         JTextField txtnuevoMetodoEnvio = new JTextField();
 
-        inputPanelEnvio.add(new JLabel("ID Usuario:" + id_user));
+        inputPanelEnvio.setLayout(new GridLayout(3, 2, 5, 5)); // 3 rows, 2 columns, 5px horizontal and vertical gaps
+
+        inputPanelEnvio.add(new JLabel("ID Usuario: " + id_user));
+        inputPanelEnvio.add(new JLabel("")); // Empty label to fill the second column
         inputPanelEnvio.add(new JLabel("ID Pedido:"));
         inputPanelEnvio.add(txtIdPedidoEnvio);
-        inputPanelEnvio.add(new JLabel("Método de Envío:"));
-        inputPanelEnvio.add(txtnuevoMetodoEnvio);
+
 
         JButton btnCambiarMetodoEnvio = new JButton("Cambiar Método de Envío");
         JPanel topPanelEnvio = new JPanel(new FlowLayout());
@@ -1159,7 +1162,7 @@ public class Diseño {
             try {
                 textAreaEnvio.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoEnvio.getText().trim());
-                String metodoEnvio = txtMetodoEnvio.getText().trim();
+                String metodoEnvio = txtnuevoMetodoEnvio.getText().trim();
 
                 Pedido pedidoService = new Pedido();
                 pedidoService.elegirMetodoEnvio(metodoEnvio, id_user, idPedido);
@@ -1175,12 +1178,12 @@ public class Diseño {
         JPanel panelConfirmarRecepcion = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelRecepcion = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdPedidoRecepcion = new JTextField();
-        JTextField txtIdUsuarioRecepcion = new JTextField();
 
+        inputPanelRecepcion.add(new JLabel("ID Usuario:" + id_user));
+        inputPanelRecepcion.add(new JLabel(""));
         inputPanelRecepcion.add(new JLabel("ID Pedido:"));
         inputPanelRecepcion.add(txtIdPedidoRecepcion);
-        inputPanelRecepcion.add(new JLabel("ID Usuario:"));
-        inputPanelRecepcion.add(txtIdUsuarioRecepcion);
+
 
         JButton btnConfirmarRecepcion = new JButton("Confirmar Recepción");
         JPanel topPanelRecepcion = new JPanel(new FlowLayout());
@@ -1197,10 +1200,9 @@ public class Diseño {
             try {
                 textAreaRecepcion.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoRecepcion.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioRecepcion.getText().trim());
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.confirmarRecepcionPedido(idUsuario, idPedido);
+                pedidoService.confirmarRecepcionPedido(id_user, idPedido);
                 textAreaRecepcion.append("Recepción del pedido confirmada con éxito.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelConfirmarRecepcion, "Error al confirmar la recepción del pedido: " + ex.getMessage());
@@ -1213,20 +1215,19 @@ public class Diseño {
         JPanel panelCambiarMetodoPago = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelPago = new JPanel(new GridLayout(4, 2, 5, 5));
         JTextField txtIdPedidoPago = new JTextField();
-        JTextField txtIdUsuarioPago = new JTextField();
         JTextField txtIdMetodoPago = new JTextField();
         JTextField txtTipoMetodoPago = new JTextField();
 
+        inputPanelPago.add(new JLabel("ID Usuario: " + id_user));
+        inputPanelPago.add(new JLabel("")); // Empty label to fill the second column
         inputPanelPago.add(new JLabel("ID Pedido:"));
         inputPanelPago.add(txtIdPedidoPago);
-        inputPanelPago.add(new JLabel("ID Usuario:"));
-        inputPanelPago.add(txtIdUsuarioPago);
         inputPanelPago.add(new JLabel("ID Método de Pago:"));
         inputPanelPago.add(txtIdMetodoPago);
         inputPanelPago.add(new JLabel("Tipo de Método de Pago:"));
         inputPanelPago.add(txtTipoMetodoPago);
 
-        JButton btnElegirMetodoPago = new JButton("Cmabiar Método de Pago");
+        JButton btnElegirMetodoPago = new JButton("Cambiar Método de Pago");
         JPanel topPanelPago = new JPanel(new FlowLayout());
         topPanelPago.add(inputPanelPago);
         topPanelPago.add(btnElegirMetodoPago);
@@ -1241,12 +1242,11 @@ public class Diseño {
             try {
                 textAreaPago.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoPago.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioPago.getText().trim());
                 int idMetodoPago = Integer.parseInt(txtIdMetodoPago.getText().trim());
                 String tipoMetodoPago = txtTipoMetodoPago.getText().trim();
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.elegirMetodoPago(idMetodoPago, tipoMetodoPago, idPedido, idUsuario);
+                pedidoService.elegirMetodoPago(idMetodoPago, tipoMetodoPago, idPedido, id_user);
                 textAreaPago.append("Método de pago elegido con éxito.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelCambiarMetodoPago, "Error al cambiar el método de pago: " + ex.getMessage());
