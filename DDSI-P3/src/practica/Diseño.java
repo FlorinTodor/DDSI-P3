@@ -1011,11 +1011,11 @@ public class Diseño {
         JTextField txtEstadoPedido = new JTextField();
         JTextField txtTipoPago = new JTextField();
         JTextField txtMetodoEnvio = new JTextField();
-        JTextField txtIdUsuario = new JTextField();
         JTextField txtCarrito = new JTextField();
+        JLabel labelUsuario = new JLabel( "Eres el usuario: " + Integer.toString(id_user));
 
-        panelRealizarPedido.add(new JLabel("Dirección:"));
-        panelRealizarPedido.add(txtDireccion);
+
+        panelRealizarPedido.add(labelUsuario);
 
         panelRealizarPedido.add(new JLabel("ID Pedido:"));
         panelRealizarPedido.add(txtIdPedido);
@@ -1029,8 +1029,8 @@ public class Diseño {
         panelRealizarPedido.add(new JLabel("Método de Envío:"));
         panelRealizarPedido.add(txtMetodoEnvio);
 
-        panelRealizarPedido.add(new JLabel("ID Usuario:"));
-        panelRealizarPedido.add(txtIdUsuario);
+        panelRealizarPedido.add(new JLabel("Dirección:"));
+        panelRealizarPedido.add(txtDireccion);
 
         panelRealizarPedido.add(new JLabel("Carrito (IDs de productos separados por comas):"));
         panelRealizarPedido.add(txtCarrito);
@@ -1050,11 +1050,9 @@ public class Diseño {
                 for (String idProducto : carritoArray) {
                     carrito.add(Integer.parseInt(idProducto.trim()));
                 }
-                int idUser = Integer.parseInt(txtIdUsuario.getText().trim());
 
                 // Llamada a metodo realizarPedido
-                Pedido orderService = new Pedido(idPed,carrito,estPed,idUser);
-                orderService.realizarPedido(direcc,idPed,estPed,tipPag,metEnv,idUser,carrito);
+                Pedido orderService = new Pedido(idPed, carrito, estPed, id_user, metEnv, direcc);                orderService.realizarPedido(direcc,idPed,estPed,tipPag,metEnv,id_user,carrito);
                 JOptionPane.showMessageDialog(panelRealizarPedido, "Pedido realizado con exito");
 
             } catch (Exception ex2) {
@@ -1067,9 +1065,10 @@ public class Diseño {
         // Panel para Ver Historial de Pedidos
         JPanel panelVerHistorialPedidos = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelHistorial = new JPanel(new GridLayout(1, 2, 5, 5));
-        JTextField txtIdUsuarioHistorial = new JTextField();
-        inputPanelHistorial.add(new JLabel("ID Usuario:"));
-        inputPanelHistorial.add(txtIdUsuarioHistorial);
+        JLabel idUsuarioHistorial = new JLabel( "Eres el usuario: " + Integer.toString(id_user));
+        inputPanelHistorial.add(new JLabel("ID Usuario: " + Integer.toString(id_user)));
+        panelVerHistorialPedidos.add(idUsuarioHistorial);
+
 
         JButton btnVerHistorial = new JButton("Ver Historial de Pedidos");
         JPanel topPanelHistorial = new JPanel(new FlowLayout());
@@ -1085,9 +1084,8 @@ public class Diseño {
         btnVerHistorial.addActionListener(e -> {
             try {
                 textAreaHistorial.setText("");
-                int idUsuario = Integer.parseInt(txtIdUsuarioHistorial.getText().trim());
                 Pedido pedidoService = new Pedido();
-                List<Pedido> pedidos = pedidoService.verHistorialPedidos(idUsuario);
+                List<Pedido> pedidos = pedidoService.verHistorialPedidos(id_user);
                 for (Pedido pedido : pedidos) {
                     textAreaHistorial.append(pedido.toString() + "\n");
                 }
@@ -1102,12 +1100,11 @@ public class Diseño {
         JPanel panelCancelarPedido = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelCancelar = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdPedidoCancelar = new JTextField();
-        JTextField txtIdUsuarioCancelar = new JTextField();
 
+
+        inputPanelCancelar.add(new JLabel("ID Usuario: " + id_user));
         inputPanelCancelar.add(new JLabel("ID Pedido:"));
         inputPanelCancelar.add(txtIdPedidoCancelar);
-        inputPanelCancelar.add(new JLabel("ID Usuario:"));
-        inputPanelCancelar.add(txtIdUsuarioCancelar);
 
         JButton btnCancelarPedido = new JButton("Cancelar Pedido");
         JPanel topPanelCancelar = new JPanel(new FlowLayout());
@@ -1124,10 +1121,9 @@ public class Diseño {
             try {
                 textAreaCancelar.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoCancelar.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioCancelar.getText().trim());
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.cancelarPedido(idPedido, idUsuario);
+                pedidoService.cancelarPedido(idPedido, id_user);
                 textAreaCancelar.append("Pedido cancelado con éxito.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelCancelarPedido, "Error al cancelar el pedido: " + ex.getMessage());
@@ -1140,13 +1136,11 @@ public class Diseño {
         JPanel panelCambiarMetodoEnvio = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelEnvio = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtIdPedidoEnvio = new JTextField();
-        JTextField txtIdUsuarioEnvio = new JTextField();
         JTextField txtnuevoMetodoEnvio = new JTextField();
 
+        inputPanelEnvio.add(new JLabel("ID Usuario:" + id_user));
         inputPanelEnvio.add(new JLabel("ID Pedido:"));
         inputPanelEnvio.add(txtIdPedidoEnvio);
-        inputPanelEnvio.add(new JLabel("ID Usuario:"));
-        inputPanelEnvio.add(txtIdUsuarioEnvio);
         inputPanelEnvio.add(new JLabel("Método de Envío:"));
         inputPanelEnvio.add(txtnuevoMetodoEnvio);
 
@@ -1165,11 +1159,10 @@ public class Diseño {
             try {
                 textAreaEnvio.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoEnvio.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioEnvio.getText().trim());
                 String metodoEnvio = txtMetodoEnvio.getText().trim();
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.elegirMetodoEnvio(metodoEnvio, idUsuario, idPedido);
+                pedidoService.elegirMetodoEnvio(metodoEnvio, id_user, idPedido);
                 textAreaEnvio.append("Método de envío elegido con éxito.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelCambiarMetodoEnvio, "Error al elegir el método de envío: " + ex.getMessage());

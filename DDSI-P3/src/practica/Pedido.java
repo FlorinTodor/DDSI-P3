@@ -15,25 +15,31 @@ public class Pedido {
     private List<Integer> productos;
     private String estadoPedido;
     private int idUsuario;
+    private String metodoEnvio;
+    private String direccion;
 
     //constructor sin parámetros
     public Pedido() {
     }
 
-    public Pedido(int idPedido, List<Integer> productos, String estadoPedido, int idUsuario) {
+    public Pedido(int idPedido, List<Integer> productos, String estadoPedido, int idUsuario, String metodoEnvio, String direccion) {
         this.idPedido = idPedido;
         this.productos = productos;
         this.estadoPedido = estadoPedido;
         this.idUsuario = idUsuario;
+        this.metodoEnvio = metodoEnvio;
+        this.direccion = direccion;
     }
 
     @Override
     public String toString() {
         return "Pedido{" +
-                "idPedido='" + idPedido + '\'' +
-                ", productos=" + productos +
-                ", estadoPedido='" + estadoPedido + '\'' +
+                "idPedido=" + idPedido +
                 ", idUsuario=" + idUsuario +
+                ", estadoPedido='" + estadoPedido + '\'' +
+                ", productos=" + productos +
+                ", metodoEnvio='" + metodoEnvio + '\'' +
+                ", direccion='" + direccion + '\'' +
                 '}';
     }
     /**
@@ -145,8 +151,7 @@ public class Pedido {
                 pstmtProductos.close();
 
                 // Crear un objeto Pedido y agregarlo a la lista
-                Pedido pedido = new Pedido(idPedido, productos, estadoPedido, idUsuario);
-                pedidos.add(pedido);
+                Pedido pedido = new Pedido(idPedido, productos, estadoPedido, idUsuario, metodoEnvio, direccion);                pedidos.add(pedido);
             }
         } finally {
             if (rs != null) rs.close();
