@@ -86,7 +86,7 @@ public class Pago {
             }
 
             // Insertar los detalles del metodo de pago en la base de datos
-            String sqlInsertarMetodoPago = "INSERT INTO pago (ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_PayPal, Fecha_Registro, ID_Usuario) VALUES (pago_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sqlInsertarMetodoPago = "INSERT INTO pago (ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_PayPal, Fecha_Registro, ID_USUARIO) VALUES (pago_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?)";
             pstmt = conn.prepareStatement(sqlInsertarMetodoPago, Statement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, tipoMetodoPago);
             pstmt.setString(2, numeroTarjeta);
@@ -128,11 +128,11 @@ public class Pago {
             conn.setAutoCommit(false); // Iniciar transacción
 
             // Verificar que el metodo de pago pertenece al usuario
-            String sqlVerificarMetodoPago = "SELECT ID_Usuario FROM pago WHERE ID_metodoPago = ?";
+            String sqlVerificarMetodoPago = "SELECT ID_USUARIO FROM pago WHERE ID_metodoPago = ?";
             pstmt = conn.prepareStatement(sqlVerificarMetodoPago);
             pstmt.setInt(1, idMetodoPago);
             rs = pstmt.executeQuery();
-            if (!rs.next() || rs.getInt("ID_Usuario") != idUsuario) {
+            if (!rs.next() || rs.getInt("ID_USUARIO") != idUsuario) {
                 throw new SQLException("El método de pago no pertenece al usuario.");
             }
 
@@ -174,7 +174,7 @@ public class Pago {
             conn = Connection.connection;
 
             // Consultar los métodos de pago del usuario autenticado
-            String sqlMetodosPago = "SELECT ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Registro FROM pago WHERE ID_Usuario = ?";
+            String sqlMetodosPago = "SELECT ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Registro FROM pago WHERE ID_USUARIO = ?";
             pstmt = conn.prepareStatement(sqlMetodosPago);
             pstmt.setInt(1, idUsuario);
             rs = pstmt.executeQuery();
@@ -224,16 +224,16 @@ public class Pago {
             }
 
             // Verificar que el metodo de pago pertenece al usuario autenticado
-            String sqlVerificarMetodoPago = "SELECT ID_Usuario FROM pago WHERE ID_metodoPago = ?";
+            String sqlVerificarMetodoPago = "SELECT ID_USUARIO FROM pago WHERE ID_metodoPago = ?";
             pstmt = conn.prepareStatement(sqlVerificarMetodoPago);
             pstmt.setInt(1, idMetodoPago);
             rs = pstmt.executeQuery();
-            if (!rs.next() || rs.getInt("ID_Usuario") != idUsuario) {
+            if (!rs.next() || rs.getInt("ID_USUARIO") != idUsuario) {
                 return "El método de pago no pertenece al usuario.";
             }
 
             // Registrar la transacción en la base de datos
-            String sqlRegistrarTransaccion = "INSERT INTO transaccion (ID_Transaccion, ID_Pedido, ID_Usuario, ID_metodoPago, Cantidad, Fecha_Hora) VALUES (transaccion_seq.NEXTVAL, ?, ?, ?, ?, ?)";
+            String sqlRegistrarTransaccion = "INSERT INTO transaccion (ID_Transaccion, ID_Pedido, ID_USUARIO, ID_metodoPago, Cantidad, Fecha_Hora) VALUES (transaccion_seq.NEXTVAL, ?, ?, ?, ?, ?)";
             pstmt = conn.prepareStatement(sqlRegistrarTransaccion, Statement.RETURN_GENERATED_KEYS);
             pstmt.setInt(1, idPedido);
             pstmt.setInt(2, idUsuario);
@@ -282,7 +282,7 @@ public class Pago {
             String sqlTransacciones = "SELECT t.ID_Transaccion, t.ID_Pedido, t.Cantidad, t.Fecha_Hora, t.Estado_Transaccion, p.Tipo_MetodoPago " +
                     "FROM transaccion t " +
                     "JOIN pago p ON t.ID_metodoPago = p.ID_metodoPago " +
-                    "WHERE t.ID_Usuario = ?";
+                    "WHERE t.ID_USUARIO = ?";
             pstmt = conn.prepareStatement(sqlTransacciones);
             pstmt.setInt(1, idUsuario);
             rs = pstmt.executeQuery();
