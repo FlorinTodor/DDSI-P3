@@ -168,6 +168,19 @@ public class Diseño {
         });
         menuGestion.add(insertarDatosPrueba);
 
+        // Opción 4: Insertar disparadores
+        JMenuItem insertarDisparadores = new JMenuItem("Insertar disparadores");
+        insertarDisparadores.addActionListener(e -> {
+            try {
+                Disparadores.crearDisparadores(Connection.connection);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        menuGestion.add(insertarDisparadores);
+
+
+
 
         // Añadir menús a la barra de menú
         menuBar.add(menuArchivo);
@@ -485,8 +498,7 @@ public class Diseño {
         panelEditProduct.add(txtEditPrecioProducto);
         panelEditProduct.add(new JLabel("Nueva Cantidad:"));
         panelEditProduct.add(txtEditCantidadProducto);
-        panelEditProduct.add(new JLabel("ID Usuario:"));
-        panelEditProduct.add(txtEditIdUsuarioProducto);
+        panelEditProduct.add(new JLabel("ID Usuario:" + id_user));
 
         JButton btnEditProduct = new JButton("Editar Producto");
         panelEditProduct.add(btnEditProduct);
@@ -497,7 +509,7 @@ public class Diseño {
                 String nombre = txtEditNombreProducto.getText().trim();
                 double precio = Double.parseDouble(txtEditPrecioProducto.getText().trim());
                 int cantidad = Integer.parseInt(txtEditCantidadProducto.getText().trim());
-                int idUsuario = Integer.parseInt(txtEditIdUsuarioProducto.getText().trim());
+                int idUsuario = id_user;
 
                 Producto productoService = new Producto();
                 productoService.editProduct(idProducto, nombre, cantidad, precio, idUsuario);
@@ -513,12 +525,10 @@ public class Diseño {
         // Panel para Eliminar Producto
         JPanel panelDeleteProduct = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtDeleteIdProducto = new JTextField();
-        JTextField txtDeleteIdUsuarioProducto = new JTextField();
 
         panelDeleteProduct.add(new JLabel("ID Producto:"));
         panelDeleteProduct.add(txtDeleteIdProducto);
-        panelDeleteProduct.add(new JLabel("ID Usuario:"));
-        panelDeleteProduct.add(txtDeleteIdUsuarioProducto);
+        panelDeleteProduct.add(new JLabel("ID Usuario:" + id_user));
 
         JButton btnDeleteProduct = new JButton("Eliminar Producto");
         panelDeleteProduct.add(btnDeleteProduct);
@@ -526,7 +536,7 @@ public class Diseño {
         btnDeleteProduct.addActionListener(e -> {
             try {
                 int idProducto = Integer.parseInt(txtDeleteIdProducto.getText().trim());
-                int idUsuario = Integer.parseInt(txtDeleteIdUsuarioProducto.getText().trim());
+                int idUsuario = id_user;
 
                 Producto productoService = new Producto();
                 productoService.deleteProduct(idProducto, idUsuario);

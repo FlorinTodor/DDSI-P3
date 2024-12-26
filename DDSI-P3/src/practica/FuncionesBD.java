@@ -114,6 +114,7 @@ public class FuncionesBD {
 
 
 
+
     public static void insertarDatosPrueba_tabla() {
         try (Statement stmt = Connection.connection.createStatement()) {
             // Insertar Usuarios
@@ -127,6 +128,10 @@ public class FuncionesBD {
                     "VALUES (10, 'Camisa', 50, 19.99)");
             stmt.executeUpdate("INSERT INTO producto (ID_Producto, NombreProducto, Cantidad, Precio) " +
                     "VALUES (11, 'Pantalón', 20, 29.99)");
+            stmt.executeUpdate("INSERT INTO modificaProducto (ID_Usuario, ID_Producto) " +
+                    "VALUES (1, 11)");
+            stmt.executeUpdate("INSERT INTO modificaProducto (ID_Usuario, ID_Producto) " +
+                    "VALUES (1, 10)");
 
             // Insertar Pagos
             stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (1, SYSDATE)");
@@ -198,8 +203,8 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE producto (\n" +
                     "    ID_Producto integer,\n" +
                     "    NombreProducto varchar(30),\n" +
-                    "    Cantidad integer NOT NULL CHECK ( cantidad > 0 ),\n" +
-                    "    Precio float NOT NULL CHECK (precio > 0),\n" +
+                    "    Cantidad integer NOT NULL CHECK ( cantidad >= 0 ),\n" +
+                    "    Precio float NOT NULL CHECK (precio >= 0),\n" +
                     "    PRIMARY KEY(ID_Producto)\n" +
                     ")");
 
