@@ -53,6 +53,7 @@ public class Pedido {
 
         // Estados validos para metodo de  un envio
         String[] validStates = {"express", "normal", "frágil"};
+        estadoPedido = "procesando";
 
         // Comprobar si es valido el estado del pedido
         if (!Arrays.asList(validStates).contains(metodoEnvio)) {
@@ -131,13 +132,14 @@ public class Pedido {
             }
 
 // Crear pedido
-            String sqlPedido = "UPDATE pedido SET Direccion = ?, Estado_Pedido = ?, Tipo_Pago = ?, Metodo_Envio = ?, WHERE ID_Pedido = ?";
+            String sqlPedido = "UPDATE pedido SET Direccion = ?, Estado_Pedido = ?, Tipo_Pago = ?, Metodo_Envio = ? WHERE ID_Pedido = ? AND ID_Usuario = ?";
             pstmt = conn.prepareStatement(sqlPedido);
             pstmt.setString(1, direccion);
             pstmt.setString(2, estadoPedido);
             pstmt.setInt(3, tipoPago);
             pstmt.setString(4, metodoEnvio);
             pstmt.setInt(5, nextIdPedido);
+            pstmt.setInt(6, idUsuario);
             pstmt.executeUpdate();
 
 // Actualizar el stock de los productos
@@ -149,8 +151,8 @@ public class Pedido {
                 pstmt.executeUpdate();
             }
 
-            nextIdPedido++;
-
+            nextIdPedido = nextIdPedido + 1;
+/*
 // Crear nuevo pedido vacío
             String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
             try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
@@ -164,7 +166,7 @@ public class Pedido {
             pstmt = conn.prepareStatement(sqlGestionCarrito);
             pstmt.setInt(1, idCarrito);
             pstmt.setInt(2, nextIdPedido);
-            pstmt.executeUpdate();
+            pstmt.executeUpdate();*/
 
 // Vaciar el carrito
             try {
