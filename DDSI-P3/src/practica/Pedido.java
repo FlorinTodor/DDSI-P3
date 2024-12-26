@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import practica.Carrito;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 
 public class Pedido {
     private int idPedido;
+    private Carrito carrito;
     private List<Integer> productos;
     private String estadoPedido;
     private int idUsuario;
@@ -22,9 +24,9 @@ public class Pedido {
     public Pedido() {
     }
 
-    public Pedido(int idPedido, List<Integer> productos, String estadoPedido, int idUsuario, String metodoEnvio, String direccion) {
+    public Pedido(int idPedido, Carrito carrito, String estadoPedido, int idUsuario, String metodoEnvio, String direccion) {
         this.idPedido = idPedido;
-        this.productos = productos;
+        this.carrito = carrito;
         this.estadoPedido = estadoPedido;
         this.idUsuario = idUsuario;
         this.metodoEnvio = metodoEnvio;
@@ -37,7 +39,6 @@ public class Pedido {
                 "idPedido=" + idPedido +
                 ", idUsuario=" + idUsuario +
                 ", estadoPedido='" + estadoPedido + '\'' +
-                ", productos=" + productos +
                 ", metodoEnvio='" + metodoEnvio + '\'' +
                 ", direccion='" + direccion + '\'' +
                 '}';
@@ -45,19 +46,18 @@ public class Pedido {
     /**
      * RF4.1: Añadir reseña sobre un pedido
      */
-    public void realizarPedido(String direccion, int idPedido, String estadoPedido, int tipoPago, String metodoEnvio, int idUsuario, List<Integer> carrito) throws SQLException {
+    public void realizarPedido(String direccion, Carrito carrito, int tipoPago, String metodoEnvio, int idUsuario) throws SQLException {
         java.sql.Connection  conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
-        // EStados validos para un pedido
-        String[] validStates = {"pendiente", "procesando", "enviado", "entregado"};
+        // Estados validos para metodo de  un envio
+        String[] validStates = {"express", "normal", "frágil"};
 
         // Comprobar si es valido el estado del pedido
-        if (!Arrays.asList(validStates).contains(estadoPedido)) {
-            throw new IllegalArgumentException("El estado del pedido no es válido.");
+        if (!Arrays.asList(validStates).contains(metodoEnvio)) {
+            throw new IllegalArgumentException("El método del envío no es válido.");
         }
-
 
         try {
             conn = Connection.connection;
@@ -72,8 +72,42 @@ public class Pedido {
                 throw new SQLException("Error al verificar si el usuario existe.", e);
             }
 
-            // Verificar stock y estado de los productos en el carrito
-            for (int idProducto : carrito) {
+            // Verificar si el carrito existe para el usuario
+            /*try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM carrito WHERE ID_Carrito = ?")) {
+                ps.setInt(1, idUsuario);
+                try (rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        throw new Exception("No existe un carrito asociado al usuario con ID: " + idUsuario);
+                    }
+                }
+            } catch (SQLException e) {
+                throw new Exception("Error al verificar la existencia del carrito: " + e.getMessage(), e);
+            }
+
+// Verificar si el carrito está vacío
+            try {
+                ArrayList<String> productosEnCarrito = carrito.viewCart(idUsuario);
+                if (productosEnCarrito.isEmpty() || productosEnCarrito.get(0).equals("El carrito está vacío.")) {
+                    throw new Exception("El carrito está vacío. No se puede realizar el pedido.");
+                }
+            } catch (Exception e) {
+                throw new Exception("Error al verificar el contenido del carrito: " + e.getMessage(), e);
+            }*/
+
+            int idCarrito = 0;
+            try {
+                idCarrito = carrito.getOrCreateCarritoIdByUsuario(idUsuario);
+                // Your code here
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Handle the exception appropriately
+            }
+            Map<Integer, Integer> productos = carrito.getProductosDelCarrito(idCarrito);
+
+// Verificar stock y estado de los productos en el carrito
+            for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
+                int idProducto = producto.getKey();
+                int cantidad = producto.getValue();
                 String sqlProducto = "SELECT Cantidad FROM producto WHERE ID_Producto = ?";
                 pstmt = conn.prepareStatement(sqlProducto);
                 pstmt.setInt(1, idProducto);
@@ -83,23 +117,60 @@ public class Pedido {
                 }
             }
 
-            // Registrar el pedido
-            String sqlPedido = "INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario) VALUES (?, ?, ?, ?, ?, ?)";
+// Buscar máximo id pedido asociado al usuario
+            int nextIdPedido = -1;
+            String maxIdQuery = "SELECT MAX(ID_Pedido) FROM pedido WHERE ID_Usuario = ?";
+            pstmt = conn.prepareStatement(maxIdQuery);
+            pstmt.setInt(1, idUsuario); // Establecer el parámetro del ID de usuario
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                nextIdPedido = rs.getInt(1); // Obtener el mayor ID_Pedido
+                if (rs.wasNull()) {
+                    nextIdPedido = 0; // Si el resultado es NULL, asignar 0
+                }
+            }
+
+// Crear pedido
+            String sqlPedido = "UPDATE pedido SET Direccion = ?, Estado_Pedido = ?, Tipo_Pago = ?, Metodo_Envio = ?, WHERE ID_Pedido = ?";
             pstmt = conn.prepareStatement(sqlPedido);
-            pstmt.setInt(1, idPedido);
-            pstmt.setString(2, direccion);
-            pstmt.setString(3, estadoPedido);
-            pstmt.setInt(4, tipoPago);
-            pstmt.setString(5, metodoEnvio);
-            pstmt.setInt(6, idUsuario);
+            pstmt.setString(1, direccion);
+            pstmt.setString(2, estadoPedido);
+            pstmt.setInt(3, tipoPago);
+            pstmt.setString(4, metodoEnvio);
+            pstmt.setInt(5, nextIdPedido);
             pstmt.executeUpdate();
 
-            // Actualizar el stock de los productos
-            for (int idProducto : carrito) {
+// Actualizar el stock de los productos
+            for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
+                int idProducto = producto.getKey();
                 String sqlUpdateStock = "UPDATE producto SET Cantidad = Cantidad - 1 WHERE ID_Producto = ?";
                 pstmt = conn.prepareStatement(sqlUpdateStock);
                 pstmt.setInt(1, idProducto);
                 pstmt.executeUpdate();
+            }
+
+            nextIdPedido++;
+
+// Crear nuevo pedido vacío
+            String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
+            try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
+                psPedido.setInt(1, nextIdPedido);
+                psPedido.setInt(2, idUsuario);
+                psPedido.executeUpdate();
+            }
+
+// Crear una nueva entrada en la tabla GestionCarrito
+            String sqlGestionCarrito = "INSERT INTO GestionCarrito (ID_Carrito, ID_Pedido) VALUES (?, ?)";
+            pstmt = conn.prepareStatement(sqlGestionCarrito);
+            pstmt.setInt(1, idCarrito);
+            pstmt.setInt(2, nextIdPedido);
+            pstmt.executeUpdate();
+
+// Vaciar el carrito
+            try {
+                carrito.emptyCart(idUsuario);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             conn.commit(); // Confirmar transacción
@@ -153,7 +224,7 @@ public class Pedido {
                 pstmtProductos.close();
 
                 // Crear un objeto Pedido y agregarlo a la lista
-                Pedido pedido = new Pedido(idPedido, productos, estadoPedido, idUsuario, metodoEnvio, direccion);
+                Pedido pedido = new Pedido(idPedido, carrito, estadoPedido, idUsuario, metodoEnvio, direccion);
                 pedidos.add(pedido);
             }
         } finally {

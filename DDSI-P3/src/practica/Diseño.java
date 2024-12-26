@@ -1007,21 +1007,11 @@ public class Diseño {
 
         JPanel panelRealizarPedido = new JPanel(new GridLayout(0, 1, 5, 5));
         JTextField txtDireccion = new JTextField();
-        JTextField txtIdPedido = new JTextField();
-        JTextField txtEstadoPedido = new JTextField();
         JTextField txtTipoPago = new JTextField();
         JTextField txtMetodoEnvio = new JTextField();
-        JTextField txtCarrito = new JTextField();
         JLabel labelUsuario = new JLabel( "Eres el usuario: " + Integer.toString(id_user));
 
-
         panelRealizarPedido.add(labelUsuario);
-
-        panelRealizarPedido.add(new JLabel("ID Pedido:"));
-        panelRealizarPedido.add(txtIdPedido);
-
-        panelRealizarPedido.add(new JLabel("Estado Pedido:"));
-        panelRealizarPedido.add(txtEstadoPedido);
 
         panelRealizarPedido.add(new JLabel("Tipo de Pago:"));
         panelRealizarPedido.add(txtTipoPago);
@@ -1032,27 +1022,18 @@ public class Diseño {
         panelRealizarPedido.add(new JLabel("Dirección:"));
         panelRealizarPedido.add(txtDireccion);
 
-        panelRealizarPedido.add(new JLabel("Carrito (IDs de productos separados por comas):"));
-        panelRealizarPedido.add(txtCarrito);
-
         JButton btnRealizarPedido = new JButton("Añadir Pedido");
         panelRealizarPedido.add(btnRealizarPedido);
 
         btnRealizarPedido.addActionListener(e -> {
             try {
                 String direcc = txtDireccion.getText().trim();
-                int idPed = Integer.parseInt(txtIdPedido.getText().trim());
-                String estPed = txtEstadoPedido .getText().trim();
                 int tipPag = Integer.parseInt(txtTipoPago.getText().trim());
                 String metEnv= txtMetodoEnvio .getText().trim();
-                String[] carritoArray = txtCarrito.getText().trim().split(",");
-                List<Integer> carrito = new ArrayList<>();
-                for (String idProducto : carritoArray) {
-                    carrito.add(Integer.parseInt(idProducto.trim()));
-                }
-
+                Carrito carrito = new Carrito();
                 // Llamada a metodo realizarPedido
-                Pedido orderService = new Pedido(idPed, carrito, estPed, id_user, metEnv, direcc);                orderService.realizarPedido(direcc,idPed,estPed,tipPag,metEnv,id_user,carrito);
+                Pedido orderService = new Pedido();
+                orderService.realizarPedido(direcc, carrito, tipPag, metEnv, id_user);
                 JOptionPane.showMessageDialog(panelRealizarPedido, "Pedido realizado con exito");
 
             } catch (Exception ex2) {

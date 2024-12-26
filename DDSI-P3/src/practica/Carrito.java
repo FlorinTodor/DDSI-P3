@@ -1,11 +1,34 @@
 package practica;
 
 import java.sql.*;
+import java.util.AbstractMap;
 import java.util.ArrayList;
-
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 
 public class Carrito {
+
+
+    /**
+     * Obtener productos del carrito
+     */
+    public Map<Integer, Integer> getProductosDelCarrito(int idCarrito) throws SQLException {
+        Map<Integer, Integer> productos = new HashMap<>();
+        String sqlProductos = "SELECT ID_Producto, Cantidad FROM tiene WHERE ID_Carrito = ?";
+        try (PreparedStatement ps = Connection.connection.prepareStatement(sqlProductos)) {
+            ps.setInt(1, idCarrito);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int idProducto = rs.getInt("ID_Producto");
+                    int cantidad = rs.getInt("Cantidad");
+                    productos.put(idProducto, cantidad);
+                }
+            }
+        }
+        return productos;
+    }
 
     private int addCarritoEntry(int idUsuario) throws Exception {
         if (Connection.connection == null) {
@@ -32,7 +55,7 @@ public class Carrito {
         // Crear un nuevo ID de pedido
         int nextId = -1;
 
-        // 1. Obtener el valor máximo actual de ID_USUARIO
+        // Obtener el valor máximo actual de ID_PEDIDO
         String maxIdQuery = "SELECT NVL(MAX(ID_PEDIDO), 0) + 1 FROM PEDIDO";
         try (PreparedStatement ps = conn.prepareStatement(maxIdQuery);
              ResultSet rs = ps.executeQuery()) {
@@ -66,7 +89,7 @@ public class Carrito {
      * Método auxiliar para obtener o crear el ID del carrito activo asociado a un usuario.
      * Si no existe un carrito activo, se crea uno nuevo.
      */
-    private int getOrCreateCarritoIdByUsuario(int idUsuario) throws Exception {
+    public int getOrCreateCarritoIdByUsuario(int idUsuario) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
