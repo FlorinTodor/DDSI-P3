@@ -213,9 +213,43 @@ relacion_valida INTEGER;
 END;
 /
 
+-- Disparador que comprueba si el producto que queremos agregar al carrito existe
+-- y si la cantidad a agregar es menor o igual que la cantidad en stock
+CREATE OR REPLACE TRIGGER verificar_cantidad_producto
+    BEFORE INSERT OR UPDATE ON tiene
+    FOR EACH ROW
+DECLARE
+    cantidad_producto INTEGER;
+    producto_existe INTEGER;
+BEGIN
+    -- Verificar si el producto existe en la tabla Producto
+    SELECT COUNT(*)
+    INTO producto_existe
+    FROM producto
+    WHERE ID_Producto = :NEW.ID_Producto;
 
+    IF producto_existe = 0 THEN
+        RAISE_APPLICATION_ERROR(
+                -20006,
+                'Error: El producto no existe en la tabla Producto.'
+        );
+    END IF;
 
+    -- Obtener la cantidad disponible del producto en la tabla Producto
+    SELECT Cantidad
+    INTO cantidad_producto
+    FROM producto
+    WHERE ID_Producto = :NEW.ID_Producto;
 
+    -- Verificar que la cantidad a insertar sea menor que la cantidad disponible
+    IF :NEW.Cantidad > cantidad_producto THEN
+        RAISE_APPLICATION_ERROR(
+                -20005,
+                'Error: La cantidad a insertar es mayor que la cantidad disponible del producto.'
+        );
+    END IF;
+END;
+/
 
 SELECT * FROM Usuario;
 SELECT * FROM Producto;
