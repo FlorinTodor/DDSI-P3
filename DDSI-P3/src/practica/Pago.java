@@ -161,7 +161,6 @@ public class Pago {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
     }
 
@@ -193,7 +192,6 @@ public class Pago {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
 
         return metodosPago;
@@ -268,7 +266,6 @@ public class Pago {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
     }
 
@@ -304,7 +301,6 @@ public class Pago {
         } finally {
             if (rs != null) rs.close();
             if (pstmt != null) pstmt.close();
-            if (conn != null) conn.close();
         }
 
         return transacciones;
