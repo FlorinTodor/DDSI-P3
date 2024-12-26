@@ -64,7 +64,7 @@ public class Producto{
     /**
      * RF2.2: Editar producto
      */
-    public void editProduct(int idProducto, String nuevoNombre, int nuevaCantidad, double nuevoPrecio, int idUsuario) throws Exception {
+    public void editProduct(int idProducto, String nuevoNombre, Integer nuevaCantidad, Double nuevoPrecio, int idUsuario) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
@@ -109,7 +109,6 @@ public class Producto{
         if (nuevoPrecio <= 0) {
             throw new Exception("El nuevo precio debe ser mayor que 0.");
         }
-
         // Usar el nombre actual si no se proporciona un nuevo nombre
         if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
             nuevoNombre = nombreActual;

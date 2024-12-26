@@ -498,7 +498,7 @@ public class Diseño {
         panelEditProduct.add(txtEditPrecioProducto);
         panelEditProduct.add(new JLabel("Nueva Cantidad:"));
         panelEditProduct.add(txtEditCantidadProducto);
-        panelEditProduct.add(new JLabel("ID Usuario:" + id_user));
+        panelEditProduct.add(new JLabel("ID Usuario: " + id_user));
 
         JButton btnEditProduct = new JButton("Editar Producto");
         panelEditProduct.add(btnEditProduct);
