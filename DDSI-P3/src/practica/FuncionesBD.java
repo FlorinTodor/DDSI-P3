@@ -112,8 +112,20 @@ public class FuncionesBD {
         }
     }
 
-
-
+    public static void crearSecuencia() {
+        String borrarSecuenciaSQL = "DROP SEQUENCE seq_id_pedido";
+        String crearSecuenciaSQL = "CREATE SEQUENCE seq_id_pedido START WITH 1 INCREMENT BY 1";
+        try (Statement stmt = Connection.connection.createStatement()) {
+            // Borrar la secuencia si existe
+            stmt.executeUpdate(borrarSecuenciaSQL);
+            // Crear la nueva secuencia
+            stmt.executeUpdate(crearSecuenciaSQL);
+            Connection.connection.commit();
+            JOptionPane.showMessageDialog(Connection.frame, "Secuencia creada correctamente.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(Connection.frame, "Error al crear la secuencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     public static void insertarDatosPrueba_tabla() {
         try (Statement stmt = Connection.connection.createStatement()) {
@@ -278,7 +290,7 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE GestionCarrito (\n" +
                     "    ID_Carrito integer REFERENCES carrito(ID_Carrito),\n" +
                     "    ID_Pedido integer REFERENCES pedido(ID_Pedido),\n" +
-                    "    PRIMARY KEY(ID_Carrito)\n" +
+                    "    PRIMARY KEY(ID_Carrito, ID_Pedido)\n" +
                     ")");
 
             stmt.executeUpdate("CREATE TABLE GestionPedido (\n" +

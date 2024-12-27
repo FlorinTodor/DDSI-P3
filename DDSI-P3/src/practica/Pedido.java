@@ -148,7 +148,7 @@ public class Pedido {
                 pstmt.executeUpdate();
             }*/
 
-           // carrito.crearRelacionCarritoPedido(idUsuario); HAY QUE CAMBIAR
+           carrito.crearRelacionCarritoPedido(idUsuario);
 
             // Vaciar el carrito
             try {

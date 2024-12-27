@@ -98,9 +98,11 @@ CREATE TABLE tiene (
 
 -- Relación: Gestión de Carrito
 CREATE TABLE GestionCarrito (
-    ID_Carrito integer REFERENCES carrito(ID_Carrito),
-    ID_Pedido integer REFERENCES pedido(ID_Pedido),
-    PRIMARY KEY(ID_Pedido)
+    ID_Carrito INTEGER NOT NULL,
+    ID_Pedido INTEGER NOT NULL,
+    PRIMARY KEY (ID_Carrito, ID_Pedido),
+    FOREIGN KEY (ID_Carrito) REFERENCES CARRITO(ID_Carrito),
+    FOREIGN KEY (ID_Pedido) REFERENCES PEDIDO(ID_Pedido)
 );
 
 -- Relación: Gestión de Pedido

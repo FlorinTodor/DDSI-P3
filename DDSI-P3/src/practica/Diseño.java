@@ -151,6 +151,7 @@ public class Diseño {
         crearBorrarTablas.addActionListener(e -> {
             FuncionesBD.eliminarDatos_tabla();
             FuncionesBD.borraryCrearTablas();
+            FuncionesBD.crearSecuencia();
         });
         menuGestion.add(crearBorrarTablas);
 
