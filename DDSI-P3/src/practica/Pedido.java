@@ -53,7 +53,6 @@ public class Pedido {
 
         // Estados validos para metodo de  un envio
         String[] validStates = {"express", "normal", "frágil"};
-        estadoPedido = "procesando";
 
         // Comprobar si es valido el estado del pedido
         if (!Arrays.asList(validStates).contains(metodoEnvio)) {
@@ -85,15 +84,15 @@ public class Pedido {
                 throw new SQLException("Error al verificar la existencia del carrito: " + e.getMessage(), e);
             }
 
-// Verificar si el carrito está vacío
-            try {
+            // Verificar si el carrito está vacío
+           /* try {
                 ArrayList<String> productosEnCarrito = carrito.viewCart(idUsuario);
                 if (productosEnCarrito.isEmpty() || productosEnCarrito.get(0).equals("El carrito está vacío.")) {
                     throw new Exception("El carrito está vacío. No se puede realizar el pedido.");
                 }
             } catch (Exception e) {
                 throw new SQLException("Error al verificar el contenido del carrito: " + e.getMessage(), e);
-            }
+            }*/
 
             int idCarrito = 0;
             try {
@@ -103,9 +102,9 @@ public class Pedido {
                 e.printStackTrace();
                 // Handle the exception appropriately
             }
-            Map<Integer, Integer> productos = carrito.getProductosDelCarrito(idCarrito);
+            /*Map<Integer, Integer> productos = carrito.getProductosDelCarrito(idCarrito);
 
-// Verificar stock y estado de los productos en el carrito
+            // Verificar stock y estado de los productos en el carrito
             for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
                 int idProducto = producto.getKey();
                 int cantidad = producto.getValue();
@@ -116,73 +115,42 @@ public class Pedido {
                 if (!rs.next() || rs.getInt("Cantidad") <= 0) {
                     throw new SQLException("El producto con ID " + idProducto + " no tiene stock o no está habilitado.");
                 }
-            }
+            }*/
 
-// Buscar máximo id pedido asociado al usuario
-            int nextIdPedido = -1;
+            // Buscar máximo id pedido asociado al usuario
+            int idPedido = -1;
             String maxIdQuery = "SELECT MAX(ID_Pedido) FROM pedido WHERE ID_Usuario = ?";
             pstmt = conn.prepareStatement(maxIdQuery);
             pstmt.setInt(1, idUsuario); // Establecer el parámetro del ID de usuario
             rs = pstmt.executeQuery();
             if (rs.next()) {
-                nextIdPedido = rs.getInt(1); // Obtener el mayor ID_Pedido
+                idPedido = rs.getInt(1); // Obtener el mayor ID_Pedido
                 if (rs.wasNull()) {
-                    nextIdPedido = 0; // Si el resultado es NULL, asignar 0
+                    idPedido = 0; // Si el resultado es NULL, asignar 0
                 }
             }
 
-// Crear pedido
-            String sqlPedido = "UPDATE pedido SET Direccion = ?, Estado_Pedido = ?, Tipo_Pago = ?, Metodo_Envio = ? WHERE ID_Pedido = ? AND ID_Usuario = ?";
+            // Crear pedido
+            String sqlPedido = "UPDATE PEDIDO SET Direccion = ?, Estado_Pedido = 'procesando', Tipo_Pago = ?, Metodo_Envio = ? WHERE ID_Pedido = ?";
             pstmt = conn.prepareStatement(sqlPedido);
             pstmt.setString(1, direccion);
-            pstmt.setString(2, estadoPedido);
-            pstmt.setInt(3, tipoPago);
-            pstmt.setString(4, metodoEnvio);
-            pstmt.setInt(5, nextIdPedido);
-            pstmt.setInt(6, idUsuario);
+            pstmt.setInt(2, tipoPago);
+            pstmt.setString(3, metodoEnvio);
+            pstmt.setInt(4, idPedido);
             pstmt.executeUpdate();
 
-// Actualizar el stock de los productos
-            for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
+            // Actualizar el stock de los productos
+           /* for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
                 int idProducto = producto.getKey();
                 String sqlUpdateStock = "UPDATE producto SET Cantidad = Cantidad - 1 WHERE ID_Producto = ?";
                 pstmt = conn.prepareStatement(sqlUpdateStock);
                 pstmt.setInt(1, idProducto);
                 pstmt.executeUpdate();
-            }
+            }*/
 
-            //nextIdPedido = nextIdPedido + 1;
+           // carrito.crearRelacionCarritoPedido(idUsuario); HAY QUE CAMBIAR
 
-// Crear nuevo pedido vacío
-            String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (seq_id_pedido.NEXTVAL, ?)";
-            try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
-                //psPedido.setInt(1, nextIdPedido);
-                psPedido.setInt(1, idUsuario);
-                psPedido.executeUpdate();
-            }
-
-            // Obtener el ID_PEDIDO recién generado por la secuencia
-            int nextidPedido;
-            String getGeneratedIdPedidoSQL = "SELECT MAX(ID_PEDIDO) FROM PEDIDO WHERE ID_USUARIO = ?"; //Forma más segura de obtener el id que le corresponde a este usuario
-            try (PreparedStatement psGetIdPedido = conn.prepareStatement(getGeneratedIdPedidoSQL)) {
-                psGetIdPedido.setInt(1, idUsuario);
-                try (ResultSet rs1 = psGetIdPedido.executeQuery()) {
-                    if (rs1.next()) {
-                        nextidPedido = rs1.getInt(1);
-                    } else {
-                        throw new SQLException("No se pudo obtener el ID_PEDIDO generado.");
-                    }
-                }
-            }
-
-// Crear una nueva entrada en la tabla GestionCarrito
-            String sqlGestionCarrito = "INSERT INTO GestionCarrito (ID_Carrito, ID_Pedido) VALUES (?, ?)";
-            pstmt = conn.prepareStatement(sqlGestionCarrito);
-            pstmt.setInt(1, idCarrito);
-            pstmt.setInt(2, nextIdPedido);
-            pstmt.executeUpdate();
-
-// Vaciar el carrito
+            // Vaciar el carrito
             try {
                 carrito.emptyCart(idUsuario);
             } catch (Exception e) {

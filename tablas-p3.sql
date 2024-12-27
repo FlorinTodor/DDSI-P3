@@ -100,7 +100,7 @@ CREATE TABLE tiene (
 CREATE TABLE GestionCarrito (
     ID_Carrito integer REFERENCES carrito(ID_Carrito),
     ID_Pedido integer REFERENCES pedido(ID_Pedido),
-    PRIMARY KEY(ID_Carrito)
+    PRIMARY KEY(ID_Pedido)
 );
 
 -- Relación: Gestión de Pedido
@@ -162,18 +162,19 @@ CREATE OR REPLACE TRIGGER validar_usuario_en_modificaProducto
 AFTER INSERT OR UPDATE ON modificaProducto
                            FOR EACH ROW
 DECLARE
-    usuario_existe INTEGER;
-        BEGIN
-            -- Verificar si el usuario asociado al producto existe
-                SELECT COUNT(*)
-                INTO usuario_existe
-                FROM usuario
-                WHERE ID_Usuario = :NEW.ID_Usuario;
+usuario_existe INTEGER;
+    BEGIN
+        -- Verificar si el usuario asociado al producto existe
+        SELECT COUNT(*)
+        INTO usuario_existe
+        FROM usuario
+        WHERE ID_Usuario = : NEW.ID_Usuario;
 
-            -- Opcional: Lanzar un error si se requiere notificar el problema
-                RAISE_APPLICATION_ERROR(-20002, 'El usuario asociado al producto no existe. Producto eliminado.');
+        -- Opcional: Lanzar un error si se requiere notificar el problema
+        IF usuario_existe = 0 THEN
+            RAISE_APPLICATION_ERROR(-20002, 'El usuario asociado al producto no existe. Producto eliminado.');
         END IF;
-    END;
+END;
 /
 
 --Disparador que verifica que el producto en tabla ModificaProducto existe
@@ -190,8 +191,9 @@ producto_existe INTEGER;
             WHERE ID_Producto = :NEW.ID_Producto;
 
         -- Opcional: Lanzar un error para notificar el problema
+        IF producto_existe = 0 THEN
             RAISE_APPLICATION_ERROR(-20003, 'El producto asociado no existe. Relación eliminada de modificaProducto.');
-    END IF;
+        END IF;
 END;
 /
 
@@ -209,8 +211,9 @@ relacion_valida INTEGER;
             WHERE ID_Producto = :NEW.ID_Producto;
 
         -- Opcional: Lanzar un error para informar sobre la eliminación
+        IF relacion_valida = 0 THEN
             RAISE_APPLICATION_ERROR(-20004, 'El producto no tiene una relación válida en modificaProducto. Producto eliminado.');
-    END IF;
+        END IF;
 END;
 /
 
