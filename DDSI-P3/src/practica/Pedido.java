@@ -73,37 +73,34 @@ public class Pedido {
             }
 
             // Verificar si el carrito existe para el usuario
-            try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM carrito WHERE ID_Carrito = ?")) {
-                ps.setInt(1, idUsuario);
-                try (ResultSet rs2 = ps.executeQuery()) {
-                    if (rs2.next() && rs2.getInt(1) == 0) {
-                        throw new Exception("No existe un carrito asociado al usuario con ID: " + idUsuario);
-                    }
+            int idCarrito = -1;
+            try {
+                idCarrito = carrito.getCarritoId(idUsuario);
+                if (idCarrito == -1) {
+                    throw new SQLException("Error al verificar la existencia del carrito: El carrito no existe para el usuario.");
                 }
             } catch (Exception e) {
-                throw new SQLException("Error al verificar la existencia del carrito: " + e.getMessage(), e);
+                throw new SQLException("Error al obtener el ID del carrito: " + e.getMessage(), e);
             }
 
             // Verificar si el carrito está vacío
-           /* try {
+           try {
                 ArrayList<String> productosEnCarrito = carrito.viewCart(idUsuario);
                 if (productosEnCarrito.isEmpty() || productosEnCarrito.get(0).equals("El carrito está vacío.")) {
                     throw new Exception("El carrito está vacío. No se puede realizar el pedido.");
                 }
             } catch (Exception e) {
                 throw new SQLException("Error al verificar el contenido del carrito: " + e.getMessage(), e);
-            }*/
-
-            int idCarrito = 0;
+            }
             try {
-                idCarrito = carrito.getOrCreateCarritoIdByUsuario(idUsuario);
+                idCarrito = carrito.getCarritoId(idUsuario);
                 // Your code here
             } catch (Exception e) {
                 e.printStackTrace();
                 // Handle the exception appropriately
             }
-            /*Map<Integer, Integer> productos = carrito.getProductosDelCarrito(idCarrito);
 
+            Map<Integer, Integer> productos = carrito.getProductosDelCarrito(idCarrito);
             // Verificar stock y estado de los productos en el carrito
             for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
                 int idProducto = producto.getKey();
@@ -115,7 +112,7 @@ public class Pedido {
                 if (!rs.next() || rs.getInt("Cantidad") <= 0) {
                     throw new SQLException("El producto con ID " + idProducto + " no tiene stock o no está habilitado.");
                 }
-            }*/
+            }
 
             // Buscar máximo id pedido asociado al usuario
             int idPedido = -1;
@@ -150,19 +147,17 @@ public class Pedido {
             }
 
             // Actualizar el stock de los productos
-           /* for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
-                int idProducto = producto.getKey();
-                String sqlUpdateStock = "UPDATE producto SET Cantidad = Cantidad - 1 WHERE ID_Producto = ?";
-                pstmt = conn.prepareStatement(sqlUpdateStock);
-                pstmt.setInt(1, idProducto);
-                pstmt.executeUpdate();
-            }*/
+           for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
+               int idProducto = producto.getKey();
+               String sqlUpdateStock = "UPDATE producto SET Cantidad = Cantidad - ? WHERE ID_Producto = ?";
+               pstmt = conn.prepareStatement(sqlUpdateStock);
+               pstmt.setInt(1, producto.getValue());
+               pstmt.setInt(2, idProducto);
+               pstmt.executeUpdate();
+           }
 
-           carrito.crearRelacionCarritoPedido(idUsuario);
-
-            // Vaciar el carrito
-            try {
-                carrito.emptyCart(idUsuario);
+            try{
+                carrito.addCarritoEntry(idUsuario);
             } catch (Exception e) {
                 e.printStackTrace();
             }

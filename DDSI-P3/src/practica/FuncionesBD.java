@@ -112,9 +112,24 @@ public class FuncionesBD {
         }
     }
 
-    public static void crearSecuencia() {
-        String borrarSecuenciaSQL = "DROP SEQUENCE seq_id_pedido";
+    public static void crearSecuenciaPedido() {
+        String borrarSecuenciaSQL = "BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE seq_id_pedido'; EXCEPTION WHEN OTHERS THEN NULL; END;";
         String crearSecuenciaSQL = "CREATE SEQUENCE seq_id_pedido START WITH 1 INCREMENT BY 1";
+        try (Statement stmt = Connection.connection.createStatement()) {
+            // Borrar la secuencia si existe
+            stmt.executeUpdate(borrarSecuenciaSQL);
+            // Crear la nueva secuencia
+            stmt.executeUpdate(crearSecuenciaSQL);
+            Connection.connection.commit();
+            JOptionPane.showMessageDialog(Connection.frame, "Secuencia creada correctamente.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(Connection.frame, "Error al crear la secuencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    public static void crearSecuenciaCarrito() {
+        String borrarSecuenciaSQL = "BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE seq_id_carrito'; EXCEPTION WHEN OTHERS THEN NULL; END;";
+
+        String crearSecuenciaSQL = "CREATE SEQUENCE seq_id_carrito START WITH 1 INCREMENT BY 1";
         try (Statement stmt = Connection.connection.createStatement()) {
             // Borrar la secuencia si existe
             stmt.executeUpdate(borrarSecuenciaSQL);
@@ -296,8 +311,8 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE GestionPedido (\n" +
                     "    ID_Usuario integer REFERENCES usuario(ID_Usuario),\n" +
                     "    ID_Pedido integer REFERENCES pedido(ID_Pedido),\n" +
-                    "    PRIMARY KEY(ID_Pedido),\n" +
-                    "    UNIQUE(ID_Usuario)\n" +
+                    "    PRIMARY KEY(ID_Usuario, ID_Pedido),\n" +
+                    "    UNIQUE(ID_Pedido)\n" +
                     ")");
 
             Connection.connection.commit();

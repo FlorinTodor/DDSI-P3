@@ -121,6 +121,70 @@ public class Disparadores {
                     "    END IF; " +
                     "END;";
 
+    // TRIGGER para verificar la cantidad de producto antes de insertar o actualizar en la tabla 'tiene' Gabriel
+    private static final String TRIG_VERIFICAR_CANTIDAD_PRODUCTO =
+            "CREATE OR REPLACE TRIGGER verificar_cantidad_producto " +
+                    "BEFORE INSERT OR UPDATE ON tiene " +
+                    "FOR EACH ROW " +
+                    "DECLARE " +
+                    "    cantidad_producto INTEGER; " +
+                    "    producto_existe INTEGER; " +
+                    "BEGIN " +
+                    "    SELECT COUNT(*) " +
+                    "    INTO producto_existe " +
+                    "    FROM producto " +
+                    "    WHERE ID_Producto = :NEW.ID_Producto; " +
+                    "    IF producto_existe = 0 THEN " +
+                    "        RAISE_APPLICATION_ERROR( " +
+                    "                -20006, " +
+                    "                'Error: El producto no existe en la tabla Producto.' " +
+                    "        ); " +
+                    "    END IF; " +
+                    "    SELECT Cantidad " +
+                    "    INTO cantidad_producto " +
+                    "    FROM producto " +
+                    "    WHERE ID_Producto = :NEW.ID_Producto; " +
+                    "    IF :NEW.Cantidad > cantidad_producto THEN " +
+                    "        RAISE_APPLICATION_ERROR( " +
+                    "                -20005, " +
+                    "                'Error: La cantidad a insertar es mayor que la cantidad disponible del producto.' " +
+                    "        ); " +
+                    "    END IF; " +
+                    "END;";
+
+    // TRIGGER que evita que se inserte una relación duplicada entre un carrito y un pedido en GESTIONCARRITO. Gabriel
+    private static final String TRIG_EVITAR_CARRITO_DUPLICADO =
+            "CREATE OR REPLACE TRIGGER evitar_carrito_duplicado " +
+                    "BEFORE INSERT ON gestioncarrito " +
+                    "FOR EACH ROW " +
+                    "DECLARE " +
+                    "    carrito_duplicado INTEGER; " +
+                    "BEGIN " +
+                    "    SELECT COUNT(*) INTO carrito_duplicado " +
+                    "    FROM gestioncarrito " +
+                    "    WHERE ID_Carrito = :NEW.ID_Carrito AND ID_Pedido = :NEW.ID_Pedido; " +
+                    "    IF carrito_duplicado > 0 THEN " +
+                    "        RAISE_APPLICATION_ERROR(-20007, 'Error: Ya existe una relación entre este carrito y pedido.'); " +
+                    "    END IF; " +
+                    "END;";
+
+    // Trigger para verificar que el ID_Usuario asociado con un pedido existe en la tabla usuario
+    private static final String TRIG_VERIFICAR_USUARIO_EN_PEDIDO =
+            "CREATE OR REPLACE TRIGGER verificar_usuario_en_pedido "
+                    + "BEFORE INSERT OR UPDATE ON pedido "
+                    + "FOR EACH ROW "
+                    + "DECLARE "
+                    + "   usuario_existe INTEGER; "
+                    + "BEGIN "
+                    + "   SELECT COUNT(*) INTO usuario_existe "
+                    + "     FROM usuario "
+                    + "    WHERE ID_Usuario = :NEW.ID_Usuario; "
+                    + "   IF usuario_existe = 0 THEN "
+                    + "      RAISE_APPLICATION_ERROR(-20007, "
+                    + "         'Error: El usuario asociado al pedido no existe.' "
+                    + "      ); "
+                    + "   END IF; "
+                    + "END;";
 
     /**
      * Método que crea (o reemplaza) todos los disparadores en la BD.
@@ -135,6 +199,9 @@ public class Disparadores {
             st.execute(TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO);
             st.execute(TRIG_VERIFICAR_USUARIO_EXISTE);
             st.execute(TRIG_VERIFICAR_METODO_PAGO_EXISTE);
+            st.execute(TRIG_VERIFICAR_CANTIDAD_PRODUCTO);
+            st.execute(TRIG_VERIFICAR_USUARIO_EN_PEDIDO );
+            st.execute(TRIG_EVITAR_CARRITO_DUPLICADO);
             //st.execute(TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO);
             System.out.println("Disparadores creados/reemplazados con éxito.");
         }
