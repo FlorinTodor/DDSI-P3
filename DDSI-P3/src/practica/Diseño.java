@@ -3,6 +3,7 @@ package practica;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1127,6 +1128,8 @@ public class Diseño {
         inputPanelEnvio.add(new JLabel("")); // Empty label to fill the second column
         inputPanelEnvio.add(new JLabel("ID Pedido:"));
         inputPanelEnvio.add(txtIdPedidoEnvio);
+        inputPanelEnvio.add(new JLabel("Nuevo Método de Envío:"));
+        inputPanelEnvio.add(txtnuevoMetodoEnvio);
 
 
         JButton btnCambiarMetodoEnvio = new JButton("Cambiar Método de Envío");
@@ -1145,6 +1148,12 @@ public class Diseño {
                 textAreaEnvio.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoEnvio.getText().trim());
                 String metodoEnvio = txtnuevoMetodoEnvio.getText().trim();
+
+                // Validar que el método de envío sea uno de los permitidos
+                String[] validStates = {"express", "normal", "frágil"};
+                if (!Arrays.asList(validStates).contains(metodoEnvio)) {
+                    throw new IllegalArgumentException("El método del envío no es válido.");
+                }
 
                 Pedido pedidoService = new Pedido();
                 pedidoService.elegirMetodoEnvio(metodoEnvio, id_user, idPedido);

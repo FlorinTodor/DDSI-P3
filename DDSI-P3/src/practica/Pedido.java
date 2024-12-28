@@ -139,6 +139,16 @@ public class Pedido {
             pstmt.setInt(4, idPedido);
             pstmt.executeUpdate();
 
+            // Insertar en la tabla GestionPedido
+            String sqlGestionPedido = "INSERT INTO GestionPedido (ID_Usuario, ID_Pedido) VALUES (?, ?)";
+            try (PreparedStatement psGestionPedido = conn.prepareStatement(sqlGestionPedido)) {
+                psGestionPedido.setInt(1, idUsuario);
+                psGestionPedido.setInt(2, idPedido);
+                psGestionPedido.executeUpdate();
+            } catch (SQLException e) {
+                throw new SQLException("Error al insertar en la tabla GestionPedido: " + e.getMessage(), e);
+            }
+
             // Actualizar el stock de los productos
            /* for (Map.Entry<Integer, Integer> producto : productos.entrySet()) {
                 int idProducto = producto.getKey();
