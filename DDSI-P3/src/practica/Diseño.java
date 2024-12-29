@@ -2,7 +2,9 @@ package practica;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -151,6 +153,10 @@ public class Diseño {
         crearBorrarTablas.addActionListener(e -> {
             FuncionesBD.eliminarDatos_tabla();
             FuncionesBD.borraryCrearTablas();
+            FuncionesBD.crearSecuenciaPedido();
+            FuncionesBD.crearSecuenciaCarrito();
+            Connection.cerrarConexion(true);
+            frame.dispose();
         });
         menuGestion.add(crearBorrarTablas);
 
@@ -178,6 +184,16 @@ public class Diseño {
             }
         });
         menuGestion.add(insertarDisparadores);
+        // Opción 5: Crear tablas
+        JMenuItem CrearTablas = new JMenuItem("Crear Tablas");
+        CrearTablas.addActionListener(e -> {
+            try {
+                FuncionesBD.crearTablas();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        menuGestion.add(CrearTablas);
 
 
 
@@ -770,22 +786,25 @@ public class Diseño {
 
         usuariosTabbedPane.addTab("Modificar Datos de Usuario", panelUpdateUser);
 
-        // -----------------------------------------------------------
         // RF1.4: Recuperar Contraseña (Muestra Token Generado)
-        // -----------------------------------------------------------
         JPanel panelRecoverPassword = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtCorreoRecover = new JTextField();
+        JTextField txtTokenGenerated = new JTextField();
+        txtTokenGenerated.setEditable(false);
 
         panelRecoverPassword.add(new JLabel("Correo:"));
         panelRecoverPassword.add(txtCorreoRecover);
+        panelRecoverPassword.add(new JLabel("Token Generado:"));
+        panelRecoverPassword.add(txtTokenGenerated);
 
-        JButton btnRecoverPassword = new JButton("Recuperar Contraseña");
+        JButton btnRecoverPassword = new JButton("Generar Token");
         panelRecoverPassword.add(btnRecoverPassword);
 
         btnRecoverPassword.addActionListener(e -> {
             try {
                 Usuario userService = new Usuario();
                 String token = userService.recoverPassword(txtCorreoRecover.getText().trim());
+                txtTokenGenerated.setText(token);
                 JOptionPane.showMessageDialog(panelRecoverPassword,
                         "Token de recuperación generado: " + token);
             } catch (Exception ex) {
@@ -794,14 +813,42 @@ public class Diseño {
             }
         });
 
-        usuariosTabbedPane.addTab("Recuperar Contraseña", panelRecoverPassword);
+        usuariosTabbedPane.addTab("Generar Token", panelRecoverPassword);
 
-        /*
-            Implementado en pestalla_registro del fichero Diseño.java
-             */
-        // -----------------------------------------------------------
-        // RF1.5: Iniciar Sesión
-        // -----------------------------------------------------------
+        // RF1.4 Cambiar Contraseña utilizando el Token
+        JPanel panelResetPassword = new JPanel(new GridLayout(4, 2, 5, 5));
+        JTextField txtCorreoReset = new JTextField();
+        JTextField txtTokenInput = new JTextField();
+        JTextField txtNewPassword = new JTextField();
+
+        panelResetPassword.add(new JLabel("Correo:"));
+        panelResetPassword.add(txtCorreoReset);
+        panelResetPassword.add(new JLabel("Token:"));
+        panelResetPassword.add(txtTokenInput);
+        panelResetPassword.add(new JLabel("Nueva Contraseña:"));
+        panelResetPassword.add(txtNewPassword);
+
+        JButton btnResetPassword = new JButton("Cambiar Contraseña");
+        panelResetPassword.add(btnResetPassword);
+
+        btnResetPassword.addActionListener(e -> {
+            try {
+                Usuario userService = new Usuario();
+                userService.resetPassword(
+                        txtCorreoReset.getText().trim(),
+                        txtTokenInput.getText().trim(),
+                        txtNewPassword.getText().trim(),
+                        txtTokenGenerated.getText().trim() // Token generado antes
+                );
+                JOptionPane.showMessageDialog(panelResetPassword,
+                        "Contraseña cambiada con éxito.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelResetPassword,
+                        "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        usuariosTabbedPane.addTab("Recuperar Contraseña", panelResetPassword);
 
         return usuariosTabbedPane;
     }
@@ -996,69 +1043,74 @@ public class Diseño {
         return reseñasTabbedPane;
     }
 
-    private static JTabbedPane crearPestañasPedidos(){
+    private static JTabbedPane crearPestañasPedidos() {
         // -----------------------------------------------------------
         // PESTAÑA PARA PEDIDOS
         // -----------------------------------------------------------
 
         JTabbedPane pedidosTabbedPane = new JTabbedPane();
 
-        //Panel para añadir pedido
-
+        // Panel para añadir pedido
         JPanel panelRealizarPedido = new JPanel(new GridLayout(0, 1, 5, 5));
         JTextField txtDireccion = new JTextField();
-        JTextField txtIdPedido = new JTextField();
-        JTextField txtEstadoPedido = new JTextField();
-        JTextField txtTipoPago = new JTextField();
-        JTextField txtMetodoEnvio = new JTextField();
-        JTextField txtIdUsuario = new JTextField();
-        JTextField txtCarrito = new JTextField();
+        JLabel labelUsuario = new JLabel("Eres el usuario: " + Integer.toString(id_user));
+
+        panelRealizarPedido.add(labelUsuario);
+
+        // Botones para tipo de pago
+        JPanel pagoOptionsPanel = new JPanel(new FlowLayout());
+        JButton btnPagoTarjeta = new JButton("Tarjeta de Crédito");
+        JButton btnPagoPaypal = new JButton("PayPal");
+        pagoOptionsPanel.add(btnPagoTarjeta);
+        pagoOptionsPanel.add(btnPagoPaypal);
+
+        panelRealizarPedido.add(new JLabel("Tipo de Pago:"));
+        panelRealizarPedido.add(pagoOptionsPanel);
+
+        // Botones para método de envío
+        JPanel envioOptionsPanel = new JPanel(new FlowLayout());
+        JButton btnEnvioExpress = new JButton("Express");
+        JButton btnEnvioNormal = new JButton("Normal");
+        JButton btnEnvioFragil = new JButton("Frágil");
+        envioOptionsPanel.add(btnEnvioExpress);
+        envioOptionsPanel.add(btnEnvioNormal);
+        envioOptionsPanel.add(btnEnvioFragil);
+
+        panelRealizarPedido.add(new JLabel("Método de Envío:"));
+        panelRealizarPedido.add(envioOptionsPanel);
 
         panelRealizarPedido.add(new JLabel("Dirección:"));
         panelRealizarPedido.add(txtDireccion);
 
-        panelRealizarPedido.add(new JLabel("ID Pedido:"));
-        panelRealizarPedido.add(txtIdPedido);
-
-        panelRealizarPedido.add(new JLabel("Estado Pedido:"));
-        panelRealizarPedido.add(txtEstadoPedido);
-
-        panelRealizarPedido.add(new JLabel("Tipo de Pago:"));
-        panelRealizarPedido.add(txtTipoPago);
-
-        panelRealizarPedido.add(new JLabel("Método de Envío:"));
-        panelRealizarPedido.add(txtMetodoEnvio);
-
-        panelRealizarPedido.add(new JLabel("ID Usuario:"));
-        panelRealizarPedido.add(txtIdUsuario);
-
-        panelRealizarPedido.add(new JLabel("Carrito (IDs de productos separados por comas):"));
-        panelRealizarPedido.add(txtCarrito);
-
         JButton btnRealizarPedido = new JButton("Añadir Pedido");
         panelRealizarPedido.add(btnRealizarPedido);
+
+        // Variables para almacenar las selecciones
+        final String[] tipoPagoSeleccionado = {""};
+        final String[] metodoEnvioSeleccionado = {""};
+
+        // Acción para los botones de tipo de pago
+        btnPagoTarjeta.addActionListener(e -> tipoPagoSeleccionado[0] = "Tarjeta de Crédito");
+        btnPagoPaypal.addActionListener(e -> tipoPagoSeleccionado[0] = "PayPal");
+
+        // Acción para los botones de método de envío
+        btnEnvioExpress.addActionListener(e -> metodoEnvioSeleccionado[0] = "express");
+        btnEnvioNormal.addActionListener(e -> metodoEnvioSeleccionado[0] = "normal");
+        btnEnvioFragil.addActionListener(e -> metodoEnvioSeleccionado[0] = "frágil");
 
         btnRealizarPedido.addActionListener(e -> {
             try {
                 String direcc = txtDireccion.getText().trim();
-                int idPed = Integer.parseInt(txtIdPedido.getText().trim());
-                String estPed = txtEstadoPedido .getText().trim();
-                int tipPag = Integer.parseInt(txtTipoPago.getText().trim());
-                String metEnv= txtMetodoEnvio .getText().trim();
-                String[] carritoArray = txtCarrito.getText().trim().split(",");
-                List<Integer> carrito = new ArrayList<>();
-                for (String idProducto : carritoArray) {
-                    carrito.add(Integer.parseInt(idProducto.trim()));
+                if (tipoPagoSeleccionado[0].isEmpty() || metodoEnvioSeleccionado[0].isEmpty()) {
+                    throw new IllegalArgumentException("Debe seleccionar un tipo de pago y un método de envío.");
                 }
-                int idUser = Integer.parseInt(txtIdUsuario.getText().trim());
 
-                // Llamada a metodo realizarPedido
-                Pedido orderService = new Pedido(idPed,carrito,estPed,idUser);
-                orderService.realizarPedido(direcc,idPed,estPed,tipPag,metEnv,idUser,carrito);
-                JOptionPane.showMessageDialog(panelRealizarPedido, "Pedido realizado con exito");
-
-            } catch (Exception ex2) {
-                JOptionPane.showMessageDialog(panelRealizarPedido, "Error al añadir pedido: " + ex2.getMessage());
+                Carrito carrito = new Carrito();
+                Pedido orderService = new Pedido();
+                orderService.realizarPedido(direcc, carrito, tipoPagoSeleccionado[0].equals("Tarjeta de Crédito") ? 1 : 2, metodoEnvioSeleccionado[0], id_user);
+                JOptionPane.showMessageDialog(panelRealizarPedido, "Pedido realizado con éxito.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelRealizarPedido, "Error al añadir pedido: " + ex.getMessage());
             }
         });
 
@@ -1067,9 +1119,9 @@ public class Diseño {
         // Panel para Ver Historial de Pedidos
         JPanel panelVerHistorialPedidos = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelHistorial = new JPanel(new GridLayout(1, 2, 5, 5));
-        JTextField txtIdUsuarioHistorial = new JTextField();
-        inputPanelHistorial.add(new JLabel("ID Usuario:"));
-        inputPanelHistorial.add(txtIdUsuarioHistorial);
+        JLabel idUsuarioHistorial = new JLabel("Eres el usuario: " + Integer.toString(id_user));
+        inputPanelHistorial.add(new JLabel("ID Usuario: " + Integer.toString(id_user)));
+        panelVerHistorialPedidos.add(idUsuarioHistorial);
 
         JButton btnVerHistorial = new JButton("Ver Historial de Pedidos");
         JPanel topPanelHistorial = new JPanel(new FlowLayout());
@@ -1085,9 +1137,8 @@ public class Diseño {
         btnVerHistorial.addActionListener(e -> {
             try {
                 textAreaHistorial.setText("");
-                int idUsuario = Integer.parseInt(txtIdUsuarioHistorial.getText().trim());
                 Pedido pedidoService = new Pedido();
-                List<Pedido> pedidos = pedidoService.verHistorialPedidos(idUsuario);
+                List<Pedido> pedidos = pedidoService.verHistorialPedidos(id_user);
                 for (Pedido pedido : pedidos) {
                     textAreaHistorial.append(pedido.toString() + "\n");
                 }
@@ -1102,12 +1153,11 @@ public class Diseño {
         JPanel panelCancelarPedido = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelCancelar = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdPedidoCancelar = new JTextField();
-        JTextField txtIdUsuarioCancelar = new JTextField();
 
+        inputPanelCancelar.add(new JLabel("ID Usuario: " + id_user));
+        inputPanelCancelar.add(new JLabel(""));
         inputPanelCancelar.add(new JLabel("ID Pedido:"));
         inputPanelCancelar.add(txtIdPedidoCancelar);
-        inputPanelCancelar.add(new JLabel("ID Usuario:"));
-        inputPanelCancelar.add(txtIdUsuarioCancelar);
 
         JButton btnCancelarPedido = new JButton("Cancelar Pedido");
         JPanel topPanelCancelar = new JPanel(new FlowLayout());
@@ -1124,10 +1174,9 @@ public class Diseño {
             try {
                 textAreaCancelar.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoCancelar.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioCancelar.getText().trim());
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.cancelarPedido(idPedido, idUsuario);
+                pedidoService.cancelarPedido(idPedido, id_user);
                 textAreaCancelar.append("Pedido cancelado con éxito.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelCancelarPedido, "Error al cancelar el pedido: " + ex.getMessage());
@@ -1136,19 +1185,26 @@ public class Diseño {
 
         pedidosTabbedPane.addTab("Cancelar Pedido", panelCancelarPedido);
 
-        // Panel para cambiar  Método de Envío
+        // Panel para cambiar Método de Envío
         JPanel panelCambiarMetodoEnvio = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelEnvio = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtIdPedidoEnvio = new JTextField();
-        JTextField txtIdUsuarioEnvio = new JTextField();
-        JTextField txtnuevoMetodoEnvio = new JTextField();
 
+        inputPanelEnvio.add(new JLabel("ID Usuario: " + id_user));
+        inputPanelEnvio.add(new JLabel(""));
         inputPanelEnvio.add(new JLabel("ID Pedido:"));
         inputPanelEnvio.add(txtIdPedidoEnvio);
-        inputPanelEnvio.add(new JLabel("ID Usuario:"));
-        inputPanelEnvio.add(txtIdUsuarioEnvio);
-        inputPanelEnvio.add(new JLabel("Método de Envío:"));
-        inputPanelEnvio.add(txtnuevoMetodoEnvio);
+
+        JPanel envioOptionsPanelCambio = new JPanel(new FlowLayout());
+        JButton btnExpress = new JButton("Express");
+        JButton btnNormal = new JButton("Normal");
+        JButton btnFragil = new JButton("Frágil");
+        envioOptionsPanelCambio.add(btnExpress);
+        envioOptionsPanelCambio.add(btnNormal);
+        envioOptionsPanelCambio.add(btnFragil);
+
+        inputPanelEnvio.add(new JLabel("Nuevo Método de Envío:"));
+        inputPanelEnvio.add(envioOptionsPanelCambio);
 
         JButton btnCambiarMetodoEnvio = new JButton("Cambiar Método de Envío");
         JPanel topPanelEnvio = new JPanel(new FlowLayout());
@@ -1161,33 +1217,100 @@ public class Diseño {
         panelCambiarMetodoEnvio.add(topPanelEnvio, BorderLayout.NORTH);
         panelCambiarMetodoEnvio.add(new JScrollPane(textAreaEnvio), BorderLayout.CENTER);
 
-        btnCambiarMetodoEnvio.addActionListener(e -> {
+        ActionListener envioListener = e -> {
             try {
                 textAreaEnvio.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoEnvio.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioEnvio.getText().trim());
-                String metodoEnvio = txtMetodoEnvio.getText().trim();
+                String metodoEnvio = e.getActionCommand(); // Obtener el comando de acción
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.elegirMetodoEnvio(metodoEnvio, idUsuario, idPedido);
-                textAreaEnvio.append("Método de envío elegido con éxito.\n");
+                pedidoService.elegirMetodoEnvio(metodoEnvio, id_user, idPedido);
+                textAreaEnvio.append("Método de envío cambiado a " + metodoEnvio + " con éxito.\n");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelCambiarMetodoEnvio, "Error al elegir el método de envío: " + ex.getMessage());
+                JOptionPane.showMessageDialog(panelCambiarMetodoEnvio, "Error al cambiar el método de envío: " + ex.getMessage());
             }
-        });
+        };
+
+// Configurar comandos de acción para los botones
+        btnExpress.setActionCommand("express");
+        btnNormal.setActionCommand("normal");
+        btnFragil.setActionCommand("frágil");
+
+// Añadir el ActionListener a los botones
+        btnExpress.addActionListener(envioListener);
+        btnNormal.addActionListener(envioListener);
+        btnFragil.addActionListener(envioListener);
 
         pedidosTabbedPane.addTab("Cambiar Método de Envío", panelCambiarMetodoEnvio);
 
-// Panel para Confirmar Recepción del Pedido
+        // Panel para Cambiar el método de pago
+        JPanel panelCambiarMetodoPago = new JPanel(new BorderLayout(5, 5));
+        JPanel inputPanelPago = new JPanel(new GridLayout(4, 2, 5, 5));
+        JTextField txtIdPedidoPago = new JTextField();
+        JTextField txtIdMetodoPago = new JTextField();
+
+        inputPanelPago.add(new JLabel("ID Usuario: " + id_user));
+        inputPanelPago.add(new JLabel(""));
+        inputPanelPago.add(new JLabel("ID Pedido:"));
+        inputPanelPago.add(txtIdPedidoPago);
+        inputPanelPago.add(new JLabel("ID Método de Pago:"));
+        inputPanelPago.add(txtIdMetodoPago);
+
+        JPanel pagoOptionsPanelCambio = new JPanel(new FlowLayout());
+        JButton btnPagoTarjetaCambio = new JButton("Tarjeta de Crédito");
+        JButton btnPagoPaypalCambio = new JButton("PayPal");
+        pagoOptionsPanelCambio.add(btnPagoTarjetaCambio);
+        pagoOptionsPanelCambio.add(btnPagoPaypalCambio);
+
+        inputPanelPago.add(new JLabel("Tipo de Método de Pago:"));
+        inputPanelPago.add(pagoOptionsPanelCambio);
+
+        JButton btnElegirMetodoPago = new JButton("Cambiar Método de Pago");
+        JPanel topPanelPago = new JPanel(new FlowLayout());
+        topPanelPago.add(inputPanelPago);
+        topPanelPago.add(btnElegirMetodoPago);
+
+        JTextArea textAreaPago = new JTextArea(10, 40);
+        textAreaPago.setEditable(false);
+
+        panelCambiarMetodoPago.add(topPanelPago, BorderLayout.NORTH);
+        panelCambiarMetodoPago.add(new JScrollPane(textAreaPago), BorderLayout.CENTER);
+
+        final String[] tipoMetodoPagoSeleccionado = {""};
+
+        btnPagoTarjetaCambio.addActionListener(e -> tipoMetodoPagoSeleccionado[0] = "Tarjeta de Crédito");
+        btnPagoPaypalCambio.addActionListener(e -> tipoMetodoPagoSeleccionado[0] = "PayPal");
+
+        btnElegirMetodoPago.addActionListener(e -> {
+            try {
+                textAreaPago.setText("");
+                int idPedido = Integer.parseInt(txtIdPedidoPago.getText().trim());
+                int idMetodoPago = Integer.parseInt(txtIdMetodoPago.getText().trim());
+
+                if (tipoMetodoPagoSeleccionado[0].isEmpty()) {
+                    throw new IllegalArgumentException("Debe seleccionar un tipo de método de pago.");
+                }
+
+                Pedido pedidoService = new Pedido();
+                pedidoService.elegirMetodoPago(idMetodoPago, tipoMetodoPagoSeleccionado[0], idPedido, id_user);
+                textAreaPago.append("Método de pago cambiado con éxito a " + tipoMetodoPagoSeleccionado[0] + ".\n");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelCambiarMetodoPago, "Error al cambiar el método de pago: " + ex.getMessage());
+            }
+        });
+
+        pedidosTabbedPane.addTab("Cambiar Método de Pago", panelCambiarMetodoPago);
+
+        // Panel para Confirmar Recepción del Pedido
         JPanel panelConfirmarRecepcion = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelRecepcion = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdPedidoRecepcion = new JTextField();
-        JTextField txtIdUsuarioRecepcion = new JTextField();
 
+        inputPanelRecepcion.add(new JLabel("ID Usuario:" + id_user));
+        inputPanelRecepcion.add(new JLabel(""));
         inputPanelRecepcion.add(new JLabel("ID Pedido:"));
         inputPanelRecepcion.add(txtIdPedidoRecepcion);
-        inputPanelRecepcion.add(new JLabel("ID Usuario:"));
-        inputPanelRecepcion.add(txtIdUsuarioRecepcion);
+
 
         JButton btnConfirmarRecepcion = new JButton("Confirmar Recepción");
         JPanel topPanelRecepcion = new JPanel(new FlowLayout());
@@ -1204,10 +1327,9 @@ public class Diseño {
             try {
                 textAreaRecepcion.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoRecepcion.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioRecepcion.getText().trim());
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.confirmarRecepcionPedido(idUsuario, idPedido);
+                pedidoService.confirmarRecepcionPedido(id_user, idPedido);
                 textAreaRecepcion.append("Recepción del pedido confirmada con éxito.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelConfirmarRecepcion, "Error al confirmar la recepción del pedido: " + ex.getMessage());
@@ -1216,86 +1338,128 @@ public class Diseño {
 
         pedidosTabbedPane.addTab("Confirmar Recepción", panelConfirmarRecepcion);
 
-        // Panel para Cambiar el metodo de pago
-        JPanel panelCambiarMetodoPago = new JPanel(new BorderLayout(5, 5));
-        JPanel inputPanelPago = new JPanel(new GridLayout(4, 2, 5, 5));
-        JTextField txtIdPedidoPago = new JTextField();
-        JTextField txtIdUsuarioPago = new JTextField();
-        JTextField txtIdMetodoPago = new JTextField();
-        JTextField txtTipoMetodoPago = new JTextField();
-
-        inputPanelPago.add(new JLabel("ID Pedido:"));
-        inputPanelPago.add(txtIdPedidoPago);
-        inputPanelPago.add(new JLabel("ID Usuario:"));
-        inputPanelPago.add(txtIdUsuarioPago);
-        inputPanelPago.add(new JLabel("ID Método de Pago:"));
-        inputPanelPago.add(txtIdMetodoPago);
-        inputPanelPago.add(new JLabel("Tipo de Método de Pago:"));
-        inputPanelPago.add(txtTipoMetodoPago);
-
-        JButton btnElegirMetodoPago = new JButton("Cmabiar Método de Pago");
-        JPanel topPanelPago = new JPanel(new FlowLayout());
-        topPanelPago.add(inputPanelPago);
-        topPanelPago.add(btnElegirMetodoPago);
-
-        JTextArea textAreaPago = new JTextArea(10, 40);
-        textAreaPago.setEditable(false);
-
-        panelCambiarMetodoPago.add(topPanelPago, BorderLayout.NORTH);
-        panelCambiarMetodoPago.add(new JScrollPane(textAreaPago), BorderLayout.CENTER);
-
-        btnElegirMetodoPago.addActionListener(e -> {
-            try {
-                textAreaPago.setText("");
-                int idPedido = Integer.parseInt(txtIdPedidoPago.getText().trim());
-                int idUsuario = Integer.parseInt(txtIdUsuarioPago.getText().trim());
-                int idMetodoPago = Integer.parseInt(txtIdMetodoPago.getText().trim());
-                String tipoMetodoPago = txtTipoMetodoPago.getText().trim();
-
-                Pedido pedidoService = new Pedido();
-                pedidoService.elegirMetodoPago(idMetodoPago, tipoMetodoPago, idPedido, idUsuario);
-                textAreaPago.append("Método de pago elegido con éxito.\n");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelCambiarMetodoPago, "Error al cambiar el método de pago: " + ex.getMessage());
-            }
-        });
-
-        pedidosTabbedPane.addTab("Cambiar Método de Pago", panelCambiarMetodoPago);
         return pedidosTabbedPane;
     }
 
+
     private static JTabbedPane crearPestañasPago(){
         JTabbedPane pagosTabbedPane = new JTabbedPane();
+
         // -----------------------------------------------------------
         // RF6.1 Agregar Método de Pago
         // -----------------------------------------------------------
-        JPanel panelAgregarMetodo = new JPanel(new GridLayout(7, 2, 5, 5));
-        JTextField txtTipoPago = new JTextField();
+        // En vez de GridLayout(7, 2) dejamos el 0 en "filas" para que se acomoden dinámicamente
+        JPanel panelAgregarMetodo = new JPanel(new GridLayout(0, 2, 5, 5));
+
+        // Botones para elegir Tarjeta o PayPal
+        JButton btnSeleccionTarjeta = new JButton("Tarjeta de Crédito");
+        JButton btnSeleccionPayPal = new JButton("PayPal");
+
+        // Etiquetas
+        JLabel lblNumeroTarjeta = new JLabel("Número de Tarjeta:");
+        JLabel lblFechaExpiracion = new JLabel("Fecha de Expiración (MM/YY):");
+        JLabel lblCodigoCVV = new JLabel("Código CVV:");
+        JLabel lblNombreTitular = new JLabel("Nombre del Titular:");
+        JLabel lblCorreoPayPal = new JLabel("Correo PayPal:");
+
+        // Campos de texto
         JTextField txtNumeroTarjeta = new JTextField();
         JTextField txtFechaExpiracion = new JTextField();
         JTextField txtCodigoCVV = new JTextField();
         JTextField txtNombreTitular = new JTextField();
         JTextField txtCorreoPayPal = new JTextField();
 
-        panelAgregarMetodo.add(new JLabel("Tipo de Método de Pago:"));
-        panelAgregarMetodo.add(txtTipoPago);
-        panelAgregarMetodo.add(new JLabel("Número de Tarjeta:"));
-        panelAgregarMetodo.add(txtNumeroTarjeta);
-        panelAgregarMetodo.add(new JLabel("Fecha de Expiración (MM/YY):"));
-        panelAgregarMetodo.add(txtFechaExpiracion);
-        panelAgregarMetodo.add(new JLabel("Código CVV:"));
-        panelAgregarMetodo.add(txtCodigoCVV);
-        panelAgregarMetodo.add(new JLabel("Nombre del Titular:"));
+        // Por defecto, vamos a deshabilitar los campos (hasta que elija)
+        // o puedes dejarlos habilitados y solo “en blanco”
+        txtNumeroTarjeta.setEnabled(false);
+        txtFechaExpiracion.setEnabled(false);
+        txtCodigoCVV.setEnabled(false);
+        txtCorreoPayPal.setEnabled(false);
+        // Este siempre está habilitado porque se requiere para ambos métodos
+        txtNombreTitular.setEnabled(true);
+
+        // Añadimos los componentes al panel
+        // Primero, los botones para elegir método de pago
+        panelAgregarMetodo.add(new JLabel("Selecciona un método de pago:"));
+        // En la siguiente celda, usaremos un subpanel para poner ambos botones
+        JPanel subPanelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        subPanelBotones.add(btnSeleccionTarjeta);
+        subPanelBotones.add(btnSeleccionPayPal);
+        panelAgregarMetodo.add(subPanelBotones);
+
+        // Luego, cada par (label-campo) en orden:
+        panelAgregarMetodo.add(lblNombreTitular);
         panelAgregarMetodo.add(txtNombreTitular);
-        panelAgregarMetodo.add(new JLabel("Correo PayPal:"));
+
+        panelAgregarMetodo.add(lblNumeroTarjeta);
+        panelAgregarMetodo.add(txtNumeroTarjeta);
+
+        panelAgregarMetodo.add(lblFechaExpiracion);
+        panelAgregarMetodo.add(txtFechaExpiracion);
+
+        panelAgregarMetodo.add(lblCodigoCVV);
+        panelAgregarMetodo.add(txtCodigoCVV);
+
+        panelAgregarMetodo.add(lblCorreoPayPal);
         panelAgregarMetodo.add(txtCorreoPayPal);
 
+        // Botón para agregar método
         JButton btnAgregarMetodo = new JButton("Agregar Método de Pago");
+        // Añadimos un hueco vacío para alinear (o puedes meterlo en la misma fila)
+        panelAgregarMetodo.add(new JLabel(""));
         panelAgregarMetodo.add(btnAgregarMetodo);
 
+        // Variable para guardar el tipo seleccionado
+        final String[] tipoSeleccionado = {null};
+
+        // Listeners de los botones para seleccionar Tarjeta o PayPal
+        btnSeleccionTarjeta.addActionListener(e -> {
+            tipoSeleccionado[0] = "Tarjeta de crédito";
+
+            // Habilitamos los campos de tarjeta:
+            txtNumeroTarjeta.setEnabled(true);
+            txtFechaExpiracion.setEnabled(true);
+            txtCodigoCVV.setEnabled(true);
+            // Deshabilitamos el correo PayPal
+            txtCorreoPayPal.setEnabled(false);
+
+            // Limpiamos o deshabilitamos su contenido si quieres
+            txtCorreoPayPal.setText("");
+        });
+
+        btnSeleccionPayPal.addActionListener(e -> {
+            tipoSeleccionado[0] = "PayPal";
+
+            // Deshabilitamos los campos de tarjeta
+            txtNumeroTarjeta.setEnabled(false);
+            txtFechaExpiracion.setEnabled(false);
+            txtCodigoCVV.setEnabled(false);
+
+            // Limpiamos o deshabilitamos su contenido si quieres
+            txtNumeroTarjeta.setText("");
+            txtFechaExpiracion.setText("");
+            txtCodigoCVV.setText("");
+
+            // Habilitamos el correo de PayPal
+            txtCorreoPayPal.setEnabled(true);
+        });
+
+        // Acción del botón "Agregar Método de Pago"
         btnAgregarMetodo.addActionListener(e -> {
             try {
-                String tipoPago = txtTipoPago.getText().trim();
+                // Validamos que haya un tipo de método seleccionado
+                if (tipoSeleccionado[0] == null) {
+                    JOptionPane.showMessageDialog(
+                            panelAgregarMetodo,
+                            "Por favor, selecciona Tarjeta o PayPal antes de continuar.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                // Recopilamos datos
+                String tipoPago = tipoSeleccionado[0];  // "Tarjeta de crédito" o "PayPal"
                 String numeroTarjeta = txtNumeroTarjeta.getText().trim();
                 String fechaExpiracion = txtFechaExpiracion.getText().trim();
                 String codigoCVV = txtCodigoCVV.getText().trim();
@@ -1303,10 +1467,42 @@ public class Diseño {
                 String correoPayPal = txtCorreoPayPal.getText().trim();
 
                 Pago pagoService = new Pago();
-                pagoService.agregarMetodoPago(id_user, tipoPago, numeroTarjeta, fechaExpiracion, codigoCVV, nombreTitular, correoPayPal);
-                JOptionPane.showMessageDialog(panelAgregarMetodo, "Método de pago agregado con éxito. ID: \n");
+                int idGenerado = pagoService.agregarMetodoPago(
+                        id_user,
+                        tipoPago,
+                        numeroTarjeta,
+                        fechaExpiracion,
+                        codigoCVV,
+                        nombreTitular,
+                        correoPayPal
+                );
+
+                JOptionPane.showMessageDialog(
+                        panelAgregarMetodo,
+                        "Método de pago agregado con éxito. ID: " + idGenerado
+                );
+
+                // Opcional: limpiar campos tras el éxito
+                txtNumeroTarjeta.setText("");
+                txtFechaExpiracion.setText("");
+                txtCodigoCVV.setText("");
+                txtNombreTitular.setText("");
+                txtCorreoPayPal.setText("");
+                tipoSeleccionado[0] = null;
+
+                // Volver a deshabilitar todo si gustas
+                txtNumeroTarjeta.setEnabled(false);
+                txtFechaExpiracion.setEnabled(false);
+                txtCodigoCVV.setEnabled(false);
+                txtCorreoPayPal.setEnabled(false);
+
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelAgregarMetodo, "Error al agregar método de pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelAgregarMetodo,
+                        "Error al agregar método de pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1317,7 +1513,6 @@ public class Diseño {
         // -----------------------------------------------------------
         JPanel panelEliminarMetodo = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdMetodoEliminar = new JTextField();
-
         panelEliminarMetodo.add(new JLabel("ID Método de Pago:"));
         panelEliminarMetodo.add(txtIdMetodoEliminar);
 
@@ -1327,12 +1522,17 @@ public class Diseño {
         btnEliminarMetodo.addActionListener(e -> {
             try {
                 int idMetodo = Integer.parseInt(txtIdMetodoEliminar.getText().trim());
-
                 Pago pagoService = new Pago();
-                pagoService.eliminarMetodoPago(id_user, idMetodo);
-                JOptionPane.showMessageDialog(panelEliminarMetodo, "Método de pago eliminado con éxito\n");
+                String mensaje = pagoService.eliminarMetodoPago(id_user, idMetodo);
+
+                JOptionPane.showMessageDialog(panelEliminarMetodo, mensaje);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelEliminarMetodo, "Error al eliminar método de pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelEliminarMetodo,
+                        "Error al eliminar método de pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1359,7 +1559,12 @@ public class Diseño {
                     textAreaMetodos.append(metodo.toString() + "\n");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelVerMetodos, "Error al ver métodos de pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelVerMetodos,
+                        "Error al ver métodos de pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1390,10 +1595,15 @@ public class Diseño {
                 double cantidad = Double.parseDouble(txtCantidadPago.getText().trim());
 
                 Pago pagoService = new Pago();
-                pagoService.realizarPago(idPedido, idMetodo, cantidad, id_user);
-                JOptionPane.showMessageDialog(panelRealizarPago, "Pago realizado con éxito \n");
+                String mensaje = pagoService.realizarPago(idPedido, idMetodo, cantidad, id_user);
+                JOptionPane.showMessageDialog(panelRealizarPago, mensaje);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelRealizarPago, "Error al realizar el pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelRealizarPago,
+                        "Error al realizar el pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1420,7 +1630,12 @@ public class Diseño {
                     textAreaHistorial.append(transaccion.toString() + "\n");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelHistorialTransacciones, "Error al ver historial: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelHistorialTransacciones,
+                        "Error al ver historial: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1428,6 +1643,7 @@ public class Diseño {
 
         return pagosTabbedPane;
     }
+
 
 
 

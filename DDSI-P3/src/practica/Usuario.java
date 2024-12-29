@@ -143,7 +143,6 @@ public class Usuario {
         }
 
         String token = UUID.randomUUID().toString().substring(0, 8);
-        String estadoCuenta = null;
 
         // Verificar si el correo está registrado y activo
         try (PreparedStatement ps = Connection.connection.prepareStatement(
@@ -151,8 +150,8 @@ public class Usuario {
             ps.setString(1, correo);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    estadoCuenta = rs.getString("ESTADO");
-                    if (estadoCuenta.equalsIgnoreCase("Inactivo")) {
+                    String estadoCuenta = rs.getString("ESTADO");
+                    if (estadoCuenta.equalsIgnoreCase("I")) {
                         throw new Exception("No se puede recuperar contraseña para cuentas deshabilitadas.");
                     }
                 } else {
@@ -161,15 +160,31 @@ public class Usuario {
             }
         }
 
-        // Guardar el token en la base de datos
+        // Muestra el token por pantalla
+        return token; // Devuelve el token generado
+    }
+
+    /**
+     * RF1.4: Cambiar Contraseña utilizando el Token generado
+     */
+    public void resetPassword(String correo, String token, String nuevaContraseña, String expectedToken) throws Exception {
+        if (!token.equals(expectedToken)) {
+            throw new Exception("El token proporcionado es incorrecto.");
+        }
+
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        // Actualizar la contraseña
         try (PreparedStatement ps = Connection.connection.prepareStatement(
-                "UPDATE USUARIO SET ID_TOKEN = ? WHERE CORREO = ?")) {
-            ps.setString(1, token);
+                "UPDATE USUARIO SET CONTRASEÑA = ? WHERE CORREO = ?")) {
+            ps.setString(1, nuevaContraseña);
             ps.setString(2, correo);
             ps.executeUpdate();
         }
-        return token; // Devuelve el token generado
     }
+
 
     /**
      * RF1.5: Iniciar Sesión

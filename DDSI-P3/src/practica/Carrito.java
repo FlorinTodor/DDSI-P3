@@ -1,13 +1,87 @@
 package practica;
 
 import java.sql.*;
+import java.util.AbstractMap;
 import java.util.ArrayList;
-
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 
 public class Carrito {
 
-    private int addCarritoEntry(int idUsuario) throws Exception {
+    /**
+     * Obtener productos del carrito
+     */
+    public Map<Integer, Integer> getProductosDelCarrito(int idCarrito) throws SQLException {
+        Map<Integer, Integer> productos = new HashMap<>();
+        String sqlProductos = "SELECT ID_Producto, Cantidad FROM tiene WHERE ID_Carrito = ?";
+        try (PreparedStatement ps = Connection.connection.prepareStatement(sqlProductos)) {
+            ps.setInt(1, idCarrito);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int idProducto = rs.getInt("ID_Producto");
+                    int cantidad = rs.getInt("Cantidad");
+                    productos.put(idProducto, cantidad);
+                }
+            }
+        }
+        return productos;
+    }
+
+    private void crearRelacionCarritoPedido(int idUsuario, int idCarrito) throws SQLException {
+        // Obtener el valor actual de la secuencia
+        java.sql.Connection conn = Connection.connection;
+        // Crear un nuevo ID de carrito
+        int idPedido = -1;
+
+        // Obtener el valor actual de la secuencia
+        try (PreparedStatement psSequence = conn.prepareStatement("SELECT seq_id_pedido.CURRVAL FROM DUAL")) { // DUAL es una tabla dummy en Oracle. En PostgreSQL sería simplemente "SELECT currval('seq_id_pedido')")
+            try (ResultSet rs = psSequence.executeQuery()) {
+                if (rs.next()) {
+                    idPedido = rs.getInt(1);
+                } else {
+                    // Manejar el caso en el que no se puede obtener el valor actual de la secuencia (poco probable)
+                    throw new SQLException("No se pudo obtener el valor actual de la secuencia");
+                }
+            } catch (SQLException e) {
+                // Si CURRVAL falla, inicializar la secuencia con NEXTVAL
+                try (PreparedStatement psInitSequence = conn.prepareStatement("SELECT seq_id_pedido.NEXTVAL FROM DUAL")) {
+                    try (ResultSet rsInit = psInitSequence.executeQuery()) {
+                        if (rsInit.next()) {
+                            idPedido = rsInit.getInt(1);
+                        } else {
+                            throw new SQLException("No se pudo inicializar la secuencia");
+                        }
+                    }
+                }
+            }
+        }
+
+        try (PreparedStatement psIncrementSequence = conn.prepareStatement("SELECT seq_id_pedido.NEXTVAL FROM DUAL")) { // En PostgreSQL sería simplemente "SELECT nextval('seq_id_pedido')")
+            psIncrementSequence.executeQuery();
+        }
+
+        System.out.println("currentIdPedido: " + idPedido + "idCarrito: " + idCarrito);
+
+        // Insertar el pedido usando el valor actual de la secuencia
+        String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
+        try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
+            psPedido.setInt(1, idPedido);
+            psPedido.setInt(2, idUsuario);
+            psPedido.executeUpdate();
+        }
+
+        // Insertar la entrada en la tabla GESTIONCARRITO
+        String insertGestionCarritoSQL = "INSERT INTO GESTIONCARRITO (ID_CARRITO, ID_PEDIDO) VALUES (?, ?)";
+        try (PreparedStatement psGestionCarrito = conn.prepareStatement(insertGestionCarritoSQL)) {
+            psGestionCarrito.setInt(1, idCarrito);
+            psGestionCarrito.setInt(2, idPedido);
+            psGestionCarrito.executeUpdate();
+        }
+    }
+
+    public int addCarritoEntry(int idUsuario) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
@@ -19,8 +93,35 @@ public class Carrito {
             throw new Exception("El usuario no existe.");
         }
 
-        // Crear un nuevo ID de carrito igual al ID del usuario
-        int idCarrito = idUsuario;
+        // Crear un nuevo ID de carrito
+        int idCarrito = -1;
+
+        // Obtener el valor actual de la secuencia
+        try (PreparedStatement psSequence = conn.prepareStatement("SELECT seq_id_carrito.CURRVAL FROM DUAL")) { // DUAL es una tabla dummy en Oracle. En PostgreSQL sería simplemente "SELECT currval('seq_id_pedido')")
+            try (ResultSet rs = psSequence.executeQuery()) {
+                if (rs.next()) {
+                    idCarrito = rs.getInt(1);
+                } else {
+                    // Manejar el caso en el que no se puede obtener el valor actual de la secuencia (poco probable)
+                    throw new SQLException("No se pudo obtener el valor actual de la secuencia");
+                }
+            } catch (SQLException e) {
+                // Si CURRVAL falla, inicializar la secuencia con NEXTVAL
+                try (PreparedStatement psInitSequence = conn.prepareStatement("SELECT seq_id_carrito.NEXTVAL FROM DUAL")) {
+                    try (ResultSet rsInit = psInitSequence.executeQuery()) {
+                        if (rsInit.next()) {
+                            idCarrito = rsInit.getInt(1);
+                        } else {
+                            throw new SQLException("No se pudo inicializar la secuencia");
+                        }
+                    }
+                }
+            }
+        }
+
+        try (PreparedStatement psIncrementSequence = conn.prepareStatement("SELECT seq_id_carrito.NEXTVAL FROM DUAL")) { // En PostgreSQL sería simplemente "SELECT nextval('seq_id_pedido')")
+            psIncrementSequence.executeQuery();
+        }
 
         // Insertar el nuevo carrito en la tabla CARRITO
         String insertCarritoSQL = "INSERT INTO CARRITO (ID_CARRITO) VALUES (?)";
@@ -29,33 +130,7 @@ public class Carrito {
             psCarrito.executeUpdate();
         }
 
-        // Crear un nuevo ID de pedido
-        int nextId = -1;
-
-        // 1. Obtener el valor máximo actual de ID_USUARIO
-        String maxIdQuery = "SELECT NVL(MAX(ID_PEDIDO), 0) + 1 FROM PEDIDO";
-        try (PreparedStatement ps = conn.prepareStatement(maxIdQuery);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                nextId = rs.getInt(1);
-            }
-        }
-
-        // Insertar el nuevo pedido en la tabla PEDIDO
-        String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
-        try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
-            psPedido.setInt(1, nextId);
-            psPedido.setInt(2, idUsuario);
-            psPedido.executeUpdate();
-        }
-
-        // Insertar la entrada en la tabla GESTIONCARRITO
-        String insertGestionCarritoSQL = "INSERT INTO GESTIONCARRITO (ID_CARRITO, ID_PEDIDO) VALUES (?, ?)";
-        try (PreparedStatement psGestionCarrito = conn.prepareStatement(insertGestionCarritoSQL)) {
-            psGestionCarrito.setInt(1, idCarrito);
-            psGestionCarrito.setInt(2, nextId);
-            psGestionCarrito.executeUpdate();
-        }
+        crearRelacionCarritoPedido(idUsuario, idCarrito);
 
         conn.commit();
 
@@ -66,7 +141,7 @@ public class Carrito {
      * Método auxiliar para obtener o crear el ID del carrito activo asociado a un usuario.
      * Si no existe un carrito activo, se crea uno nuevo.
      */
-    private int getOrCreateCarritoIdByUsuario(int idUsuario) throws Exception {
+    public int getCarritoId(int idUsuario) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
@@ -78,41 +153,35 @@ public class Carrito {
             throw new Exception("El usuario no existe.");
         }
 
-        Integer idCarrito = null;
-        Integer idPedido = null;
+        int idCarrito = -1;
 
-        // 1. Buscar el id_pedido mayor asociado al usuario en la tabla PEDIDO
-        String maxPedidoQuery = "SELECT MAX(ID_Pedido) FROM PEDIDO WHERE ID_Usuario = ? AND Estado_Pedido IS NULL";
+        // 1. Buscar el máximo ID_Pedido para el usuario en la tabla PEDIDO
+        String maxPedidoQuery = "SELECT MAX(ID_Pedido) FROM pedido WHERE ID_Usuario = ?";
         try (PreparedStatement ps = conn.prepareStatement(maxPedidoQuery)) {
             ps.setInt(1, idUsuario);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    idPedido = rs.getInt(1);
-                }
-            }
-        }
-
-        // 2. Buscar el id_carrito asociado al id_pedido en la tabla GESTIONCARRITO
-        if (idPedido != null) {
-            String carritoQuery = "SELECT ID_Carrito FROM GESTIONCARRITO WHERE ID_Pedido = ?";
-            try (PreparedStatement ps = conn.prepareStatement(carritoQuery)) {
-                ps.setInt(1, idPedido);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        idCarrito = rs.getInt("ID_Carrito");
+                    int maxIdPedido = rs.getInt(1);
+                    if (!rs.wasNull()) {
+                        // 2. Buscar el ID_Carrito en la tabla GestionCarrito usando el ID_Pedido
+                        String carritoQuery = "SELECT ID_Carrito FROM GestionCarrito WHERE ID_Pedido = ?";
+                        try (PreparedStatement ps2 = conn.prepareStatement(carritoQuery)) {
+                            ps2.setInt(1, maxIdPedido);
+                            try (ResultSet rs2 = ps2.executeQuery()) {
+                                if (rs2.next()) {
+                                    idCarrito = rs2.getInt("ID_Carrito");
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // 3. Si no existe un carrito asociado, crear uno nuevo
-        if (idCarrito == null) {
-            idCarrito = addCarritoEntry(idUsuario);
-        }
+        System.out.println("idCarrito: " + idCarrito);
 
         return idCarrito;
     }
-
 
     /**
      * RF3.1: Añadir producto al carrito
@@ -155,7 +224,9 @@ public class Carrito {
         }
 
         // Obtener o crear el carrito asociado al usuario
-        int idCarrito = getOrCreateCarritoIdByUsuario(idUsuario);
+        int idCarrito = getCarritoId(idUsuario);
+        if(idCarrito == -1)
+            idCarrito = addCarritoEntry(idUsuario);
 
         // Verificar que el producto no esté ya en el carrito
         try (PreparedStatement ps = conn.prepareStatement(
@@ -190,14 +261,13 @@ public class Carrito {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-
         // Verificar si el usuario existe
         if (!Connection.doesUserExist(idUsuario)) {
             throw new Exception("El usuario no existe.");
         }
 
         java.sql.Connection conn = Connection.connection;
-        int idCarrito = getOrCreateCarritoIdByUsuario(idUsuario);
+        int idCarrito = getCarritoId(idUsuario);
 
         ArrayList<String> resultado = new ArrayList<>();
         double subtotal = 0.0;
@@ -281,7 +351,7 @@ public class Carrito {
             throw new Exception("La cantidad solicitada excede el stock disponible.");
         }
 
-        int idCarrito = getOrCreateCarritoIdByUsuario(idUsuario);
+        int idCarrito = getCarritoId(idUsuario);
 
         // Verificar si el producto está en el carrito
         try (PreparedStatement ps = conn.prepareStatement(
@@ -322,7 +392,7 @@ public class Carrito {
             throw new Exception("El usuario no existe.");
         }
 
-        int idCarrito = getOrCreateCarritoIdByUsuario(idUsuario);
+        int idCarrito = getCarritoId(idUsuario);
 
         // Verificar si el producto está en el carrito
         try (PreparedStatement ps = conn.prepareStatement(
@@ -357,7 +427,7 @@ public class Carrito {
         }
 
         java.sql.Connection conn =  Connection.connection;
-        int idCarrito = getOrCreateCarritoIdByUsuario(idUsuario);
+        int idCarrito = getCarritoId(idUsuario);
 
         // Verificar si el carrito ya está vacío
         boolean estaVacio = false;

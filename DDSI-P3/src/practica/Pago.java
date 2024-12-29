@@ -86,7 +86,7 @@ public class Pago {
             }
 
             // Insertar los detalles del metodo de pago en la base de datos
-            String sqlInsertarMetodoPago = "INSERT INTO pago (ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_PayPal, Fecha_Registro, ID_USUARIO) VALUES (pago_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sqlInsertarMetodoPago = "INSERT INTO pago (ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_PayPal, Fecha, ID_USUARIO) VALUES (pago_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?)";
             pstmt = conn.prepareStatement(sqlInsertarMetodoPago, Statement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, tipoMetodoPago);
             pstmt.setString(2, numeroTarjeta);
@@ -174,7 +174,7 @@ public class Pago {
             conn = Connection.connection;
 
             // Consultar los métodos de pago del usuario autenticado
-            String sqlMetodosPago = "SELECT ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Registro FROM pago WHERE ID_USUARIO = ?";
+            String sqlMetodosPago = "SELECT ID_metodoPago, Tipo_MetodoPago, Numero_Tarjeta, Fecha FROM pago WHERE ID_USUARIO = ?";
             pstmt = conn.prepareStatement(sqlMetodosPago);
             pstmt.setInt(1, idUsuario);
             rs = pstmt.executeQuery();
