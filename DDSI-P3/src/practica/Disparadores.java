@@ -1,6 +1,8 @@
 package practica;
 
+import javax.swing.*;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -210,6 +212,54 @@ public class Disparadores {
             System.out.println("Disparadores creados/reemplazados con éxito.");
         }
     }
+
+    public static void eliminarDisparadores() throws SQLException {
+        java.sql.Connection con = practica.Connection.connection;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = con.createStatement();
+
+            // Obtener todos los nombres de los triggers
+            String obtenerTriggersSQL = "SELECT TRIGGER_NAME FROM USER_TRIGGERS";
+            rs = stmt.executeQuery(obtenerTriggersSQL);
+
+            // Eliminar cada trigger encontrado
+            while (rs.next()) {
+                String triggerName = rs.getString("TRIGGER_NAME");
+
+                // Usar un nuevo Statement para ejecutar el DROP TRIGGER
+                try (Statement dropStmt = con.createStatement()) {
+                    String dropTriggerSQL = "DROP TRIGGER " + triggerName;
+                    System.out.println("Eliminando trigger: " + triggerName);
+                    dropStmt.executeUpdate(dropTriggerSQL);
+                } catch (SQLException e) {
+                    System.err.println("Error al eliminar trigger " + triggerName + ": " + e.getMessage());
+                }
+            }
+            JOptionPane.showMessageDialog(practica.Connection.frame, "Triggers eliminados correctamente.");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            // Cerrar recursos
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
 
 }
 

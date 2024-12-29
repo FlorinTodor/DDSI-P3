@@ -200,7 +200,7 @@ public class Diseño {
         JMenuItem EliminarDisparadores = new JMenuItem("Eliminar Disparadores");
         EliminarDisparadores.addActionListener(e -> {
             try{
-                FuncionesBD.eliminarDisparadores();
+                Disparadores.eliminarDisparadores();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
