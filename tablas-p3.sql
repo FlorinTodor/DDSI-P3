@@ -16,8 +16,8 @@ CREATE TABLE usuario (
 CREATE TABLE producto (
     ID_Producto integer NOT NULL,
     NombreProducto varchar(30),
-    Cantidad integer,
-    Precio float,
+    Cantidad integer check ( cantidad >= 0 ),
+    Precio float check ( precio >= 0 ),
     PRIMARY KEY(ID_Producto)
 );
 
@@ -85,7 +85,7 @@ CREATE TABLE Gestion_Reseña (
 CREATE TABLE modificaProducto (
     ID_Usuario integer REFERENCES usuario(ID_Usuario),
     ID_Producto integer REFERENCES producto(ID_Producto),
-    PRIMARY KEY(ID_Usuario)
+    PRIMARY KEY(ID_Producto)
 );
 
 -- Relación: Productos en Carrito
