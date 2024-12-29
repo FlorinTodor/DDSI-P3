@@ -838,7 +838,7 @@ public class Diseño {
                         txtCorreoReset.getText().trim(),
                         txtTokenInput.getText().trim(),
                         txtNewPassword.getText().trim(),
-                        txtTokenGenerated.getText().trim() // Token generado anteriormente
+                        txtTokenGenerated.getText().trim() // Token generado antes
                 );
                 JOptionPane.showMessageDialog(panelResetPassword,
                         "Contraseña cambiada con éxito.");

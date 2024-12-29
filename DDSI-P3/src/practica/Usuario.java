@@ -160,7 +160,7 @@ public class Usuario {
             }
         }
 
-        // Mostrar el token por pantalla
+        // Muestra el token por pantalla
         return token; // Devuelve el token generado
     }
 
