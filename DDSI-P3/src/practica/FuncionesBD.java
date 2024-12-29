@@ -84,8 +84,6 @@ public class FuncionesBD {
     }
 
 
-
-
     public static void eliminarDatos_tabla() {
         try (Statement stmt = Connection.connection.createStatement()) {
             // Eliminar datos en el orden correcto respetando las dependencias
@@ -126,6 +124,7 @@ public class FuncionesBD {
             JOptionPane.showMessageDialog(Connection.frame, "Error al crear la secuencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     public static void crearSecuenciaCarrito() {
         String borrarSecuenciaSQL = "BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE seq_id_carrito'; EXCEPTION WHEN OTHERS THEN NULL; END;";
 
@@ -145,7 +144,7 @@ public class FuncionesBD {
     public static void insertarDatosPrueba_tabla() {
         try (Statement stmt = Connection.connection.createStatement()) {
             // Insertar Usuarios
-              stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Contraseña, Direccion) " +
+            stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Contraseña, Direccion) " +
                     "VALUES (2, 'user1@example.com', 'Juan', 'A', 'contraseña', 'Calle Falsa 123')");
             stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Contraseña, Direccion) " +
                     "VALUES (3, 'user2@example.com', 'Maria', 'A', 'contraseña', 'Avenida Principal 456')");
@@ -204,9 +203,10 @@ public class FuncionesBD {
             }
         }
     }
+
     private static void TruncarSiExiste(String nombre, Statement stmt) throws SQLException {
         try {
-            String sql = "TRUNCATE TABLE " + nombre ;
+            String sql = "TRUNCATE TABLE " + nombre;
             stmt.executeUpdate(sql);
             System.out.println(nombre + " TRUNCATED.");
         } catch (SQLException e) {
@@ -215,6 +215,7 @@ public class FuncionesBD {
             }
         }
     }
+
     public static void borraryCrearTablas() {
         try (Statement stmt = Connection.connection.createStatement()) {
             // Truncar tablas dependientes primero
@@ -253,7 +254,7 @@ public class FuncionesBD {
 
 
             // Crear tablas base
-                crearTablas();
+            crearTablas();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(Connection.frame, "Error al crear las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -373,6 +374,52 @@ public class FuncionesBD {
         }
     }
 
+    public static void eliminarDisparadores() throws SQLException {
+        java.sql.Connection con = Connection.connection;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = con.createStatement();
+
+            // Obtener todos los nombres de los triggers
+            String obtenerTriggersSQL = "SELECT TRIGGER_NAME FROM USER_TRIGGERS";
+            rs = stmt.executeQuery(obtenerTriggersSQL);
+
+            // Eliminar cada trigger encontrado
+            while (rs.next()) {
+                String triggerName = rs.getString("TRIGGER_NAME");
+
+                // Usar un nuevo Statement para ejecutar el DROP TRIGGER
+                try (Statement dropStmt = con.createStatement()) {
+                    String dropTriggerSQL = "DROP TRIGGER " + triggerName;
+                    System.out.println("Eliminando trigger: " + triggerName);
+                    dropStmt.executeUpdate(dropTriggerSQL);
+                } catch (SQLException e) {
+                    System.err.println("Error al eliminar trigger " + triggerName + ": " + e.getMessage());
+                }
+            }
+            JOptionPane.showMessageDialog(Connection.frame, "Triggers eliminados correctamente.");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            // Cerrar recursos
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
 
 }
 
