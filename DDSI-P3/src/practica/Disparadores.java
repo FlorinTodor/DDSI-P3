@@ -114,7 +114,7 @@ public class Disparadores {
     // 6) TRIGGER garantizar si existe el metodo de pago cuando vayas a hacer un pago
     private static final String TRIG_VERIFICAR_METODO_PAGO_EXISTE =
             "CREATE OR REPLACE TRIGGER TRIG_VERIFICAR_METODO_PAGO_EXISTE " +
-                    "BEFORE INSERT ON transaccion " +
+                    "BEFORE INSERT ON Realiza " +
                     "FOR EACH ROW " +
                     "DECLARE " +
                     "    metodo_pago_existe NUMBER; " +
