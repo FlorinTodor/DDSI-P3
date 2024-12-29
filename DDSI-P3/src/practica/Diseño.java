@@ -786,22 +786,25 @@ public class Diseño {
 
         usuariosTabbedPane.addTab("Modificar Datos de Usuario", panelUpdateUser);
 
-        // -----------------------------------------------------------
         // RF1.4: Recuperar Contraseña (Muestra Token Generado)
-        // -----------------------------------------------------------
         JPanel panelRecoverPassword = new JPanel(new GridLayout(3, 2, 5, 5));
         JTextField txtCorreoRecover = new JTextField();
+        JTextField txtTokenGenerated = new JTextField();
+        txtTokenGenerated.setEditable(false);
 
         panelRecoverPassword.add(new JLabel("Correo:"));
         panelRecoverPassword.add(txtCorreoRecover);
+        panelRecoverPassword.add(new JLabel("Token Generado:"));
+        panelRecoverPassword.add(txtTokenGenerated);
 
-        JButton btnRecoverPassword = new JButton("Recuperar Contraseña");
+        JButton btnRecoverPassword = new JButton("Generar Token");
         panelRecoverPassword.add(btnRecoverPassword);
 
         btnRecoverPassword.addActionListener(e -> {
             try {
                 Usuario userService = new Usuario();
                 String token = userService.recoverPassword(txtCorreoRecover.getText().trim());
+                txtTokenGenerated.setText(token);
                 JOptionPane.showMessageDialog(panelRecoverPassword,
                         "Token de recuperación generado: " + token);
             } catch (Exception ex) {
@@ -810,14 +813,42 @@ public class Diseño {
             }
         });
 
-        usuariosTabbedPane.addTab("Recuperar Contraseña", panelRecoverPassword);
+        usuariosTabbedPane.addTab("Generar Token", panelRecoverPassword);
 
-        /*
-            Implementado en pestalla_registro del fichero Diseño.java
-             */
-        // -----------------------------------------------------------
-        // RF1.5: Iniciar Sesión
-        // -----------------------------------------------------------
+        // RF1.4 Cambiar Contraseña utilizando el Token
+        JPanel panelResetPassword = new JPanel(new GridLayout(4, 2, 5, 5));
+        JTextField txtCorreoReset = new JTextField();
+        JTextField txtTokenInput = new JTextField();
+        JTextField txtNewPassword = new JTextField();
+
+        panelResetPassword.add(new JLabel("Correo:"));
+        panelResetPassword.add(txtCorreoReset);
+        panelResetPassword.add(new JLabel("Token:"));
+        panelResetPassword.add(txtTokenInput);
+        panelResetPassword.add(new JLabel("Nueva Contraseña:"));
+        panelResetPassword.add(txtNewPassword);
+
+        JButton btnResetPassword = new JButton("Cambiar Contraseña");
+        panelResetPassword.add(btnResetPassword);
+
+        btnResetPassword.addActionListener(e -> {
+            try {
+                Usuario userService = new Usuario();
+                userService.resetPassword(
+                        txtCorreoReset.getText().trim(),
+                        txtTokenInput.getText().trim(),
+                        txtNewPassword.getText().trim(),
+                        txtTokenGenerated.getText().trim() // Token generado anteriormente
+                );
+                JOptionPane.showMessageDialog(panelResetPassword,
+                        "Contraseña cambiada con éxito.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(panelResetPassword,
+                        "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        usuariosTabbedPane.addTab("Recuperar Contraseña", panelResetPassword);
 
         return usuariosTabbedPane;
     }
