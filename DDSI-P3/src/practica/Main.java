@@ -6,7 +6,6 @@ public class Main {
         Connection.inicializarFrameRegistro();
         Connection.inicializarFramePrincipal();
         Connection.conectarBD();
-
         // Iniciar sesión o registrarse
         int idUsuario = Diseño.pantalla_registro(Connection.frame_registro);
 

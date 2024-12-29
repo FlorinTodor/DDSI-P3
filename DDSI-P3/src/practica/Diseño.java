@@ -181,6 +181,16 @@ public class Diseño {
             }
         });
         menuGestion.add(insertarDisparadores);
+        // Opción 5: Crear tablas
+        JMenuItem CrearTablas = new JMenuItem("Crear Tablas");
+        CrearTablas.addActionListener(e -> {
+            try {
+                FuncionesBD.crearTablas();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        menuGestion.add(CrearTablas);
 
 
 
@@ -1251,36 +1261,122 @@ public class Diseño {
 
     private static JTabbedPane crearPestañasPago(){
         JTabbedPane pagosTabbedPane = new JTabbedPane();
+
         // -----------------------------------------------------------
         // RF6.1 Agregar Método de Pago
         // -----------------------------------------------------------
-        JPanel panelAgregarMetodo = new JPanel(new GridLayout(7, 2, 5, 5));
-        JTextField txtTipoPago = new JTextField();
+        // En vez de GridLayout(7, 2) dejamos el 0 en "filas" para que se acomoden dinámicamente
+        JPanel panelAgregarMetodo = new JPanel(new GridLayout(0, 2, 5, 5));
+
+        // Botones para elegir Tarjeta o PayPal
+        JButton btnSeleccionTarjeta = new JButton("Tarjeta de Crédito");
+        JButton btnSeleccionPayPal = new JButton("PayPal");
+
+        // Etiquetas
+        JLabel lblNumeroTarjeta = new JLabel("Número de Tarjeta:");
+        JLabel lblFechaExpiracion = new JLabel("Fecha de Expiración (MM/YY):");
+        JLabel lblCodigoCVV = new JLabel("Código CVV:");
+        JLabel lblNombreTitular = new JLabel("Nombre del Titular:");
+        JLabel lblCorreoPayPal = new JLabel("Correo PayPal:");
+
+        // Campos de texto
         JTextField txtNumeroTarjeta = new JTextField();
         JTextField txtFechaExpiracion = new JTextField();
         JTextField txtCodigoCVV = new JTextField();
         JTextField txtNombreTitular = new JTextField();
         JTextField txtCorreoPayPal = new JTextField();
 
-        panelAgregarMetodo.add(new JLabel("Tipo de Método de Pago:"));
-        panelAgregarMetodo.add(txtTipoPago);
-        panelAgregarMetodo.add(new JLabel("Número de Tarjeta:"));
-        panelAgregarMetodo.add(txtNumeroTarjeta);
-        panelAgregarMetodo.add(new JLabel("Fecha de Expiración (MM/YY):"));
-        panelAgregarMetodo.add(txtFechaExpiracion);
-        panelAgregarMetodo.add(new JLabel("Código CVV:"));
-        panelAgregarMetodo.add(txtCodigoCVV);
-        panelAgregarMetodo.add(new JLabel("Nombre del Titular:"));
+        // Por defecto, vamos a deshabilitar los campos (hasta que elija)
+        // o puedes dejarlos habilitados y solo “en blanco”
+        txtNumeroTarjeta.setEnabled(false);
+        txtFechaExpiracion.setEnabled(false);
+        txtCodigoCVV.setEnabled(false);
+        txtCorreoPayPal.setEnabled(false);
+        // Este siempre está habilitado porque se requiere para ambos métodos
+        txtNombreTitular.setEnabled(true);
+
+        // Añadimos los componentes al panel
+        // Primero, los botones para elegir método de pago
+        panelAgregarMetodo.add(new JLabel("Selecciona un método de pago:"));
+        // En la siguiente celda, usaremos un subpanel para poner ambos botones
+        JPanel subPanelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        subPanelBotones.add(btnSeleccionTarjeta);
+        subPanelBotones.add(btnSeleccionPayPal);
+        panelAgregarMetodo.add(subPanelBotones);
+
+        // Luego, cada par (label-campo) en orden:
+        panelAgregarMetodo.add(lblNombreTitular);
         panelAgregarMetodo.add(txtNombreTitular);
-        panelAgregarMetodo.add(new JLabel("Correo PayPal:"));
+
+        panelAgregarMetodo.add(lblNumeroTarjeta);
+        panelAgregarMetodo.add(txtNumeroTarjeta);
+
+        panelAgregarMetodo.add(lblFechaExpiracion);
+        panelAgregarMetodo.add(txtFechaExpiracion);
+
+        panelAgregarMetodo.add(lblCodigoCVV);
+        panelAgregarMetodo.add(txtCodigoCVV);
+
+        panelAgregarMetodo.add(lblCorreoPayPal);
         panelAgregarMetodo.add(txtCorreoPayPal);
 
+        // Botón para agregar método
         JButton btnAgregarMetodo = new JButton("Agregar Método de Pago");
+        // Añadimos un hueco vacío para alinear (o puedes meterlo en la misma fila)
+        panelAgregarMetodo.add(new JLabel(""));
         panelAgregarMetodo.add(btnAgregarMetodo);
 
+        // Variable para guardar el tipo seleccionado
+        final String[] tipoSeleccionado = {null};
+
+        // Listeners de los botones para seleccionar Tarjeta o PayPal
+        btnSeleccionTarjeta.addActionListener(e -> {
+            tipoSeleccionado[0] = "Tarjeta de crédito";
+
+            // Habilitamos los campos de tarjeta:
+            txtNumeroTarjeta.setEnabled(true);
+            txtFechaExpiracion.setEnabled(true);
+            txtCodigoCVV.setEnabled(true);
+            // Deshabilitamos el correo PayPal
+            txtCorreoPayPal.setEnabled(false);
+
+            // Limpiamos o deshabilitamos su contenido si quieres
+            txtCorreoPayPal.setText("");
+        });
+
+        btnSeleccionPayPal.addActionListener(e -> {
+            tipoSeleccionado[0] = "PayPal";
+
+            // Deshabilitamos los campos de tarjeta
+            txtNumeroTarjeta.setEnabled(false);
+            txtFechaExpiracion.setEnabled(false);
+            txtCodigoCVV.setEnabled(false);
+
+            // Limpiamos o deshabilitamos su contenido si quieres
+            txtNumeroTarjeta.setText("");
+            txtFechaExpiracion.setText("");
+            txtCodigoCVV.setText("");
+
+            // Habilitamos el correo de PayPal
+            txtCorreoPayPal.setEnabled(true);
+        });
+
+        // Acción del botón "Agregar Método de Pago"
         btnAgregarMetodo.addActionListener(e -> {
             try {
-                String tipoPago = txtTipoPago.getText().trim();
+                // Validamos que haya un tipo de método seleccionado
+                if (tipoSeleccionado[0] == null) {
+                    JOptionPane.showMessageDialog(
+                            panelAgregarMetodo,
+                            "Por favor, selecciona Tarjeta o PayPal antes de continuar.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                // Recopilamos datos
+                String tipoPago = tipoSeleccionado[0];  // "Tarjeta de crédito" o "PayPal"
                 String numeroTarjeta = txtNumeroTarjeta.getText().trim();
                 String fechaExpiracion = txtFechaExpiracion.getText().trim();
                 String codigoCVV = txtCodigoCVV.getText().trim();
@@ -1288,10 +1384,42 @@ public class Diseño {
                 String correoPayPal = txtCorreoPayPal.getText().trim();
 
                 Pago pagoService = new Pago();
-                pagoService.agregarMetodoPago(id_user, tipoPago, numeroTarjeta, fechaExpiracion, codigoCVV, nombreTitular, correoPayPal);
-                JOptionPane.showMessageDialog(panelAgregarMetodo, "Método de pago agregado con éxito. ID: \n");
+                int idGenerado = pagoService.agregarMetodoPago(
+                        id_user,
+                        tipoPago,
+                        numeroTarjeta,
+                        fechaExpiracion,
+                        codigoCVV,
+                        nombreTitular,
+                        correoPayPal
+                );
+
+                JOptionPane.showMessageDialog(
+                        panelAgregarMetodo,
+                        "Método de pago agregado con éxito. ID: " + idGenerado
+                );
+
+                // Opcional: limpiar campos tras el éxito
+                txtNumeroTarjeta.setText("");
+                txtFechaExpiracion.setText("");
+                txtCodigoCVV.setText("");
+                txtNombreTitular.setText("");
+                txtCorreoPayPal.setText("");
+                tipoSeleccionado[0] = null;
+
+                // Volver a deshabilitar todo si gustas
+                txtNumeroTarjeta.setEnabled(false);
+                txtFechaExpiracion.setEnabled(false);
+                txtCodigoCVV.setEnabled(false);
+                txtCorreoPayPal.setEnabled(false);
+
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelAgregarMetodo, "Error al agregar método de pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelAgregarMetodo,
+                        "Error al agregar método de pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1302,7 +1430,6 @@ public class Diseño {
         // -----------------------------------------------------------
         JPanel panelEliminarMetodo = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdMetodoEliminar = new JTextField();
-
         panelEliminarMetodo.add(new JLabel("ID Método de Pago:"));
         panelEliminarMetodo.add(txtIdMetodoEliminar);
 
@@ -1312,12 +1439,17 @@ public class Diseño {
         btnEliminarMetodo.addActionListener(e -> {
             try {
                 int idMetodo = Integer.parseInt(txtIdMetodoEliminar.getText().trim());
-
                 Pago pagoService = new Pago();
-                pagoService.eliminarMetodoPago(id_user, idMetodo);
-                JOptionPane.showMessageDialog(panelEliminarMetodo, "Método de pago eliminado con éxito\n");
+                String mensaje = pagoService.eliminarMetodoPago(id_user, idMetodo);
+
+                JOptionPane.showMessageDialog(panelEliminarMetodo, mensaje);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelEliminarMetodo, "Error al eliminar método de pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelEliminarMetodo,
+                        "Error al eliminar método de pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1344,7 +1476,12 @@ public class Diseño {
                     textAreaMetodos.append(metodo.toString() + "\n");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelVerMetodos, "Error al ver métodos de pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelVerMetodos,
+                        "Error al ver métodos de pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1375,10 +1512,15 @@ public class Diseño {
                 double cantidad = Double.parseDouble(txtCantidadPago.getText().trim());
 
                 Pago pagoService = new Pago();
-                pagoService.realizarPago(idPedido, idMetodo, cantidad, id_user);
-                JOptionPane.showMessageDialog(panelRealizarPago, "Pago realizado con éxito \n");
+                String mensaje = pagoService.realizarPago(idPedido, idMetodo, cantidad, id_user);
+                JOptionPane.showMessageDialog(panelRealizarPago, mensaje);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelRealizarPago, "Error al realizar el pago: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelRealizarPago,
+                        "Error al realizar el pago: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1405,7 +1547,12 @@ public class Diseño {
                     textAreaHistorial.append(transaccion.toString() + "\n");
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelHistorialTransacciones, "Error al ver historial: " + ex.getMessage());
+                JOptionPane.showMessageDialog(
+                        panelHistorialTransacciones,
+                        "Error al ver historial: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         });
 
@@ -1413,6 +1560,7 @@ public class Diseño {
 
         return pagosTabbedPane;
     }
+
 
 
 

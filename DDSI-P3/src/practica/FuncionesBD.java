@@ -193,26 +193,75 @@ public class FuncionesBD {
         }
     }
 
-
+    private static void eliminarSiExiste(String tipo, String nombre, Statement stmt) throws SQLException {
+        try {
+            String sql = "DROP " + tipo + " " + nombre + " PURGE";
+            stmt.executeUpdate(sql);
+            System.out.println(tipo + " " + nombre + " eliminado.");
+        } catch (SQLException e) {
+            if (!e.getMessage().contains("ORA-00942")) { // Ignorar si el objeto no existe
+                throw e; // Re-lanzar si es otro tipo de error
+            }
+        }
+    }
+    private static void TruncarSiExiste(String nombre, Statement stmt) throws SQLException {
+        try {
+            String sql = "TRUNCATE TABLE " + nombre ;
+            stmt.executeUpdate(sql);
+            System.out.println(nombre + " TRUNCATED.");
+        } catch (SQLException e) {
+            if (!e.getMessage().contains("ORA-00942")) { // Ignorar si el objeto no existe
+                throw e; // Re-lanzar si es otro tipo de error
+            }
+        }
+    }
     public static void borraryCrearTablas() {
         try (Statement stmt = Connection.connection.createStatement()) {
-            // Borrar tablas que dependen de otras
-            stmt.executeUpdate("DROP TABLE Gestion_Reseña PURGE");
-            stmt.executeUpdate("DROP TABLE Realiza PURGE");
-            stmt.executeUpdate("DROP TABLE GestionPago PURGE");
-            stmt.executeUpdate("DROP TABLE GestionCarrito PURGE");
-            stmt.executeUpdate("DROP TABLE GestionPedido PURGE");
-            stmt.executeUpdate("DROP TABLE modificaProducto PURGE");
-            stmt.executeUpdate("DROP TABLE tiene PURGE");
+            // Truncar tablas dependientes primero
+            TruncarSiExiste("Gestion_Reseña", stmt);
+            TruncarSiExiste("Realiza", stmt);
+            TruncarSiExiste("GestionPago", stmt);
 
-            // Borrar tablas base
-            stmt.executeUpdate("DROP TABLE reseña PURGE");
-            stmt.executeUpdate("DROP TABLE pedido PURGE");
-            stmt.executeUpdate("DROP TABLE producto PURGE");
-            stmt.executeUpdate("DROP TABLE pago PURGE");
-            stmt.executeUpdate("DROP TABLE carrito PURGE");
-            stmt.executeUpdate("DROP TABLE usuario PURGE");
+            // Truncar tablas principales después
+            TruncarSiExiste("reseña", stmt);
+            TruncarSiExiste("pedido", stmt);
+            TruncarSiExiste("producto", stmt);
+            TruncarSiExiste("pago", stmt);
+            TruncarSiExiste("carrito", stmt);
 
+
+            // Eliminar tablas relacionadas primero
+            eliminarSiExiste("TABLE", "Gestion_Reseña", stmt);
+            eliminarSiExiste("TABLE", "Realiza", stmt);
+            eliminarSiExiste("TABLE", "GestionPago", stmt);
+            eliminarSiExiste("TABLE", "GestionCarrito", stmt);
+            eliminarSiExiste("TABLE", "GestionPedido", stmt);
+            eliminarSiExiste("TABLE", "modificaProducto", stmt);
+            eliminarSiExiste("TABLE", "tiene", stmt);
+
+            // Eliminar tablas base después
+            eliminarSiExiste("TABLE", "reseña", stmt);
+            eliminarSiExiste("TABLE", "pedido", stmt);
+            eliminarSiExiste("TABLE", "producto", stmt);
+            eliminarSiExiste("TABLE", "pago", stmt);
+            eliminarSiExiste("TABLE", "carrito", stmt);
+            eliminarSiExiste("TABLE", "usuario", stmt);
+
+            // Eliminar secuencia pago_seq
+            stmt.executeUpdate("DROP SEQUENCE PAGO_SEQ");
+            System.out.println("SEQUENCE PAGO_SEQ eliminado.");
+
+
+            // Crear tablas base
+                crearTablas();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(Connection.frame, "Error al crear las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Crear solamente tablas
+    public static void crearTablas() throws SQLException {
+        try (Statement stmt = Connection.connection.createStatement()) {
             // Crear tablas base
             stmt.executeUpdate("CREATE TABLE usuario (\n" +
                     "    ID_Usuario INTEGER NOT NULL,\n" +
@@ -258,10 +307,13 @@ public class FuncionesBD {
 
             stmt.executeUpdate("CREATE TABLE pago (\n" +
                     "    ID_metodoPago INT PRIMARY KEY,\n" +
-                    "    Fecha DATE\n" +
+                    "    ID_Usuario INT,\n" +
+                    "    Fecha DATE,\n" +
+                    "    FOREIGN KEY(ID_Usuario) REFERENCES usuario(ID_Usuario)\n" +
                     ")");
-
-            // Crear tablas relacionadas
+// Crear secuencia para ID_metodoPago en la tabla pago
+            stmt.executeUpdate("CREATE SEQUENCE pago_seq START WITH 1 INCREMENT BY 1 NOCACHE");
+// Crear tablas relacionadas
             stmt.executeUpdate("CREATE TABLE GestionPago (\n" +
                     "    ID_Usuario INT,\n" +
                     "    ID_metodoPago INT,\n" +
@@ -317,8 +369,11 @@ public class FuncionesBD {
 
             Connection.connection.commit();
             JOptionPane.showMessageDialog(Connection.frame, "Tablas creadas correctamente.");
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(Connection.frame, "Error al crear las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(Connection.frame, "Secuencia creada correctamente.");
         }
     }
+
+
 }
+
+

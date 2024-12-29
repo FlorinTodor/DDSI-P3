@@ -12,6 +12,12 @@ CREATE TABLE usuario (
     UNIQUE(Correo)
 );
 
+CREATE SEQUENCE pago_seq
+START WITH 1      -- Valor inicial
+INCREMENT BY 1    -- De cuánto en cuánto incrementa
+NOCACHE           -- Opcional
+NOCYCLE; 
+
 -- Subsistema Producto
 CREATE TABLE producto (
     ID_Producto integer NOT NULL,
@@ -48,6 +54,7 @@ CREATE TABLE reseña (
 -- Subsistema Pagos
 CREATE TABLE pago (
     ID_metodoPago INT PRIMARY KEY,
+    ID_Usuario int,
     Fecha DATE
 );
 
