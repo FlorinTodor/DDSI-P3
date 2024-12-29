@@ -309,9 +309,16 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE pago (\n" +
                     "    ID_metodoPago INT PRIMARY KEY,\n" +
                     "    ID_Usuario INT,\n" +
+                    "    Tipo_MetodoPago VARCHAR(50) NOT NULL,\n" +
+                    "    Numero_Tarjeta VARCHAR(16),\n" +
+                    "    Fecha_Expiracion VARCHAR(5),\n" +
+                    "    Codigo_CVV VARCHAR(4),\n" +
+                    "    Nombre_Titular VARCHAR(100),\n" +
+                    "    Correo_PayPal VARCHAR(100),\n" +
                     "    Fecha DATE,\n" +
                     "    FOREIGN KEY(ID_Usuario) REFERENCES usuario(ID_Usuario)\n" +
                     ")");
+
 // Crear secuencia para ID_metodoPago en la tabla pago
             stmt.executeUpdate("CREATE SEQUENCE pago_seq START WITH 1 INCREMENT BY 1 NOCACHE");
 // Crear tablas relacionadas
