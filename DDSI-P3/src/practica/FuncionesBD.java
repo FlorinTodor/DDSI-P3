@@ -345,7 +345,7 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE modificaProducto (\n" +
                     "    ID_Usuario integer REFERENCES usuario(ID_Usuario),\n" +
                     "    ID_Producto integer REFERENCES producto(ID_Producto),\n" +
-                    "    PRIMARY KEY(ID_Usuario)\n" +
+                    "    PRIMARY KEY(ID_Producto)\n" +
                     ")");
 
             stmt.executeUpdate("CREATE TABLE tiene (\n" +
