@@ -58,7 +58,7 @@ public class Producto{
                 ps.executeUpdate();
             }
 
-            conn.commit(); // Confirmar los cambios
+            Connection.connection.commit(); // Confirmar los cambios
     }
 
     /**
