@@ -60,6 +60,13 @@ public class Diseño {
                     return;
                 }
 
+                // Mostrar pantalla de consentimiento
+                boolean aceptoConsentimiento = mostrarPantallaConsentimiento(frame);
+                if (!aceptoConsentimiento) {
+                    JOptionPane.showMessageDialog(frame, "Debe aceptar el consentimiento para continuar.", "Consentimiento requerido", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
                 Usuario userService = new Usuario();
                 int idGenerado = userService.registerUser(correo, nombre, direccion, contraseña);
                 id_usuario.set(idGenerado);
@@ -121,7 +128,7 @@ public class Diseño {
 
         while (id_usuario.get() == 0) {
             try {
-                sleep(100);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
@@ -129,6 +136,46 @@ public class Diseño {
 
         return id_usuario.get();
     }
+
+    private static boolean mostrarPantallaConsentimiento(JFrame frame) {
+        JPanel panelConsentimiento = new JPanel(new BorderLayout(10, 10));
+
+        JTextArea txtConsentimiento = new JTextArea(
+                "Al registrarse, usted acepta los siguientes términos:\n\n" +
+                        "- Sus datos serán almacenados y utilizados únicamente para los fines de " +
+                        "proporcionar nuestros servicios.\n" +
+                        "- Cumpliremos con todas las regulaciones de protección de datos vigentes.\n\n" +
+                        "Para más información, puede consultar nuestra política de privacidad en nuestro sitio web."
+        );
+        txtConsentimiento.setLineWrap(true);
+        txtConsentimiento.setWrapStyleWord(true);
+        txtConsentimiento.setEditable(false);
+        txtConsentimiento.setBackground(panelConsentimiento.getBackground());
+
+        JScrollPane scrollPane = new JScrollPane(
+                txtConsentimiento,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
+        scrollPane.setPreferredSize(new Dimension(400, 200)); // Tamaño ajustado para mostrar más contenido sin scroll
+
+        panelConsentimiento.add(scrollPane, BorderLayout.CENTER);
+
+        JCheckBox chkAcepto = new JCheckBox("He leído y acepto los términos y condiciones.");
+        panelConsentimiento.add(chkAcepto, BorderLayout.SOUTH);
+
+        int opcion = JOptionPane.showConfirmDialog(
+                frame,
+                panelConsentimiento,
+                "Consentimiento de Datos",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.INFORMATION_MESSAGE
+        );
+
+        return opcion == JOptionPane.OK_OPTION && chkAcepto.isSelected();
+    }
+
+
 
     public static void pantalla_inicio(JFrame frame) {
 
