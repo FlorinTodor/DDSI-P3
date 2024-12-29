@@ -47,7 +47,7 @@ public class Disparadores {
                     + "   SELECT COUNT(*) INTO usuario_existe "
                     + "     FROM usuario "
                     + "    WHERE ID_Usuario = :NEW.ID_Usuario; "
-                    + "   IF usuario_existe == 0 THEN "
+                    + "   IF usuario_existe = 0 THEN "
                     + "      -- Opcional: Lanzar un error si se requiere notificar el problema "
                     + "   RAISE_APPLICATION_ERROR(-20002, " //este error hace un rollback automático
                     + "       'El usuario asociado al producto no existe.' "
@@ -67,7 +67,7 @@ public class Disparadores {
                     + "   SELECT COUNT(*) INTO producto_existe "
                     + "     FROM producto "
                     + "    WHERE ID_Producto = :NEW.ID_Producto; "
-                    + "   IF producto_existe == 0 THEN "
+                    + "   IF producto_existe = 0 THEN "
                     + "   -- Opcional: Lanzar un error para notificar el problema "
                     + "   RAISE_APPLICATION_ERROR(-20003, "
                     + "       'El producto asociado no existe s.' "
