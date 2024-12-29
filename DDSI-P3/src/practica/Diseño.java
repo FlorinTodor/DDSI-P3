@@ -195,8 +195,17 @@ public class Diseño {
         });
         menuGestion.add(CrearTablas);
 
+        // Opcion 6: Eliminar Disparadores
 
-
+        JMenuItem EliminarDisparadores = new JMenuItem("Eliminar Disparadores");
+        EliminarDisparadores.addActionListener(e -> {
+            try{
+                FuncionesBD.eliminarDisparadores();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        menuGestion.add(EliminarDisparadores);
 
         // Añadir menús a la barra de menú
         menuBar.add(menuArchivo);
