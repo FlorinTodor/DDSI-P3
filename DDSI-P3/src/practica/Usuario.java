@@ -165,7 +165,7 @@ public class Usuario {
     }
 
     /**
-     * RF1.4: Cambiar Contraseña utilizando el Token
+     * RF1.4: Cambiar Contraseña utilizando el Token generado
      */
     public void resetPassword(String correo, String token, String nuevaContraseña, String expectedToken) throws Exception {
         if (!token.equals(expectedToken)) {
