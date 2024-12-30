@@ -7,6 +7,196 @@ import java.util.List;
 
 
 public class Pago {
+
+    /**
+     * RF6.1: Añadir un método de pago.
+     */
+    public void agregarMetodoPago(int idUsuario, String tipoMetodoPago, String numeroTarjeta, String fechaExpiracion,
+                                 String codigoCVV, String nombreTitular, String correoPayPal) throws Exception {
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        java.sql.Connection conn = Connection.connection;
+
+        // Verificar si el usuario existe
+        if (!Connection.doesUserExist(idUsuario)) {
+            throw new Exception("El usuario no existe.");
+        }
+
+        // Validar detalles del método de pago
+        if ("Tarjeta de crédito".equalsIgnoreCase(tipoMetodoPago)) {
+            if (numeroTarjeta == null || numeroTarjeta.length() != 16 || !numeroTarjeta.matches("\\d{16}")) {
+                throw new Exception("El número de tarjeta debe tener 16 dígitos.");
+            }
+            if (fechaExpiracion == null || !fechaExpiracion.matches("\\d{2}/\\d{2}")) {
+                throw new Exception("La fecha de expiración debe estar en formato MM/AA.");
+            }
+            if (codigoCVV == null || !codigoCVV.matches("\\d{3,4}")) {
+                throw new Exception("El código CVV debe tener 3 o 4 dígitos.");
+            }
+        } else if ("PayPal".equalsIgnoreCase(tipoMetodoPago)) {
+            if (correoPayPal == null || !correoPayPal.contains("@") || correoPayPal.length() > 100) {
+                throw new Exception("El correo electrónico de PayPal no es válido.");
+            }
+        } else {
+            throw new Exception("El tipo de método de pago no es válido.");
+        }
+
+        // Insertar el método de pago
+        String sql = "INSERT INTO PAGO (ID_METODOPAGO, ID_USUARIO, TIPO_METODOPAGO, NUMERO_TARJETA, FECHA_EXPIRACION, " +
+                "CODIGO_CVV, NOMBRE_TITULAR, CORREO_PAYPAL, FECHA) " +
+                "VALUES (pago_seq.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            ps.setString(2, tipoMetodoPago);
+            ps.setString(3, numeroTarjeta);
+            ps.setString(4, fechaExpiracion);
+            ps.setString(5, codigoCVV);
+            ps.setString(6, nombreTitular);
+            ps.setString(7, correoPayPal);
+            ps.executeUpdate();
+        }
+        Connection.connection.commit();
+
+    }
+
+    /**
+     * RF6.2: Eliminar un método de pago.
+     */
+    public void eliminarMetodoPago(int idUsuario, int idMetodoPago) throws Exception {
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        java.sql.Connection conn = Connection.connection;
+
+        // Verificar que el método de pago pertenece al usuario
+        String verificarMetodoPago = "SELECT COUNT(*) FROM pago WHERE ID_metodoPago = ? AND ID_Usuario = ?";
+        try (PreparedStatement ps = conn.prepareStatement(verificarMetodoPago)) {
+            ps.setInt(1, idMetodoPago);
+            ps.setInt(2, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    throw new Exception("El método de pago no pertenece al usuario.");
+                }
+            }
+        }
+
+        // Eliminar el método de pago
+        String eliminarMetodoPago = "DELETE FROM PAGO WHERE ID_METODOPAGO = ?";
+        try (PreparedStatement ps = conn.prepareStatement(eliminarMetodoPago)) {
+            ps.setInt(1, idMetodoPago);
+            ps.executeUpdate();
+        }
+
+        conn.commit(); // Confirmar los cambios
+    }
+
+    /**
+     * RF6.3: Mostrar métodos de pago asociados a un usuario.
+     */
+    public List<String> verMetodosPago(int idUsuario) throws Exception {
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        java.sql.Connection conn = Connection.connection;
+        List<String> metodosPago = new ArrayList<>();
+
+        String sql = "SELECT ID_METODOPAGO, TIPO_METODOPAGO, NUMERO_TARJETA FROM PAGO WHERE ID_USUARIO = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int idMetodoPago = rs.getInt("ID_metodoPago");
+                    String tipoMetodoPago = rs.getString("Tipo_MetodoPago");
+                    String numeroTarjeta = rs.getString("Numero_Tarjeta");
+                    String terminacion = (numeroTarjeta != null && numeroTarjeta.length() >= 4)
+                            ? numeroTarjeta.substring(numeroTarjeta.length() - 4)
+                            : "N/A";
+                    metodosPago.add("ID: " + idMetodoPago + ", Tipo: " + tipoMetodoPago + ", Terminación: " + terminacion);
+                }
+            }
+        }
+
+        if (metodosPago.isEmpty()) {
+            throw new Exception("No hay métodos de pago asociados al usuario.");
+        }
+
+        return metodosPago;
+    }
+
+    /**
+     * RF6.4: Realizar un pago.
+     */
+    public void realizarPago(int idPedido, int idMetodoPago, double cantidad, int idUsuario) throws Exception {
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        java.sql.Connection conn = Connection.connection;
+
+        // Verificar que el método de pago pertenece al usuario
+        String verificarMetodoPago = "SELECT COUNT(*) FROM PAGO WHERE ID_METODOPAGO = ? AND ID_USUARIO = ?";
+        try (PreparedStatement ps = conn.prepareStatement(verificarMetodoPago)) {
+            ps.setInt(1, idMetodoPago);
+            ps.setInt(2, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    throw new Exception("El método de pago no pertenece al usuario.");
+                }
+            }
+        }
+
+        // Registrar el pago en la tabla `Realiza`
+        String registrarPago = "INSERT INTO REALIZA (ID_METODOPAGO, ID_PEDIDO, METODO_PAGO) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(registrarPago)) {
+            ps.setInt(1, idMetodoPago);
+            ps.setInt(2, idPedido);
+            ps.setString(3, "Pago procesado");
+            ps.executeUpdate();
+        }
+
+        conn.commit(); // Confirmar los cambios
+    }
+
+    /**
+     * RF6.5: Ver el historial de transacciones.
+     */
+    public List<String> verHistorialTransacciones(int idUsuario) throws Exception {
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
+
+        java.sql.Connection conn = Connection.connection;
+        List<String> historial = new ArrayList<>();
+
+        String sql = "SELECT r.ID_PEDIDO, r.METODO_PAGO FROM REALIZA r " +
+                "JOIN PAGO p ON r.ID_METODOPAGO = p.ID_METODOPAGO " +
+                "WHERE p.ID_USUARIO = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int idPedido = rs.getInt("ID_Pedido");
+                    String metodoPago = rs.getString("Metodo_Pago");
+                    historial.add("Pedido: " + idPedido + ", Método de Pago: " + metodoPago);
+                }
+            }
+        }
+
+        if (historial.isEmpty()) {
+            throw new Exception("No hay transacciones registradas para el usuario.");
+        }
+
+        return historial;
+    }
+}
+
+
+/**
+public class Pago {
     class MetodoPago {
         private int idMetodoPago;
         private String tipoMetodoPago;
@@ -307,3 +497,4 @@ public class Pago {
     }
 
 }
+**/
