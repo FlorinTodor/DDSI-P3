@@ -1655,8 +1655,7 @@ public class Diseño {
                 String correoPayPal = txtCorreoPayPal.getText().trim();
 
                 Pago pagoService = new Pago();
-
-
+                pagoService.agregarMetodoPago(id_user, tipoPago, numeroTarjeta, fechaExpiracion, codigoCVV, nombreTitular, correoPayPal);
                 JOptionPane.showMessageDialog(
                         panelAgregarMetodo,
                         "Método de pago agregado con éxito."
