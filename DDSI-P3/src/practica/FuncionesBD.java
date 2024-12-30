@@ -160,8 +160,8 @@ public class FuncionesBD {
                     "VALUES (1, 10)");
 
             // Insertar Pagos
-            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (1, SYSDATE)");
-            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (2, SYSDATE)");
+            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, ID_Usuario, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_Paypal, Fecha) VALUES (1,2,'tarjeta de crédito','2145658732146589', '10/26', 'Juan', 'user1@paypal.com', SYSDATE)");
+            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, ID_Usuario, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_Paypal, Fecha) VALUES (2,3,'tarjeta de crédito','2145658732146588', '11/26', 'María', 'user2@paypal.com', SYSDATE)");
 
             // Insertar Pedidos
             stmt.executeUpdate("INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario) " +
