@@ -1689,23 +1689,26 @@ public class Diseño {
         // -----------------------------------------------------------
         // RF6.2: Eliminar un método de pago
         // -----------------------------------------------------------
-        JPanel panelEliminarMetodoPago = new JPanel(new GridLayout(2, 2, 5, 5));
-        JTextField txtIdMetodoPago = new JTextField();
+
+        JPanel panelEliminarMetodoPago = new JPanel(new GridLayout(3, 2, 5, 5));
+        JTextField txtIdMPago = new JTextField(10);
 
         panelEliminarMetodoPago.add(new JLabel("ID Método de Pago:"));
-        panelEliminarMetodoPago.add(txtIdMetodoPago);
+        panelEliminarMetodoPago.add(txtIdMPago);
+
+        panelEliminarMetodoPago.add(new JLabel("")); // Espacio vacío para alineación
 
         JButton btnEliminarMetodoPago = new JButton("Eliminar Método de Pago");
         panelEliminarMetodoPago.add(btnEliminarMetodoPago);
 
         btnEliminarMetodoPago.addActionListener(e -> {
             try {
-                int idMetodoPago = Integer.parseInt(txtIdMetodoPago.getText().trim());
+                int idMetodoPago = Integer.parseInt(txtIdMPago.getText().trim());
                 Pago pagoService = new Pago();
                 pagoService.eliminarMetodoPago(id_user, idMetodoPago);
                 JOptionPane.showMessageDialog(panelEliminarMetodoPago, "Método de pago eliminado exitosamente.");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panelEliminarMetodoPago, "Error al eliminar método de pago: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(panelEliminarMetodoPago, "Error al eliminar método de pago.");
             }
         });
 
@@ -1741,6 +1744,7 @@ public class Diseño {
         JPanel panelRealizarPago = new JPanel(new GridLayout(5, 2, 5, 5));
         JTextField txtIdPedido = new JTextField();
         JTextField txtCantidadPago = new JTextField();
+        JTextField txtIdMetodoPago = new JTextField();
 
         panelRealizarPago.add(new JLabel("ID del Pedido:"));
         panelRealizarPago.add(txtIdPedido);
