@@ -166,7 +166,6 @@ public class Disparadores {
             st.execute(TRIG_VERIFICAR_CANTIDAD_PRODUCTO);
             st.execute(TRIG_VERIFICAR_USUARIO_EN_PEDIDO );
             st.execute(TRIG_EVITAR_CARRITO_DUPLICADO);
-            //st.execute(TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO);
             System.out.println("Disparadores creados/reemplazados con éxito.");
         }
     }
