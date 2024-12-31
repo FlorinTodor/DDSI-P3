@@ -84,8 +84,6 @@ public class FuncionesBD {
     }
 
 
-
-
     public static void eliminarDatos_tabla() {
         try (Statement stmt = Connection.connection.createStatement()) {
             // Eliminar datos en el orden correcto respetando las dependencias
@@ -126,6 +124,7 @@ public class FuncionesBD {
             JOptionPane.showMessageDialog(Connection.frame, "Error al crear la secuencia: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     public static void crearSecuenciaCarrito() {
         String borrarSecuenciaSQL = "BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE seq_id_carrito'; EXCEPTION WHEN OTHERS THEN NULL; END;";
 
@@ -145,7 +144,7 @@ public class FuncionesBD {
     public static void insertarDatosPrueba_tabla() {
         try (Statement stmt = Connection.connection.createStatement()) {
             // Insertar Usuarios
-              stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Contraseña, Direccion) " +
+            stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Contraseña, Direccion) " +
                     "VALUES (2, 'user1@example.com', 'Juan', 'A', 'contraseña', 'Calle Falsa 123')");
             stmt.executeUpdate("INSERT INTO usuario (ID_Usuario, Correo, Nombre, Estado, Contraseña, Direccion) " +
                     "VALUES (3, 'user2@example.com', 'Maria', 'A', 'contraseña', 'Avenida Principal 456')");
@@ -161,8 +160,8 @@ public class FuncionesBD {
                     "VALUES (1, 10)");
 
             // Insertar Pagos
-            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (1, SYSDATE)");
-            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, Fecha) VALUES (2, SYSDATE)");
+            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, ID_Usuario, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_Paypal, Fecha) VALUES (1,2,'tarjeta de crédito','2145658732146589', '10/26', 'Juan', 'user1@paypal.com', SYSDATE)");
+            stmt.executeUpdate("INSERT INTO pago (ID_metodoPago, ID_Usuario, Tipo_MetodoPago, Numero_Tarjeta, Fecha_Expiracion, Codigo_CVV, Nombre_Titular, Correo_Paypal, Fecha) VALUES (2,3,'tarjeta de crédito','2145658732146588', '11/26', 'María', 'user2@paypal.com', SYSDATE)");
 
             // Insertar Pedidos
             stmt.executeUpdate("INSERT INTO pedido (ID_Pedido, Direccion, Estado_Pedido, Tipo_Pago, Metodo_Envio, ID_Usuario) " +
@@ -204,9 +203,10 @@ public class FuncionesBD {
             }
         }
     }
+
     private static void TruncarSiExiste(String nombre, Statement stmt) throws SQLException {
         try {
-            String sql = "TRUNCATE TABLE " + nombre ;
+            String sql = "TRUNCATE TABLE " + nombre;
             stmt.executeUpdate(sql);
             System.out.println(nombre + " TRUNCATED.");
         } catch (SQLException e) {
@@ -215,6 +215,7 @@ public class FuncionesBD {
             }
         }
     }
+
     public static void borraryCrearTablas() {
         try (Statement stmt = Connection.connection.createStatement()) {
             // Truncar tablas dependientes primero
@@ -253,7 +254,7 @@ public class FuncionesBD {
 
 
             // Crear tablas base
-                crearTablas();
+            crearTablas();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(Connection.frame, "Error al crear las tablas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -308,9 +309,16 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE pago (\n" +
                     "    ID_metodoPago INT PRIMARY KEY,\n" +
                     "    ID_Usuario INT,\n" +
+                    "    Tipo_MetodoPago VARCHAR(50) NOT NULL,\n" +
+                    "    Numero_Tarjeta VARCHAR(16),\n" +
+                    "    Fecha_Expiracion VARCHAR(5),\n" +
+                    "    Codigo_CVV VARCHAR(4),\n" +
+                    "    Nombre_Titular VARCHAR(100),\n" +
+                    "    Correo_PayPal VARCHAR(100),\n" +
                     "    Fecha DATE,\n" +
                     "    FOREIGN KEY(ID_Usuario) REFERENCES usuario(ID_Usuario)\n" +
                     ")");
+
 // Crear secuencia para ID_metodoPago en la tabla pago
             stmt.executeUpdate("CREATE SEQUENCE pago_seq START WITH 1 INCREMENT BY 1 NOCACHE");
 // Crear tablas relacionadas
@@ -344,7 +352,7 @@ public class FuncionesBD {
             stmt.executeUpdate("CREATE TABLE modificaProducto (\n" +
                     "    ID_Usuario integer REFERENCES usuario(ID_Usuario),\n" +
                     "    ID_Producto integer REFERENCES producto(ID_Producto),\n" +
-                    "    PRIMARY KEY(ID_Usuario)\n" +
+                    "    PRIMARY KEY(ID_Producto)\n" +
                     ")");
 
             stmt.executeUpdate("CREATE TABLE tiene (\n" +
