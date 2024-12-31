@@ -53,45 +53,8 @@ public class Disparadores {
                     + "   END IF; "
                     + "END;";
 
-    // 3) TRIGGER validar_producto_en_modificaProducto
-    /*private static final String TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO =
-            "CREATE OR REPLACE TRIGGER validar_producto_en_modificaProducto "
-                    + "AFTER INSERT OR UPDATE ON modificaProducto "
-                    + "FOR EACH ROW "
-                    + "DECLARE "
-                    + "   producto_existe INTEGER; "
-                    + "BEGIN "
-                    + "   -- Verificar si el producto existe en la tabla producto "
-                    + "   SELECT COUNT(*) INTO producto_existe "
-                    + "     FROM producto "
-                    + "    WHERE ID_Producto = :NEW.ID_Producto; "
-                    + "   IF producto_existe = 0 THEN "
-                    + "   -- Opcional: Lanzar un error para notificar el problema "
-                    + "   RAISE_APPLICATION_ERROR(-20003, "
-                    + "       'El producto asociado no existe s.' "
-                    + "   ); "
-                    + "   END IF; "
-                    + "END;";
-*/
-    // 4) TRIGGER validar_relacion_producto_modificaProducto
-    /*private static final String TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO =
-            "CREATE OR REPLACE TRIGGER validar_relacion_producto_modificaProducto "
-                    + "AFTER INSERT OR UPDATE ON producto "
-                    + "FOR EACH ROW "
-                    + "DECLARE "
-                    + "   relacion_valida INTEGER; "
-                    + "BEGIN "
-                    + "   -- Verificar si el producto tiene una relación válida en modificaProducto "
-                    + "   SELECT COUNT(*) INTO relacion_valida "
-                    + "     FROM modificaProducto "
-                    + "    WHERE ID_Producto = :NEW.ID_Producto; "
-                    + "   -- Opcional: Lanzar un error para informar sobre la eliminación "
-                    + "   RAISE_APPLICATION_ERROR(-20004, "
-                    + "       'El producto no tiene una relación válida en modificaProducto. Producto eliminado.' "
-                    + "   ); "
-                    + "END;";
-*/
-    // 5) TRIGGER garantizar que existe el usuario cuando vas a añadir metodo pago
+
+    // 3) TRIGGER garantizar que existe el usuario cuando vas a añadir metodo pago
     private static final String TRIG_VERIFICAR_USUARIO_EXISTE =
             "CREATE OR REPLACE TRIGGER TRIG_VERIFICAR_USUARIO_EXISTE " +
                     "BEFORE INSERT ON pago " +
@@ -107,7 +70,7 @@ public class Disparadores {
                     "    END IF; " +
                     "END;";
 
-    // 6) TRIGGER garantizar si existe el metodo de pago cuando vayas a hacer un pago
+    // 4) TRIGGER garantizar si existe el metodo de pago cuando vayas a hacer un pago
     private static final String TRIG_VERIFICAR_METODO_PAGO_EXISTE =
             "CREATE OR REPLACE TRIGGER TRIG_VERIFICAR_METODO_PAGO_EXISTE " +
                     "BEFORE INSERT ON Realiza " +
@@ -123,7 +86,7 @@ public class Disparadores {
                     "    END IF; " +
                     "END;";
 
-    // TRIGGER para verificar la cantidad de producto antes de insertar o actualizar en la tabla 'tiene' Gabriel
+    //  5) TRIGGER para verificar la cantidad de producto antes de insertar o actualizar en la tabla 'tiene' Gabriel
     private static final String TRIG_VERIFICAR_CANTIDAD_PRODUCTO =
             "CREATE OR REPLACE TRIGGER verificar_cantidad_producto " +
                     "BEFORE INSERT OR UPDATE ON tiene " +
@@ -154,7 +117,7 @@ public class Disparadores {
                     "    END IF; " +
                     "END;";
 
-    // TRIGGER que evita que se inserte una relación duplicada entre un carrito y un pedido en GESTIONCARRITO. Gabriel
+    //  6) TRIGGER que evita que se inserte una relación duplicada entre un carrito y un pedido en GESTIONCARRITO. Gabriel
     private static final String TRIG_EVITAR_CARRITO_DUPLICADO =
             "CREATE OR REPLACE TRIGGER evitar_carrito_duplicado " +
                     "BEFORE INSERT ON gestioncarrito " +
@@ -170,7 +133,7 @@ public class Disparadores {
                     "    END IF; " +
                     "END;";
 
-    // Trigger para verificar que el ID_Usuario asociado con un pedido existe en la tabla usuario
+    //7)  Trigger para verificar que el ID_Usuario asociado con un pedido existe en la tabla usuario
     private static final String TRIG_VERIFICAR_USUARIO_EN_PEDIDO =
             "CREATE OR REPLACE TRIGGER verificar_usuario_en_pedido "
                     + "BEFORE INSERT OR UPDATE ON pedido "
