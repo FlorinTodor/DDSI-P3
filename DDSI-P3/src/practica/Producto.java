@@ -76,8 +76,22 @@ public class Producto{
             throw new Exception("El usuario no existe.");
         }
 
+        // Comprobar si el usuario está autorizado para editar el producto
+        String verificarPermisoQuery =
+                "SELECT COUNT(*) " +
+                        "FROM modificaProducto " +
+                        "WHERE ID_PRODUCTO = ? AND ID_USUARIO = ?";
+        try (PreparedStatement ps = conn.prepareStatement(verificarPermisoQuery)) {
+            ps.setInt(1, idProducto);
+            ps.setInt(2, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    throw new Exception("El usuario no está autorizado para editar este producto.");
+                }
+            }
+        }
 
-        // Comprobar existencia del producto y detalles actuales
+        // Comprobar existencia del producto y obtener detalles actuales
         String nombreActual = null;
         Integer cantidadActual = null;
         Double precioActual = null;
@@ -102,16 +116,23 @@ public class Producto{
             throw new Exception("No se puede editar un producto que tiene campos inválidos.");
         }
 
-        if (nuevaCantidad <= 0) {
+        if (nuevaCantidad != null && nuevaCantidad <= 0) {
             throw new Exception("La nueva cantidad debe ser mayor que 0.");
         }
 
-        if (nuevoPrecio <= 0) {
+        if (nuevoPrecio != null && nuevoPrecio <= 0) {
             throw new Exception("El nuevo precio debe ser mayor que 0.");
         }
-        // Usar el nombre actual si no se proporciona un nuevo nombre
+
+        // Usar valores actuales si no se proporcionan nuevos
         if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
             nuevoNombre = nombreActual;
+        }
+        if (nuevaCantidad == null) {
+            nuevaCantidad = cantidadActual;
+        }
+        if (nuevoPrecio == null) {
+            nuevoPrecio = precioActual;
         }
 
         // Actualizar el producto

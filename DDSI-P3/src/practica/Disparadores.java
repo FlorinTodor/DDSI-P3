@@ -202,7 +202,7 @@ public class Disparadores {
             // Ejecutar cada disparador
             st.execute(TRIG_VERIFICA_PEDIDO_USUARIO);
             st.execute(TRIG_VALIDAR_USUARIO_MODIFICAPRODUCTO);
-            st.execute(TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO);
+            //st.execute(TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO);
             st.execute(TRIG_VERIFICAR_USUARIO_EXISTE);
             st.execute(TRIG_VERIFICAR_METODO_PAGO_EXISTE);
             st.execute(TRIG_VERIFICAR_CANTIDAD_PRODUCTO);
