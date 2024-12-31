@@ -37,64 +37,22 @@ public class Disparadores {
                     + "   END IF; "
                     + "END;";
 
-    // 2) TRIGGER validar_usuario_en_modificaProducto
     private static final String TRIG_VALIDAR_USUARIO_MODIFICAPRODUCTO =
-            "CREATE OR REPLACE TRIGGER validar_usuario_en_modificaProducto "
-                    + "AFTER INSERT OR UPDATE ON modificaProducto "
-                    + "FOR EACH ROW "
-                    + "DECLARE "
-                    + "   usuario_existe INTEGER; "
-                    + "BEGIN "
-                    + "   -- Verificar si el usuario asociado al producto existe "
-                    + "   SELECT COUNT(*) INTO usuario_existe "
-                    + "     FROM usuario "
-                    + "    WHERE ID_Usuario = :NEW.ID_Usuario; "
-                    + "   IF usuario_existe = 0 THEN "
-                    + "      -- Opcional: Lanzar un error si se requiere notificar el problema "
-                    + "   RAISE_APPLICATION_ERROR(-20002, " //este error hace un rollback automático
-                    + "       'El usuario asociado al producto no existe.' "
-                    + "   ); "
-                    + "   END IF; "
-                    + "END;";
+            "CREATE OR REPLACE TRIGGER TRIG_VALIDAR_USUARIO_MODIFICAPRODUCTO " +
+                    "BEFORE INSERT ON modificaProducto " +
+                    "FOR EACH ROW " +
+                    "DECLARE " +
+                    "    usuario_existe NUMBER; " +
+                    "BEGIN " +
+                    "    SELECT COUNT(*) INTO usuario_existe " +
+                    "    FROM usuario " +
+                    "    WHERE ID_Usuario = :NEW.ID_Usuario; " +
+                    "    IF usuario_existe = 0 THEN " +
+                    "        RAISE_APPLICATION_ERROR(-20002, 'Error: El usuario asociado al producto no existe.'); " +
+                    "    END IF; " +
+                    "END;";
 
-    // 3) TRIGGER validar_producto_en_modificaProducto
-    /*private static final String TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO =
-            "CREATE OR REPLACE TRIGGER validar_producto_en_modificaProducto "
-                    + "AFTER INSERT OR UPDATE ON modificaProducto "
-                    + "FOR EACH ROW "
-                    + "DECLARE "
-                    + "   producto_existe INTEGER; "
-                    + "BEGIN "
-                    + "   -- Verificar si el producto existe en la tabla producto "
-                    + "   SELECT COUNT(*) INTO producto_existe "
-                    + "     FROM producto "
-                    + "    WHERE ID_Producto = :NEW.ID_Producto; "
-                    + "   IF producto_existe = 0 THEN "
-                    + "   -- Opcional: Lanzar un error para notificar el problema "
-                    + "   RAISE_APPLICATION_ERROR(-20003, "
-                    + "       'El producto asociado no existe s.' "
-                    + "   ); "
-                    + "   END IF; "
-                    + "END;";
-*/
-    // 4) TRIGGER validar_relacion_producto_modificaProducto
-    /*private static final String TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO =
-            "CREATE OR REPLACE TRIGGER validar_relacion_producto_modificaProducto "
-                    + "AFTER INSERT OR UPDATE ON producto "
-                    + "FOR EACH ROW "
-                    + "DECLARE "
-                    + "   relacion_valida INTEGER; "
-                    + "BEGIN "
-                    + "   -- Verificar si el producto tiene una relación válida en modificaProducto "
-                    + "   SELECT COUNT(*) INTO relacion_valida "
-                    + "     FROM modificaProducto "
-                    + "    WHERE ID_Producto = :NEW.ID_Producto; "
-                    + "   -- Opcional: Lanzar un error para informar sobre la eliminación "
-                    + "   RAISE_APPLICATION_ERROR(-20004, "
-                    + "       'El producto no tiene una relación válida en modificaProducto. Producto eliminado.' "
-                    + "   ); "
-                    + "END;";
-*/
+
     // 5) TRIGGER garantizar que existe el usuario cuando vas a añadir metodo pago
     private static final String TRIG_VERIFICAR_USUARIO_EXISTE =
             "CREATE OR REPLACE TRIGGER TRIG_VERIFICAR_USUARIO_EXISTE " +
