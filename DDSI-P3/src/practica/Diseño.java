@@ -1454,8 +1454,9 @@ public class Diseño {
         // -----------------------------------------------------------
         // RF6.2: Eliminar un método de pago
         // -----------------------------------------------------------
-        JPanel panelEliminarMetodoPago = new JPanel(new GridLayout(2, 2, 5, 5));
         JTextField txtIdMetodoPago = new JTextField();
+        JPanel panelEliminarMetodoPago = new JPanel(new GridLayout(2, 2, 5, 5));
+
 
         panelEliminarMetodoPago.add(new JLabel("ID Método de Pago:"));
         panelEliminarMetodoPago.add(txtIdMetodoPago);
