@@ -56,7 +56,7 @@ public class Disparadores {
                     + "END;";
 
     // 3) TRIGGER validar_producto_en_modificaProducto
-    private static final String TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO =
+    /*private static final String TRIG_VALIDAR_PRODUCTO_MODIFICAPRODUCTO =
             "CREATE OR REPLACE TRIGGER validar_producto_en_modificaProducto "
                     + "AFTER INSERT OR UPDATE ON modificaProducto "
                     + "FOR EACH ROW "
@@ -74,7 +74,7 @@ public class Disparadores {
                     + "   ); "
                     + "   END IF; "
                     + "END;";
-
+*/
     // 4) TRIGGER validar_relacion_producto_modificaProducto
     /*private static final String TRIG_VALIDAR_RELACION_PRODUCTO_MODIFICAPRODUCTO =
             "CREATE OR REPLACE TRIGGER validar_relacion_producto_modificaProducto "
