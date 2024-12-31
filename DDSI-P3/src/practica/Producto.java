@@ -168,7 +168,20 @@ public class Producto{
         if (!Connection.doesUserExist(idUsuario)) {
             throw new Exception("El usuario no existe.");
         }
-
+        // Comprobar si el usuario está autorizado para editar el producto
+        String verificarPermisoQuery =
+                "SELECT COUNT(*) " +
+                        "FROM modificaProducto " +
+                        "WHERE ID_PRODUCTO = ? AND ID_USUARIO = ?";
+        try (PreparedStatement ps = conn.prepareStatement(verificarPermisoQuery)) {
+            ps.setInt(1, idProducto);
+            ps.setInt(2, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    throw new Exception("El usuario no está autorizado para editar este producto.");
+                }
+            }
+        }
 
         // Comprobar existencia y cantidad del producto
         Integer cantidadActual = null;
