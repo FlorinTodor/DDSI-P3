@@ -243,7 +243,7 @@ public class Reseña {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int idReseña = rs.getInt("ID_RESENA");
-                        Integer valoracion = (Integer) rs.getObject("VALORACION");
+                        Integer valoracion = (Integer) rs.getInt("VALORACION");
                         String comentario = rs.getString("COMENTARIO");
 
                         reviews.add(
@@ -298,7 +298,7 @@ public class Reseña {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int idReseña = rs.getInt("ID_RESENA");
-                        Integer valoracion = (Integer) rs.getObject("VALORACION");
+                        Integer valoracion = (Integer) rs.getInt("VALORACION");
                         String comentario = rs.getString("COMENTARIO");
 
                         reviews.add(
