@@ -14,71 +14,78 @@ public class Reseña {
         }
 
         java.sql.Connection conn = Connection.connection;
-
-        // Verificar si el usuario existe
-        if (!Connection.doesUserExist(idUsuario)) {
-            throw new Exception("El usuario no existe.");
-        }
-
-        // Comprobar que exista el pedido, que pertenece al usuario y está en estado 'Entregado'
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT ID_USUARIO, ESTADO_PEDIDO FROM PEDIDO WHERE ID_PEDIDO = ?")) {
-            ps.setInt(1, idPedido);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    throw new Exception("El pedido no existe.");
-                }
-                int userIdFromPedido = rs.getInt("ID_USUARIO");
-                String estadoPedido = rs.getString("ESTADO_PEDIDO");
-
-                if (userIdFromPedido != idUsuario) {
-                    throw new Exception("El pedido no pertenece al usuario dado.");
-                }
-
-                if (!"Entregado".equalsIgnoreCase(estadoPedido)) {
-                    throw new Exception("El pedido no está en estado 'Entregado'.");
-                }
+        try {
+            // Verificar si el usuario existe
+            if (!Connection.doesUserExist(idUsuario)) {
+                throw new Exception("El usuario no existe.");
             }
-        }
 
-        // Verificar si ya existe una reseña asociada al pedido
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT gr.ID_RESENA, r.COMENTARIO, r.VALORACION " +
-                        "FROM GESTION_RESEÑA gr " +
-                        "JOIN RESEÑA r ON gr.ID_RESENA = r.ID_RESENA " +
-                        "WHERE gr.ID_PEDIDO = ?")) {
-            ps.setInt(1, idPedido);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    String comentarioExistente = rs.getString("COMENTARIO");
-                    int valoracionExistente = rs.getInt("VALORACION");
+            // Comprobar que exista el pedido, que pertenece al usuario y está en estado 'Entregado'
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT ID_USUARIO, ESTADO_PEDIDO FROM PEDIDO WHERE ID_PEDIDO = ?")) {
+                ps.setInt(1, idPedido);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new Exception("El pedido no existe.");
+                    }
+                    int userIdFromPedido = rs.getInt("ID_USUARIO");
+                    String estadoPedido = rs.getString("ESTADO_PEDIDO");
 
-                    if (comentarioExistente == null && valoracionExistente == 0) {
-                        throw new Exception("Ya existe una reseña eliminada para este pedido. No se puede añadir una nueva.");
-                    } else {
-                        throw new Exception("Ya existe una reseña para este pedido.");
+                    if (userIdFromPedido != idUsuario) {
+                        throw new Exception("El pedido no pertenece al usuario dado.");
+                    }
+
+                    if (!"Entregado".equalsIgnoreCase(estadoPedido)) {
+                        throw new Exception("El pedido no está en estado 'Entregado'.");
                     }
                 }
             }
-        }
-        // Insertar la reseña
-        try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO RESEÑA (ID_RESENA, COMENTARIO, VALORACION) VALUES (?, ?, ?)")) {
-            ps.setInt(1, idReseña);
-            ps.setString(2, comentario);
-            ps.setInt(3, valoracion);
-            ps.executeUpdate();
-        }
 
-        // Asociar la reseña con el pedido
-        try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO GESTION_RESEÑA (ID_RESENA, ID_PEDIDO) VALUES (?, ?)")) {
-            ps.setInt(1, idReseña);
-            ps.setInt(2, idPedido);
-            ps.executeUpdate();
-        }
+            // Verificar si ya existe una reseña asociada al pedido
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT gr.ID_RESENA, r.COMENTARIO, r.VALORACION " +
+                            "FROM GESTION_RESEÑA gr " +
+                            "JOIN RESEÑA r ON gr.ID_RESENA = r.ID_RESENA " +
+                            "WHERE gr.ID_PEDIDO = ?")) {
+                ps.setInt(1, idPedido);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String comentarioExistente = rs.getString("COMENTARIO");
+                        int valoracionExistente = rs.getInt("VALORACION");
 
-        conn.commit(); // Confirmar cambios
+                        if (comentarioExistente == null && valoracionExistente == 0) {
+                            throw new Exception("Ya existe una reseña eliminada para este pedido. No se puede añadir una nueva.");
+                        } else {
+                            throw new Exception("Ya existe una reseña para este pedido.");
+                        }
+                    }
+                }
+            }
+
+            // Insertar la reseña
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO RESEÑA (ID_RESENA, COMENTARIO, VALORACION) VALUES (?, ?, ?)")) {
+                ps.setInt(1, idReseña);
+                ps.setString(2, comentario);
+                ps.setInt(3, valoracion);
+                ps.executeUpdate();
+            }
+
+            // Asociar la reseña con el pedido
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO GESTION_RESEÑA (ID_RESENA, ID_PEDIDO) VALUES (?, ?)")) {
+                ps.setInt(1, idReseña);
+                ps.setInt(2, idPedido);
+                ps.executeUpdate();
+            }
+
+            // Confirmar cambios
+            conn.commit();
+        } catch (Exception e) {
+            // Revertir cambios en caso de error
+            conn.rollback();
+            throw e;
+        }
     }
 
     /**
@@ -89,52 +96,57 @@ public class Reseña {
             throw new Exception("No hay conexión a la base de datos.");
         }
 
-        // Verificar si el usuario existe
-        if (!Connection.doesUserExist(idUsuario)) {
-            throw new Exception("El usuario no existe.");
-        }
-
         java.sql.Connection conn = Connection.connection;
-
-        // Comprobar existencia de la reseña y detalles
-        int userFromPedido = -1;
-        Integer valoracionActual = null;
-
-        String verificarReseñaQuery =
-                "SELECT r.VALORACION, p.ID_USUARIO " +
-                        "FROM RESEÑA r " +
-                        "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
-                        "JOIN PEDIDO p ON gr.ID_PEDIDO = p.ID_PEDIDO " +
-                        "WHERE r.ID_RESENA = ?";
-        try (PreparedStatement ps = conn.prepareStatement(verificarReseñaQuery)) {
-            ps.setInt(1, idReseña);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    throw new Exception("La reseña no existe.");
-                }
-                valoracionActual = rs.getInt("VALORACION");
-                userFromPedido = rs.getInt("ID_USUARIO");
+        try {
+            // Verificar si el usuario existe
+            if (!Connection.doesUserExist(idUsuario)) {
+                throw new Exception("El usuario no existe.");
             }
-        }
 
-        if (userFromPedido != idUsuario) {
-            throw new Exception("La reseña no pertenece al usuario.");
-        }
+            // Comprobar existencia de la reseña y detalles
+            int userFromPedido = -1;
+            Integer valoracionActual = null;
 
-        if (valoracionActual == null) {
-            throw new Exception("No se puede editar una reseña que ya está eliminada (valoración null).");
-        }
+            String verificarReseñaQuery =
+                    "SELECT r.VALORACION, p.ID_USUARIO " +
+                            "FROM RESEÑA r " +
+                            "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
+                            "JOIN PEDIDO p ON gr.ID_PEDIDO = p.ID_PEDIDO " +
+                            "WHERE r.ID_RESENA = ?";
+            try (PreparedStatement ps = conn.prepareStatement(verificarReseñaQuery)) {
+                ps.setInt(1, idReseña);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new Exception("La reseña no existe.");
+                    }
+                    valoracionActual = rs.getInt("VALORACION");
+                    userFromPedido = rs.getInt("ID_USUARIO");
+                }
+            }
 
-        // Actualizar la reseña
-        String actualizarReseñaQuery = "UPDATE RESEÑA SET VALORACION = ?, COMENTARIO = ? WHERE ID_RESENA = ?";
-        try (PreparedStatement ps = conn.prepareStatement(actualizarReseñaQuery)) {
-            ps.setInt(1, nuevaValoracion);
-            ps.setString(2, nuevoComentario);
-            ps.setInt(3, idReseña);
-            ps.executeUpdate();
-        }
+            if (userFromPedido != idUsuario) {
+                throw new Exception("La reseña no pertenece al usuario.");
+            }
 
-        conn.commit(); // Confirmar cambios
+            if (valoracionActual == null) {
+                throw new Exception("No se puede editar una reseña que ya está eliminada (valoración null).");
+            }
+
+            // Actualizar la reseña
+            String actualizarReseñaQuery =
+                    "UPDATE RESEÑA SET VALORACION = ?, COMENTARIO = ? WHERE ID_RESENA = ?";
+            try (PreparedStatement ps = conn.prepareStatement(actualizarReseñaQuery)) {
+                ps.setInt(1, nuevaValoracion);
+                ps.setString(2, nuevoComentario);
+                ps.setInt(3, idReseña);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
     }
 
     /**
@@ -146,49 +158,54 @@ public class Reseña {
         }
 
         java.sql.Connection conn = Connection.connection;
-
-        // Verificar si el usuario existe
-        if (!Connection.doesUserExist(idUsuario)) {
-            throw new Exception("El usuario no existe.");
-        }
-
-        // Comprobar existencia y detalles
-        int userFromPedido = -1;
-        Integer valoracionActual = null;
-
-        String verificarReseñaQuery =
-                "SELECT r.VALORACION, p.ID_USUARIO " +
-                        "FROM RESEÑA r " +
-                        "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
-                        "JOIN PEDIDO p ON gr.ID_PEDIDO = p.ID_PEDIDO " +
-                        "WHERE r.ID_RESENA = ?";
-        try (PreparedStatement ps = conn.prepareStatement(verificarReseñaQuery)) {
-            ps.setInt(1, idReseña);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    throw new Exception("La reseña no existe.");
-                }
-                valoracionActual = rs.getInt("VALORACION");
-                userFromPedido = rs.getInt("ID_USUARIO");
+        try {
+            // Verificar si el usuario existe
+            if (!Connection.doesUserExist(idUsuario)) {
+                throw new Exception("El usuario no existe.");
             }
-        }
 
-        if (userFromPedido != idUsuario) {
-            throw new Exception("La reseña no pertenece al usuario.");
-        }
+            // Comprobar existencia y detalles
+            int userFromPedido = -1;
+            Integer valoracionActual = null;
 
-        if (valoracionActual == null) {
-            throw new Exception("La reseña ya está eliminada o no se puede eliminar.");
-        }
+            String verificarReseñaQuery =
+                    "SELECT r.VALORACION, p.ID_USUARIO " +
+                            "FROM RESEÑA r " +
+                            "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
+                            "JOIN PEDIDO p ON gr.ID_PEDIDO = p.ID_PEDIDO " +
+                            "WHERE r.ID_RESENA = ?";
+            try (PreparedStatement ps = conn.prepareStatement(verificarReseñaQuery)) {
+                ps.setInt(1, idReseña);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new Exception("La reseña no existe.");
+                    }
+                    valoracionActual = rs.getInt("VALORACION");
+                    userFromPedido = rs.getInt("ID_USUARIO");
+                }
+            }
 
-        // Eliminar reseña (poner valores en null)
-        String eliminarReseñaQuery = "UPDATE RESEÑA SET VALORACION = NULL, COMENTARIO = NULL WHERE ID_RESENA = ?";
-        try (PreparedStatement ps = conn.prepareStatement(eliminarReseñaQuery)) {
-            ps.setInt(1, idReseña);
-            ps.executeUpdate();
-        }
+            if (userFromPedido != idUsuario) {
+                throw new Exception("La reseña no pertenece al usuario.");
+            }
 
-        conn.commit(); // Confirmar cambios
+            if (valoracionActual == null) {
+                throw new Exception("La reseña ya está eliminada o no se puede eliminar.");
+            }
+
+            // Eliminar reseña (poner valores en null)
+            String eliminarReseñaQuery =
+                    "UPDATE RESEÑA SET VALORACION = NULL, COMENTARIO = NULL WHERE ID_RESENA = ?";
+            try (PreparedStatement ps = conn.prepareStatement(eliminarReseñaQuery)) {
+                ps.setInt(1, idReseña);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
     }
 
     /**
@@ -204,40 +221,50 @@ public class Reseña {
 
         ArrayList<String> reviews = new ArrayList<>();
         java.sql.Connection conn = Connection.connection;
-
-        // Comprobar que el pedido existe
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) FROM PEDIDO WHERE ID_PEDIDO = ?")) {
-            ps.setInt(1, idPedido);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El pedido no existe.");
+        try {
+            // Comprobar que el pedido existe
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM PEDIDO WHERE ID_PEDIDO = ?")) {
+                ps.setInt(1, idPedido);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        throw new Exception("El pedido no existe.");
+                    }
                 }
             }
-        }
 
-        // Obtener las reseñas asociadas al pedido
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT r.ID_RESENA, r.VALORACION, r.COMENTARIO " +
-                        "FROM RESEÑA r " +
-                        "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
-                        "WHERE gr.ID_PEDIDO = ?")) {
-            ps.setInt(1, idPedido);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int idReseña = rs.getInt("ID_RESENA");
-                    Integer valoracion = rs.getObject("VALORACION") != null ? rs.getInt("VALORACION") : null;
-                    String comentario = rs.getString("COMENTARIO");
-                    reviews.add("ID_Reseña: " + idReseña + ", Valoración: " + valoracion + ", Comentario: " + comentario);
+            // Obtener las reseñas asociadas al pedido
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT r.ID_RESENA, r.VALORACION, r.COMENTARIO " +
+                            "FROM RESEÑA r " +
+                            "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
+                            "WHERE gr.ID_PEDIDO = ?")) {
+                ps.setInt(1, idPedido);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int idReseña = rs.getInt("ID_RESENA");
+                        Integer valoracion = (Integer) rs.getObject("VALORACION");
+                        String comentario = rs.getString("COMENTARIO");
+
+                        reviews.add(
+                                "ID_Reseña: " + idReseña
+                                        + ", Valoración: " + valoracion
+                                        + ", Comentario: " + comentario
+                        );
+                    }
                 }
             }
-        }
 
-        // Verificar si no hay reseñas
-        if (reviews.isEmpty()) {
-            throw new Exception("El pedido no tiene reseñas asociadas.");
-        }
+            if (reviews.isEmpty()) {
+                throw new Exception("El pedido no tiene reseñas asociadas.");
+            }
 
+            // Solo lectura, pero hacemos commit igualmente para “cerrar” la transacción
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
         return reviews;
     }
 
@@ -254,43 +281,45 @@ public class Reseña {
 
         ArrayList<String> reviews = new ArrayList<>();
         java.sql.Connection conn = Connection.connection;
+        try {
+            // Verificar si el usuario existe
+            if (!Connection.doesUserExist(idUsuario)) {
+                throw new Exception("El usuario no existe.");
+            }
 
-        // Verificar si el usuario existe
-        if (!Connection.doesUserExist(idUsuario)) {
-            throw new Exception("El usuario no existe.");
-        }
+            // Obtener las reseñas asociadas al usuario
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT r.ID_RESENA, r.VALORACION, r.COMENTARIO " +
+                            "FROM RESEÑA r " +
+                            "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
+                            "JOIN PEDIDO p ON gr.ID_PEDIDO = p.ID_PEDIDO " +
+                            "WHERE p.ID_USUARIO = ?")) {
+                ps.setInt(1, idUsuario);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int idReseña = rs.getInt("ID_RESENA");
+                        Integer valoracion = (Integer) rs.getObject("VALORACION");
+                        String comentario = rs.getString("COMENTARIO");
 
-
-        // Obtener las reseñas asociadas al usuario
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT r.ID_RESENA, r.VALORACION, r.COMENTARIO " +
-                        "FROM RESEÑA r " +
-                        "JOIN GESTION_RESEÑA gr ON r.ID_RESENA = gr.ID_RESENA " +
-                        "JOIN PEDIDO p ON gr.ID_PEDIDO = p.ID_PEDIDO " +
-                        "WHERE p.ID_USUARIO = ?")) {
-            ps.setInt(1, idUsuario);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int idReseña = rs.getInt("ID_RESENA");
-                    Integer valoracion = rs.getObject("VALORACION") != null ? rs.getInt("VALORACION") : null;
-                    String comentario = rs.getString("COMENTARIO");
-                    reviews.add("ID_Reseña: " + idReseña + ", Valoración: " + valoracion + ", Comentario: " + comentario);
+                        reviews.add(
+                                "ID_Reseña: " + idReseña
+                                        + ", Valoración: " + valoracion
+                                        + ", Comentario: " + comentario
+                        );
+                    }
                 }
             }
+
+            if (reviews.isEmpty()) {
+                throw new Exception("El usuario no tiene reseñas asociadas.");
+            }
+
+            // Solo lectura, pero igual hacemos commit
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
         }
-
-
-        // Verificar si no hay reseñas
-        if (reviews.isEmpty()) {
-            throw new Exception("El usuario no tiene reseñas asociadas.");
-        }
-
         return reviews;
     }
-
-
-
-
-
-
 }
