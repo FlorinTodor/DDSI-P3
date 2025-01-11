@@ -29,55 +29,64 @@ public class Carrito {
         return productos;
     }
 
-    private void crearRelacionCarritoPedido(int idUsuario, int idCarrito) throws SQLException {
-        // Obtener el valor actual de la secuencia
-        java.sql.Connection conn = Connection.connection;
-        // Crear un nuevo ID de carrito
-        int idPedido = -1;
+    private void crearRelacionCarritoPedido(int idUsuario, int idCarrito) throws Exception {
+        if (Connection.connection == null) {
+            throw new Exception("No hay conexión a la base de datos.");
+        }
 
-        // Obtener el valor actual de la secuencia
-        try (PreparedStatement psSequence = conn.prepareStatement("SELECT seq_id_pedido.CURRVAL FROM DUAL")) { // DUAL es una tabla dummy en Oracle. En PostgreSQL sería simplemente "SELECT currval('seq_id_pedido')")
-            try (ResultSet rs = psSequence.executeQuery()) {
-                if (rs.next()) {
-                    idPedido = rs.getInt(1);
-                } else {
-                    // Manejar el caso en el que no se puede obtener el valor actual de la secuencia (poco probable)
-                    throw new SQLException("No se pudo obtener el valor actual de la secuencia");
-                }
-            } catch (SQLException e) {
-                // Si CURRVAL falla, inicializar la secuencia con NEXTVAL
-                try (PreparedStatement psInitSequence = conn.prepareStatement("SELECT seq_id_pedido.NEXTVAL FROM DUAL")) {
-                    try (ResultSet rsInit = psInitSequence.executeQuery()) {
-                        if (rsInit.next()) {
-                            idPedido = rsInit.getInt(1);
-                        } else {
-                            throw new SQLException("No se pudo inicializar la secuencia");
+        java.sql.Connection conn = Connection.connection;
+
+        try {
+            // Crear un nuevo ID de Pedido
+            int idPedido = -1;
+
+            // Obtener el valor actual de la secuencia
+            try (PreparedStatement psSequence = conn.prepareStatement("SELECT seq_id_pedido.CURRVAL FROM DUAL")) { // DUAL es una tabla dummy en Oracle. En PostgreSQL sería simplemente "SELECT currval('seq_id_pedido')")
+                try (ResultSet rs = psSequence.executeQuery()) {
+                    if (rs.next()) {
+                        idPedido = rs.getInt(1);
+                    } else {
+                        // Manejar el caso en el que no se puede obtener el valor actual de la secuencia (poco probable)
+                        throw new SQLException("No se pudo obtener el valor actual de la secuencia");
+                    }
+                } catch (SQLException e) {
+                    // Si CURRVAL falla, inicializar la secuencia con NEXTVAL
+                    try (PreparedStatement psInitSequence = conn.prepareStatement("SELECT seq_id_pedido.NEXTVAL FROM DUAL")) {
+                        try (ResultSet rsInit = psInitSequence.executeQuery()) {
+                            if (rsInit.next()) {
+                                idPedido = rsInit.getInt(1);
+                            } else {
+                                throw new SQLException("No se pudo inicializar la secuencia");
+                            }
                         }
                     }
                 }
             }
-        }
 
-        try (PreparedStatement psIncrementSequence = conn.prepareStatement("SELECT seq_id_pedido.NEXTVAL FROM DUAL")) { // En PostgreSQL sería simplemente "SELECT nextval('seq_id_pedido')")
-            psIncrementSequence.executeQuery();
-        }
+            try (PreparedStatement psIncrementSequence = conn.prepareStatement("SELECT seq_id_pedido.NEXTVAL FROM DUAL")) { // En PostgreSQL sería simplemente "SELECT nextval('seq_id_pedido')")
+                psIncrementSequence.executeQuery();
+            }
 
-        System.out.println("currentIdPedido: " + idPedido + "idCarrito: " + idCarrito);
+            System.out.println("currentIdPedido: " + idPedido + "idCarrito: " + idCarrito);
 
-        // Insertar el pedido usando el valor actual de la secuencia
-        String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
-        try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
-            psPedido.setInt(1, idPedido);
-            psPedido.setInt(2, idUsuario);
-            psPedido.executeUpdate();
-        }
+            // Insertar el pedido usando el valor actual de la secuencia
+            String insertPedidoSQL = "INSERT INTO PEDIDO (ID_PEDIDO, ID_USUARIO) VALUES (?, ?)";
+            try (PreparedStatement psPedido = conn.prepareStatement(insertPedidoSQL)) {
+                psPedido.setInt(1, idPedido);
+                psPedido.setInt(2, idUsuario);
+                psPedido.executeUpdate();
+            }
 
-        // Insertar la entrada en la tabla GESTIONCARRITO
-        String insertGestionCarritoSQL = "INSERT INTO GESTIONCARRITO (ID_CARRITO, ID_PEDIDO) VALUES (?, ?)";
-        try (PreparedStatement psGestionCarrito = conn.prepareStatement(insertGestionCarritoSQL)) {
-            psGestionCarrito.setInt(1, idCarrito);
-            psGestionCarrito.setInt(2, idPedido);
-            psGestionCarrito.executeUpdate();
+            // Insertar la entrada en la tabla GESTIONCARRITO
+            String insertGestionCarritoSQL = "INSERT INTO GESTIONCARRITO (ID_CARRITO, ID_PEDIDO) VALUES (?, ?)";
+            try (PreparedStatement psGestionCarrito = conn.prepareStatement(insertGestionCarritoSQL)) {
+                psGestionCarrito.setInt(1, idCarrito);
+                psGestionCarrito.setInt(2, idPedido);
+                psGestionCarrito.executeUpdate();
+            }
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
         }
     }
 
@@ -93,48 +102,53 @@ public class Carrito {
             throw new Exception("El usuario no existe.");
         }
 
-        // Crear un nuevo ID de carrito
-        int idCarrito = -1;
+        try {
+            // Crear un nuevo ID de carrito
+            int idCarrito = -1;
 
-        // Obtener el valor actual de la secuencia
-        try (PreparedStatement psSequence = conn.prepareStatement("SELECT seq_id_carrito.CURRVAL FROM DUAL")) { // DUAL es una tabla dummy en Oracle. En PostgreSQL sería simplemente "SELECT currval('seq_id_pedido')")
-            try (ResultSet rs = psSequence.executeQuery()) {
-                if (rs.next()) {
-                    idCarrito = rs.getInt(1);
-                } else {
-                    // Manejar el caso en el que no se puede obtener el valor actual de la secuencia (poco probable)
-                    throw new SQLException("No se pudo obtener el valor actual de la secuencia");
-                }
-            } catch (SQLException e) {
-                // Si CURRVAL falla, inicializar la secuencia con NEXTVAL
-                try (PreparedStatement psInitSequence = conn.prepareStatement("SELECT seq_id_carrito.NEXTVAL FROM DUAL")) {
-                    try (ResultSet rsInit = psInitSequence.executeQuery()) {
-                        if (rsInit.next()) {
-                            idCarrito = rsInit.getInt(1);
-                        } else {
-                            throw new SQLException("No se pudo inicializar la secuencia");
+            // Obtener el valor actual de la secuencia
+            try (PreparedStatement psSequence = conn.prepareStatement("SELECT seq_id_carrito.CURRVAL FROM DUAL")) { // DUAL es una tabla dummy en Oracle. En PostgreSQL sería simplemente "SELECT currval('seq_id_pedido')")
+                try (ResultSet rs = psSequence.executeQuery()) {
+                    if (rs.next()) {
+                        idCarrito = rs.getInt(1);
+                    } else {
+                        // Manejar el caso en el que no se puede obtener el valor actual de la secuencia (poco probable)
+                        throw new SQLException("No se pudo obtener el valor actual de la secuencia");
+                    }
+                } catch (SQLException e) {
+                    // Si CURRVAL falla, inicializar la secuencia con NEXTVAL
+                    try (PreparedStatement psInitSequence = conn.prepareStatement("SELECT seq_id_carrito.NEXTVAL FROM DUAL")) {
+                        try (ResultSet rsInit = psInitSequence.executeQuery()) {
+                            if (rsInit.next()) {
+                                idCarrito = rsInit.getInt(1);
+                            } else {
+                                throw new SQLException("No se pudo inicializar la secuencia");
+                            }
                         }
                     }
                 }
             }
+
+            try (PreparedStatement psIncrementSequence = conn.prepareStatement("SELECT seq_id_carrito.NEXTVAL FROM DUAL")) { // En PostgreSQL sería simplemente "SELECT nextval('seq_id_pedido')")
+                psIncrementSequence.executeQuery();
+            }
+
+            // Insertar el nuevo carrito en la tabla CARRITO
+            String insertCarritoSQL = "INSERT INTO CARRITO (ID_CARRITO) VALUES (?)";
+            try (PreparedStatement psCarrito = conn.prepareStatement(insertCarritoSQL)) {
+                psCarrito.setInt(1, idCarrito);
+                psCarrito.executeUpdate();
+            }
+
+            crearRelacionCarritoPedido(idUsuario, idCarrito);
+
+            conn.commit();
+
+            return idCarrito;
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
         }
-
-        try (PreparedStatement psIncrementSequence = conn.prepareStatement("SELECT seq_id_carrito.NEXTVAL FROM DUAL")) { // En PostgreSQL sería simplemente "SELECT nextval('seq_id_pedido')")
-            psIncrementSequence.executeQuery();
-        }
-
-        // Insertar el nuevo carrito en la tabla CARRITO
-        String insertCarritoSQL = "INSERT INTO CARRITO (ID_CARRITO) VALUES (?)";
-        try (PreparedStatement psCarrito = conn.prepareStatement(insertCarritoSQL)) {
-            psCarrito.setInt(1, idCarrito);
-            psCarrito.executeUpdate();
-        }
-
-        crearRelacionCarritoPedido(idUsuario, idCarrito);
-
-        conn.commit();
-
-        return idCarrito;
     }
 
     /**
@@ -197,59 +211,65 @@ public class Carrito {
         if (!Connection.doesUserExist(idUsuario)) {
             throw new Exception("El usuario no existe.");
         }
-        // Comprobar que el producto existe
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM PRODUCTO WHERE ID_Producto = ?")) {
-            ps.setInt(1, idProducto);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El producto no existe.");
+
+        try {
+            // Comprobar que el producto existe
+            try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM PRODUCTO WHERE ID_Producto = ?")) {
+                ps.setInt(1, idProducto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        throw new Exception("El producto no existe.");
+                    }
                 }
             }
-        }
 
-        // Obtener el stock disponible
-        int stockDisponible = 0;
-        try (PreparedStatement ps = conn.prepareStatement("SELECT Cantidad FROM PRODUCTO WHERE ID_Producto = ?")) {
-            ps.setInt(1, idProducto);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    stockDisponible = rs.getInt("Cantidad");
+            // Obtener el stock disponible
+            int stockDisponible = 0;
+            try (PreparedStatement ps = conn.prepareStatement("SELECT Cantidad FROM PRODUCTO WHERE ID_Producto = ?")) {
+                ps.setInt(1, idProducto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        stockDisponible = rs.getInt("Cantidad");
+                    }
                 }
             }
-        }
 
-        // Verificar que la cantidad solicitada sea menor o igual al stock disponible
-        if (cantidad > stockDisponible) {
-            throw new Exception("La cantidad solicitada excede el stock disponible.");
-        }
+            // Verificar que la cantidad solicitada sea menor o igual al stock disponible
+            if (cantidad > stockDisponible) {
+                throw new Exception("La cantidad solicitada excede el stock disponible.");
+            }
 
-        // Obtener o crear el carrito asociado al usuario
-        int idCarrito = getCarritoId(idUsuario);
-        if(idCarrito == -1)
-            idCarrito = addCarritoEntry(idUsuario);
+            // Obtener o crear el carrito asociado al usuario
+            int idCarrito = getCarritoId(idUsuario);
+            if (idCarrito == -1)
+                idCarrito = addCarritoEntry(idUsuario);
 
-        // Verificar que el producto no esté ya en el carrito
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
-            ps.setInt(1, idCarrito);
-            ps.setInt(2, idProducto);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    throw new Exception("El producto ya está en el carrito. Utiliza la función de modificar cantidad.");
+            // Verificar que el producto no esté ya en el carrito
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
+                ps.setInt(1, idCarrito);
+                ps.setInt(2, idProducto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        throw new Exception("El producto ya está en el carrito. Utiliza la función de modificar cantidad.");
+                    }
                 }
             }
-        }
 
-        // Insertar el producto en el carrito
-        try (PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO TIENE (ID_Carrito, ID_Producto, Cantidad) VALUES (?, ?, ?)")) {
-            ps.setInt(1, idCarrito);
-            ps.setInt(2, idProducto);
-            ps.setInt(3, cantidad);
-            ps.executeUpdate();
-        }
+            // Insertar el producto en el carrito
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO TIENE (ID_Carrito, ID_Producto, Cantidad) VALUES (?, ?, ?)")) {
+                ps.setInt(1, idCarrito);
+                ps.setInt(2, idProducto);
+                ps.setInt(3, cantidad);
+                ps.executeUpdate();
+            }
 
-        conn.commit();
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
     }
 
     /**
@@ -320,61 +340,67 @@ public class Carrito {
             throw new Exception("El usuario no existe.");
         }
 
-        // Verificar si el producto existe
-        try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM PRODUCTO WHERE ID_Producto = ?")) {
-            ps.setInt(1, idProducto);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El producto no existe.");
+        try {
+
+            // Verificar si el producto existe
+            try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM PRODUCTO WHERE ID_Producto = ?")) {
+                ps.setInt(1, idProducto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        throw new Exception("El producto no existe.");
+                    }
                 }
             }
-        }
 
-        // Obtener el stock disponible del producto
-        int stockDisponible = 0;
-        try (PreparedStatement ps = conn.prepareStatement("SELECT Cantidad FROM PRODUCTO WHERE ID_Producto = ?")) {
-            ps.setInt(1, idProducto);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    stockDisponible = rs.getInt("Cantidad");
-                } else {
-                    throw new Exception("Error al obtener el stock del producto.");
+            // Obtener el stock disponible del producto
+            int stockDisponible = 0;
+            try (PreparedStatement ps = conn.prepareStatement("SELECT Cantidad FROM PRODUCTO WHERE ID_Producto = ?")) {
+                ps.setInt(1, idProducto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        stockDisponible = rs.getInt("Cantidad");
+                    } else {
+                        throw new Exception("Error al obtener el stock del producto.");
+                    }
                 }
             }
-        }
 
-        // Comprobar que la nueva cantidad es válida
-        if (nuevaCantidad < 0) {
-            throw new Exception("La cantidad no puede ser negativa.");
-        }
-        if (nuevaCantidad > stockDisponible) {
-            throw new Exception("La cantidad solicitada excede el stock disponible.");
-        }
+            // Comprobar que la nueva cantidad es válida
+            if (nuevaCantidad < 0) {
+                throw new Exception("La cantidad no puede ser negativa.");
+            }
+            if (nuevaCantidad > stockDisponible) {
+                throw new Exception("La cantidad solicitada excede el stock disponible.");
+            }
 
-        int idCarrito = getCarritoId(idUsuario);
+            int idCarrito = getCarritoId(idUsuario);
 
-        // Verificar si el producto está en el carrito
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
-            ps.setInt(1, idCarrito);
-            ps.setInt(2, idProducto);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El producto no está en el carrito.");
+            // Verificar si el producto está en el carrito
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
+                ps.setInt(1, idCarrito);
+                ps.setInt(2, idProducto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        throw new Exception("El producto no está en el carrito.");
+                    }
                 }
             }
-        }
 
-        // Actualizar la cantidad
-        try (PreparedStatement ps = conn.prepareStatement(
-                "UPDATE TIENE SET Cantidad = ? WHERE ID_Carrito = ? AND ID_Producto = ?")) {
-            ps.setInt(1, nuevaCantidad);
-            ps.setInt(2, idCarrito);
-            ps.setInt(3, idProducto);
-            ps.executeUpdate();
-        }
+            // Actualizar la cantidad
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE TIENE SET Cantidad = ? WHERE ID_Carrito = ? AND ID_Producto = ?")) {
+                ps.setInt(1, nuevaCantidad);
+                ps.setInt(2, idCarrito);
+                ps.setInt(3, idProducto);
+                ps.executeUpdate();
+            }
 
-        conn.commit();
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
     }
 
     /**
@@ -392,29 +418,34 @@ public class Carrito {
             throw new Exception("El usuario no existe.");
         }
 
-        int idCarrito = getCarritoId(idUsuario);
+        try {
+            int idCarrito = getCarritoId(idUsuario);
 
-        // Verificar si el producto está en el carrito
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
-            ps.setInt(1, idCarrito);
-            ps.setInt(2, idProducto);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    throw new Exception("El producto no está en el carrito.");
+            // Verificar si el producto está en el carrito
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
+                ps.setInt(1, idCarrito);
+                ps.setInt(2, idProducto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        throw new Exception("El producto no está en el carrito.");
+                    }
                 }
             }
-        }
 
-        // Eliminar el producto del carrito
-        try (PreparedStatement ps = conn.prepareStatement(
-                "DELETE FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
-            ps.setInt(1, idCarrito);
-            ps.setInt(2, idProducto);
-            ps.executeUpdate();
-        }
+            // Eliminar el producto del carrito
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM TIENE WHERE ID_Carrito = ? AND ID_Producto = ?")) {
+                ps.setInt(1, idCarrito);
+                ps.setInt(2, idProducto);
+                ps.executeUpdate();
+            }
 
-        conn.commit();
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
     }
 
     /**
@@ -427,32 +458,38 @@ public class Carrito {
         }
 
         java.sql.Connection conn =  Connection.connection;
-        int idCarrito = getCarritoId(idUsuario);
 
-        // Verificar si el carrito ya está vacío
-        boolean estaVacio = false;
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ?")) {
-            ps.setInt(1, idCarrito);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    estaVacio = true;
+        try {
+            int idCarrito = getCarritoId(idUsuario);
+
+            // Verificar si el carrito ya está vacío
+            boolean estaVacio = false;
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM TIENE WHERE ID_Carrito = ?")) {
+                ps.setInt(1, idCarrito);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        estaVacio = true;
+                    }
                 }
             }
-        }
 
-        if (estaVacio) {
-            throw new Exception("El carrito ya está vacío.");
-        }
+            if (estaVacio) {
+                throw new Exception("El carrito ya está vacío.");
+            }
 
-        // Vaciar el carrito
-        try (PreparedStatement ps = conn.prepareStatement(
-                "DELETE FROM TIENE WHERE ID_Carrito = ?")) {
-            ps.setInt(1, idCarrito);
-            ps.executeUpdate();
-        }
+            // Vaciar el carrito
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "DELETE FROM TIENE WHERE ID_Carrito = ?")) {
+                ps.setInt(1, idCarrito);
+                ps.executeUpdate();
+            }
 
-        conn.commit();
+            conn.commit();
+        } catch (Exception e) {
+            conn.rollback();
+            throw e;
+        }
     }
 
 }
