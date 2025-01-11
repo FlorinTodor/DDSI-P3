@@ -294,7 +294,7 @@ public class FuncionesBD {
                     "    ID_Pedido integer NOT NULL,\n" +
                     "    Direccion varchar(30),\n" +
                     "    Estado_Pedido varchar(10),\n" +
-                    "    Tipo_Pago integer,\n" +
+                    "    Tipo_Pago varchar(30),\n" +
                     "    Metodo_Envio varchar(10),\n" +
                     "    ID_Usuario integer REFERENCES usuario(ID_Usuario),\n" +
                     "    PRIMARY KEY(ID_Pedido)\n" +

@@ -236,13 +236,29 @@ public class Pedido {
             conn = Connection.connection;
             conn.setAutoCommit(false); // Iniciar transacción
 
-            // Verificar que el pedido pertenece al usuario
-            String sqlVerificarPedido = "SELECT ID_Usuario FROM pedido WHERE ID_Pedido = ?";
+            // Verificar que el pedido pertenece al usuario y obtener su estado actual
+            String sqlVerificarPedido = "SELECT ID_Usuario, Estado_Pedido FROM pedido WHERE ID_Pedido = ?";
             pstmt = conn.prepareStatement(sqlVerificarPedido);
             pstmt.setInt(1, idPedido);
             rs = pstmt.executeQuery();
-            if (!rs.next() || rs.getInt("ID_Usuario") != idUsuario) {
+
+            if (!rs.next()) {
+                throw new SQLException("El pedido no existe.");
+            }
+
+            if (rs.getInt("ID_Usuario") != idUsuario) {
                 throw new SQLException("El pedido no pertenece al usuario.");
+            }
+
+            // Verificar si el pedido ya está entregado
+            String estadoPedido = rs.getString("Estado_Pedido");
+            if ("entregado".equalsIgnoreCase(estadoPedido)) {
+                throw new SQLException("No se puede cancelar un pedido que ya ha sido entregado.");
+            }
+
+            //Si está cancelado no se puede volver a cancelar
+            if ("cancelado".equalsIgnoreCase(estadoPedido)) {
+                throw new SQLException("El pedido ya está cancelado.");
             }
 
             // Actualizar el estado del pedido a "cancelado"
@@ -285,6 +301,7 @@ public class Pedido {
             if (pstmt != null) pstmt.close();
         }
     }
+
 
     /*
      /RF4.4: Opción para elegir el metodo de envío
@@ -330,7 +347,7 @@ public class Pedido {
      * RF4.5: Confirmación recepción del pedido
      */
     public void confirmarRecepcionPedido(int idUsuario, int idPedido) throws SQLException {
-        java.sql.Connection  conn = null;
+        java.sql.Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
 
@@ -338,13 +355,24 @@ public class Pedido {
             conn = Connection.connection;
             conn.setAutoCommit(false); // Iniciar transacción
 
-            // Verificar que el pedido pertenece al usuario
-            String sqlVerificarPedido = "SELECT ID_Usuario FROM pedido WHERE ID_Pedido = ?";
+            // Verificar que el pedido pertenece al usuario Y obtener su estado
+            String sqlVerificarPedido = "SELECT ID_Usuario, Estado_Pedido FROM pedido WHERE ID_Pedido = ?"; // Se añade Estado_Pedido
             pstmt = conn.prepareStatement(sqlVerificarPedido);
             pstmt.setInt(1, idPedido);
             rs = pstmt.executeQuery();
-            if (!rs.next() || rs.getInt("ID_Usuario") != idUsuario) {
+
+            if (!rs.next()) {
+                throw new SQLException("El pedido no existe.");
+            }
+
+            if (rs.getInt("ID_Usuario") != idUsuario) {
                 throw new SQLException("El pedido no pertenece al usuario.");
+            }
+
+            // Verificar si el pedido está cancelado DESPUÉS de rs.next()
+            String estadoPedido = rs.getString("Estado_Pedido");
+            if ("cancelado".equalsIgnoreCase(estadoPedido)) {
+                throw new SQLException("No se puede confirmar la recepción de un pedido cancelado.");
             }
 
             // Actualizar Estado_Pedido a 'entregado'
@@ -352,7 +380,6 @@ public class Pedido {
             pstmt = conn.prepareStatement(sqlActualizarEstado);
             pstmt.setInt(1, idPedido);
             pstmt.executeUpdate();
-
 
             conn.commit(); // Confirmar transacción
         } catch (SQLException e) {
@@ -368,7 +395,7 @@ public class Pedido {
     /**
      * RF4.6: Opción para elegir el metodo de pago
      */
-    public void elegirMetodoPago(int idMetodoPago, String tipoMetodoPago, int idPedido, int idUsuario) throws SQLException {
+    public void elegirMetodoPago( String tipoMetodoPago, int idPedido, int idUsuario) throws SQLException {
         java.sql.Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -376,16 +403,6 @@ public class Pedido {
         try {
             conn = Connection.connection;
             conn.setAutoCommit(false); // Iniciar transacción
-
-            // Verificar que el metodo de pago es válido
-            String sqlVerificarMetodoPago = "SELECT ID_metodoPago FROM pago WHERE ID_metodoPago = ? AND Tipo_MetodoPago = ?";
-            pstmt = conn.prepareStatement(sqlVerificarMetodoPago);
-            pstmt.setInt(1, idMetodoPago);
-            pstmt.setString(2, tipoMetodoPago);
-            rs = pstmt.executeQuery();
-            if (!rs.next()) {
-                throw new SQLException("El método de pago no es válido.");
-            }
 
             // Verificar que el pedido pertenece al usuario
             String sqlVerificarPedido = "SELECT ID_Usuario FROM pedido WHERE ID_Pedido = ?";
@@ -397,11 +414,10 @@ public class Pedido {
             }
 
             // Actualizar el metodo de pago del pedido
-            String sqlActualizarMetodoPago = "UPDATE pedido SET Tipo_Pago = ?, ID_metodoPago = ? WHERE ID_Pedido = ?";
+            String sqlActualizarMetodoPago = "UPDATE pedido SET Tipo_Pago = ? WHERE ID_Pedido = ?";
             pstmt = conn.prepareStatement(sqlActualizarMetodoPago);
             pstmt.setString(1, tipoMetodoPago);
-            pstmt.setInt(2, idMetodoPago);
-            pstmt.setInt(3, idPedido);
+            pstmt.setInt(2, idPedido);
             pstmt.executeUpdate();
 
             conn.commit(); // Confirmar transacción

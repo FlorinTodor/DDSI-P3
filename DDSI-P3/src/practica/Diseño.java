@@ -1303,14 +1303,11 @@ public class Diseño {
         JPanel panelCambiarMetodoPago = new JPanel(new BorderLayout(5, 5));
         JPanel inputPanelPago = new JPanel(new GridLayout(4, 2, 5, 5));
         JTextField txtIdPedidoPago = new JTextField();
-        JTextField txtIdMetodoPago = new JTextField();
 
         inputPanelPago.add(new JLabel("ID Usuario: " + id_user));
         inputPanelPago.add(new JLabel(""));
         inputPanelPago.add(new JLabel("ID Pedido:"));
         inputPanelPago.add(txtIdPedidoPago);
-        inputPanelPago.add(new JLabel("ID Método de Pago:"));
-        inputPanelPago.add(txtIdMetodoPago);
 
         JPanel pagoOptionsPanelCambio = new JPanel(new FlowLayout());
         JButton btnPagoTarjetaCambio = new JButton("Tarjeta de Crédito");
@@ -1341,14 +1338,13 @@ public class Diseño {
             try {
                 textAreaPago.setText("");
                 int idPedido = Integer.parseInt(txtIdPedidoPago.getText().trim());
-                int idMetodoPago = Integer.parseInt(txtIdMetodoPago.getText().trim());
 
                 if (tipoMetodoPagoSeleccionado[0].isEmpty()) {
                     throw new IllegalArgumentException("Debe seleccionar un tipo de método de pago.");
                 }
 
                 Pedido pedidoService = new Pedido();
-                pedidoService.elegirMetodoPago(idMetodoPago, tipoMetodoPagoSeleccionado[0], idPedido, id_user);
+                pedidoService.elegirMetodoPago( tipoMetodoPagoSeleccionado[0], idPedido, id_user);
                 textAreaPago.append("Método de pago cambiado con éxito a " + tipoMetodoPagoSeleccionado[0] + ".\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panelCambiarMetodoPago, "Error al cambiar el método de pago: " + ex.getMessage());
