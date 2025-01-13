@@ -105,7 +105,7 @@ public class Usuario {
     /**
      * RF1.3: Modificar Datos del Usuario
      */
-    public void updateUser(int idUsuario, String nuevoCorreo, String nuevoNombre, String nuevaDireccion, String nuevaContraseña) throws Exception {
+    public void updateUser(int idUsuario, String nuevoCorreo, String nuevoNombre, String nuevaDireccion) throws Exception {
         if (Connection.connection == null) {
             throw new Exception("No hay conexión a la base de datos.");
         }
@@ -123,15 +123,15 @@ public class Usuario {
 
         // Actualizar datos
         try (PreparedStatement ps = Connection.connection.prepareStatement(
-                "UPDATE USUARIO SET CORREO = ?, NOMBRE = ?, DIRECCION = ?, CONTRASEÑA = ? WHERE ID_USUARIO = ?")) {
+                "UPDATE USUARIO SET CORREO = ?, NOMBRE = ?, DIRECCION = ? WHERE ID_USUARIO = ?")) {
             ps.setString(1, nuevoCorreo);
             ps.setString(2, nuevoNombre);
             ps.setString(3, nuevaDireccion);
-            ps.setString(4, nuevaContraseña);
-            ps.setInt(5, idUsuario);
+            ps.setInt(4, idUsuario);
             ps.executeUpdate();
         }
     }
+
 
     /**
      * RF1.4: Recuperar Contraseña

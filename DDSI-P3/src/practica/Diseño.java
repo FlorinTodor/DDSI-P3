@@ -799,14 +799,13 @@ public class Diseño {
         usuariosTabbedPane.addTab("Dar de Baja Usuario", panelDeleteUser);
 
         // -----------------------------------------------------------
-        // RF1.3: Modificar Datos de Usuario
-        // -----------------------------------------------------------
-        JPanel panelUpdateUser = new JPanel(new GridLayout(6, 2, 5, 5));
+// RF1.3: Modificar Datos de Usuario
+// -----------------------------------------------------------
+        JPanel panelUpdateUser = new JPanel(new GridLayout(5, 2, 5, 5));
         JTextField txtIdUserUpdate = new JTextField();
         JTextField txtCorreoUpdate = new JTextField();
         JTextField txtNombreUpdate = new JTextField();
         JTextField txtDireccionUpdate = new JTextField();
-        JTextField txtPasswordUpdate = new JTextField();
 
         panelUpdateUser.add(new JLabel("ID Usuario:"));
         panelUpdateUser.add(txtIdUserUpdate);
@@ -816,8 +815,6 @@ public class Diseño {
         panelUpdateUser.add(txtNombreUpdate);
         panelUpdateUser.add(new JLabel("Nueva Dirección:"));
         panelUpdateUser.add(txtDireccionUpdate);
-        panelUpdateUser.add(new JLabel("Nueva Contraseña:"));
-        panelUpdateUser.add(txtPasswordUpdate);
 
         JButton btnUpdateUser = new JButton("Modificar Datos");
         panelUpdateUser.add(btnUpdateUser);
@@ -829,8 +826,7 @@ public class Diseño {
                         Integer.parseInt(txtIdUserUpdate.getText().trim()),
                         txtCorreoUpdate.getText().trim(),
                         txtNombreUpdate.getText().trim(),
-                        txtDireccionUpdate.getText().trim(),
-                        txtPasswordUpdate.getText().trim()
+                        txtDireccionUpdate.getText().trim()
                 );
                 JOptionPane.showMessageDialog(panelUpdateUser,
                         "Datos actualizados con éxito.");
@@ -841,6 +837,8 @@ public class Diseño {
         });
 
         usuariosTabbedPane.addTab("Modificar Datos de Usuario", panelUpdateUser);
+
+
 
         // RF1.4: Recuperar Contraseña (Muestra Token Generado)
         JPanel panelRecoverPassword = new JPanel(new GridLayout(3, 2, 5, 5));
