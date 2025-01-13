@@ -117,22 +117,6 @@ public class Disparadores {
                     "    END IF; " +
                     "END;";
 
-    //  6) TRIGGER que evita que se inserte una relación duplicada entre un carrito y un pedido en GESTIONCARRITO. Gabriel
-    private static final String TRIG_EVITAR_CARRITO_DUPLICADO =
-            "CREATE OR REPLACE TRIGGER evitar_carrito_duplicado " +
-                    "BEFORE INSERT ON gestioncarrito " +
-                    "FOR EACH ROW " +
-                    "DECLARE " +
-                    "    carrito_duplicado INTEGER; " +
-                    "BEGIN " +
-                    "    SELECT COUNT(*) INTO carrito_duplicado " +
-                    "    FROM gestioncarrito " +
-                    "    WHERE ID_Carrito = :NEW.ID_Carrito AND ID_Pedido = :NEW.ID_Pedido; " +
-                    "    IF carrito_duplicado > 0 THEN " +
-                    "        RAISE_APPLICATION_ERROR(-20007, 'Error: Ya existe una relación entre este carrito y pedido.'); " +
-                    "    END IF; " +
-                    "END;";
-
     //7)  Trigger para verificar que el ID_Usuario asociado con un pedido existe en la tabla usuario
     private static final String TRIG_VERIFICAR_USUARIO_EN_PEDIDO =
             "CREATE OR REPLACE TRIGGER verificar_usuario_en_pedido "
@@ -165,7 +149,6 @@ public class Disparadores {
             st.execute(TRIG_VERIFICAR_METODO_PAGO_EXISTE);
             st.execute(TRIG_VERIFICAR_CANTIDAD_PRODUCTO);
             st.execute(TRIG_VERIFICAR_USUARIO_EN_PEDIDO );
-            st.execute(TRIG_EVITAR_CARRITO_DUPLICADO);
             System.out.println("Disparadores creados/reemplazados con éxito.");
         }
     }
