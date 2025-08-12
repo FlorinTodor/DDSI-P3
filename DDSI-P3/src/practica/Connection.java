@@ -7,8 +7,8 @@ import java.sql.*;
 public class Connection {
     /* ATRIBUTOS */
     private static final String URL = "jdbc:oracle:thin:@oracle0.ugr.es:1521/practbd";
-    private static final String USER = "x4049463";
-    private static final String PASSWORD = "x4049463";
+    private static final String USER = "user";
+    private static final String PASSWORD = "password";
     public static java.sql.Connection connection;
     public static JFrame frame;
     public static JFrame frame_registro;
