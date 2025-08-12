@@ -1,7 +1,7 @@
 # 🛒 Plataforma de Comercio Electrónico – DDSI
 
 ## 📌 Descripción
-Sistema desarrollado como parte de la asignatura **Diseño y Desarrollo de Sistemas de Información (DDSI)**.
+Sistema desarrollado como parte de la asignatura **Diseño y Desarrollo de Sistemas de Información (DDSI) 24/25**.
 Consiste en una **plataforma de comercio electrónico** que conecta compradores y vendedores, gestionando usuarios, productos, pedidos, métodos de pago y reseñas.
 El sistema se conecta a una **base de datos Oracle** y cuenta con una interfaz desarrollada en **Java Swing**.
 
